@@ -55,6 +55,7 @@ gem "faraday-multipart"
 gem "faraday-retry"
 
 gem "meta-tags"
+gem "sitemap_generator"
 
 gem "warning"
 
