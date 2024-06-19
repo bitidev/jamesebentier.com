@@ -17,10 +17,10 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: 127.0.0.1
-  username: james_ebentier_development
-  password: james_ebentier_development_password
+  pool: <%= ENV["RAILS_MAX_THREADS"].presence || 5 %>
+  host: <%= ENV["DATABASE_HOST"].presence || "127.0.0.1" %>
+  username: <%= ENV["DATABASE_USERNAME"].presence || "james_ebentier_development" %>
+  password: <%= ENV["DATABASE_PASSWORD"].presence || "james_ebentier_development_password" %>
 
 development:
   <<: *default
