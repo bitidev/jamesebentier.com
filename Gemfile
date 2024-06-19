@@ -53,6 +53,8 @@ gem "faraday"
 gem "faraday-multipart"
 gem "faraday-retry"
 
+gem "meta-tags"
+
 gem "warning"
 
 group :development, :test do

@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>JamesEbentier</title>
+    <title><%= t('site.name') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%=
+      display_meta_tags(
+        site: t('site.name')
+        separator: '|',
+        reverse: true,
+        follow: true,
+        index: true,
+        og: {
+          title: :title,
+          description: :description,
+          type: 'website',
+          site_name: :site,
+          url: request.original_url,
+          image: image_url('logo-120.webp')
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: :title,
+          description: :description,
+          site: t('site.twitter_handle'),
+          creator: t('site.owner_twitter_handle'),
+          image: image_url('logo-120.webp')
+        }
+      )
+    %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>

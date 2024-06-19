@@ -26,6 +26,9 @@
 #     en:
 #       "yes": yup
 #       enabled: "ON"
-
+---
 en:
-  hello: "Hello world"
+  site:
+    name: JEB Development
+    twitter_handle: '@jebentier'
+    owner_twitter_handle: '@jebentier'

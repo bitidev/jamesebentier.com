@@ -180,6 +180,8 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    meta-tags (2.21.0)
+      actionpack (>= 6.0.0, < 7.2)
     method_source (1.1.0)
     mini_mime (1.1.5)
     minitest (5.24.0)
@@ -400,6 +402,7 @@ DEPENDENCIES
   faraday-retry
   jbuilder
   jsbundling-rails
+  meta-tags
   pg (~> 1.1)
   pry
   puma (>= 5.0)
