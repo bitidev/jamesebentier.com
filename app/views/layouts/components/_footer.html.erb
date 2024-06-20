@@ -1,0 +1,52 @@
+<footer class="bg-base-200 border-t border-base-content/10">
+    <div class="max-w-7xl mx-auto px-8 py-24">
+      <div class=" flex lg:items-start md:flex-row md:flex-nowrap flex-wrap flex-col">
+        <div class="w-64 flex-shrink-0 md:mx-0 mx-auto text-center md:text-left">
+          <a href="/#" aria-current="page" class="flex gap-2 justify-center md:justify-start items-center">
+            <img src='/favicon.ico' alt="James Ebentier" class='w-6 h-6' width='24' height='24' />
+            <strong class="font-extrabold tracking-tight text-base md:text-lg">
+              James Ebentier
+            </strong>
+          </a>
+
+          <p class="mt-3 text-sm text-base-content/60">
+            Copyright © James Ebentier <%= Date.today.year %> - All rights reserved
+          </p>
+        </div>
+        <div class="flex-grow flex flex-wrap justify-center -mb-10 md:mt-0 mt-10 text-center">
+          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
+            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
+              Links
+            </div>
+
+            <ul class='flex flex-col list-none justify-center items-center md:items-start gap-2 mb-10 text-sm'>
+              <%# <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/blog'>Blog</NavLink></li>
+              <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/projects'>Projects</NavLink></li>
+              <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/resume'>Resume</NavLink></li> %>
+            </ul>
+          </div>
+
+          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
+            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
+              Social
+            </div>
+
+            <div class="flex flex-row space-x-4 items-start mb-10 text-sm">
+              <a href='https://twitter.com/jebentier' rel='noreferrer' target='_blank' title='jebentier twitter account' data-controller='mui-icons'><i class="fa-brands fa-twitter text-[#1da1f2] text-base" ></i></a>
+              <a href='https://linkedin.com/in/jebentier' rel='noreferrer' target='_blank' title='jebentier linkedin account'><i class="fa-brands fa-linkedin text-[#0072b1] text-base"></i></a>
+              <a href='https://github.com/jebentier' rel='noreferrer' target='_blank' title='jebentier github account'><i class="fa-brands fa-github text-base"></i></a>
+            </div>
+          </div>
+          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
+            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
+              Feeds
+            </div>
+
+            <div class="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
+              <a href='/blog/rss.xml' rel='noreferrer' target='_blank' title='blog rss feed'><i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Blog</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>

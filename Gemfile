@@ -56,6 +56,8 @@ gem "faraday"
 gem "faraday-multipart"
 gem "faraday-retry"
 
+gem "font-awesome-sass"
+
 gem "meta-tags"
 gem "sitemap_generator"
 

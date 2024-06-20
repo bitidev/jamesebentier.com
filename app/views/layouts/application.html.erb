@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html theme='light'>
+<html data-theme='light'>
   <head>
     <title><%= t('site.name') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -18,7 +18,7 @@
           type: 'website',
           site_name: :site,
           url: request.original_url,
-          image: image_url('logo192.png')
+          image: '/logo192.png'
         },
         twitter: {
           card: 'summary_large_image',
@@ -26,7 +26,7 @@
           description: :description,
           site: t('site.twitter_handle'),
           creator: t('site.owner_twitter_handle'),
-          image: image_url('logo192.png')
+          image: '/logo192.png'
         }
       )
     %>
@@ -39,9 +39,14 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+    <script src="https://kit.fontawesome.com/d7b2096eb7.js" crossorigin="anonymous"></script>
   </head>
 
   <body>
-    <%= yield %>
+    <%= render partial: 'layouts/components/header' %>
+    <div class="max-w-screen-lg m-auto font-sans-serif">
+      <%= yield %>
+    </div>
+    <%= render partial: 'layouts/components/footer' %>
   </body>
 </html>
