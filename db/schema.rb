@@ -10,8 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 0) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_21_082913) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "projects", id: :serial, force: :cascade do |t|
+    t.string "slug", limit: 255, null: false
+    t.string "title", limit: 1024, null: false
+    t.string "status", limit: 255, default: "Beta", null: false
+    t.string "url", limit: 1024, null: false
+    t.string "image", limit: 1024, null: false
+    t.text "description", null: false
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
+    t.integer "lock_version", default: 1, null: false
+    t.index ["slug"], name: "index_projects_on_slug", unique: true
+  end
 
 end

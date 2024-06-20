@@ -23,6 +23,7 @@
               <%# <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/blog'>Blog</NavLink></li>
               <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/projects'>Projects</NavLink></li>
               <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/resume'>Resume</NavLink></li> %>
+              <%= link_to 'Projects', projects_url, class: 'link link-hover' %>
             </ul>
           </div>
 
@@ -44,6 +45,9 @@
 
             <div class="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
               <a href='/blog/rss.xml' rel='noreferrer' target='_blank' title='blog rss feed'><i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Blog</a>
+              <%= link_to projects_url(format: "rss"), target: "_blank", title: "projects rss feed", class: 'link link-hover' do %>
+                <i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Projects
+              <% end %>
             </div>
           </div>
         </div>
