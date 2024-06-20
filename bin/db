@@ -12,7 +12,7 @@ def system!(*)
   system(*, exception: true)
 end
 
-def run_container
+def run_container # rubocop:disable Metrics/MethodLength
   command = [
     "#{CONTAINER_CLI} run",
     "--name #{CONTAINER_NAME}",
