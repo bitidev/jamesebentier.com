@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html theme='light'>
   <head>
     <title><%= t('site.name') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,7 +7,7 @@
     <%= csp_meta_tag %>
     <%=
       display_meta_tags(
-        site: t('site.name')
+        site: t('site.name'),
         separator: '|',
         reverse: true,
         follow: true,
@@ -18,7 +18,7 @@
           type: 'website',
           site_name: :site,
           url: request.original_url,
-          image: image_url('logo-120.webp')
+          image: image_url('logo192.png')
         },
         twitter: {
           card: 'summary_large_image',
@@ -26,10 +26,16 @@
           description: :description,
           site: t('site.twitter_handle'),
           creator: t('site.owner_twitter_handle'),
-          image: image_url('logo-120.webp')
+          image: image_url('logo192.png')
         }
       )
     %>
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/manifest.json" />
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
