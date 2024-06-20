@@ -30,7 +30,6 @@
     "bradlc.vscode-tailwindcss",
 
     /* Local Development Extensions */
-    "ms-azuretools.vscode-docker",
     "ms-vscode-remote.remote-containers",
 
     /* CI/CD Extensions */

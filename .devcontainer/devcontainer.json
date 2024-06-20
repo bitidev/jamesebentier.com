@@ -1,6 +1,6 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
 {
-	"name": "Ruby on Rails & Postgres",
+	"name": "LightRail SaaS",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -64,7 +64,10 @@
 				"github.copilot",
 				"GitHub.copilot-chat",
 				"GitHub.vscode-pull-request-github",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+
+				/* Infrastructure as Code Extensions */
+				"hashicorp.terraform"
 			]
 		}
 	},
