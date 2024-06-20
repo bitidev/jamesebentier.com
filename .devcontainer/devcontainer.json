@@ -6,7 +6,7 @@
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	"mounts": [
-		"type=bind,source=${localEnv:HOME}/.ssh,target=/root/.ssh,readonly"
+		"type=bind,source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly"
 	],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
@@ -17,7 +17,7 @@
 	"forwardPorts": [3000, 5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bundle install && rake db:setup",
+	"postCreateCommand": "bin/setup",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -70,8 +70,8 @@
 				"hashicorp.terraform"
 			]
 		}
-	},
+	}
 
-	// Connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "root"
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }

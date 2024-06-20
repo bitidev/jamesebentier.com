@@ -8,6 +8,10 @@ RUN su vscode -c "/usr/local/rvm/bin/rvm fix-permissions"
 # The value is a comma-separated list of allowed domains
 ENV RAILS_DEVELOPMENT_HOSTS=".githubpreview.dev,.preview.app.github.dev,.app.github.dev"
 
+# Install NodeJS 20.x
+RUN su vscode -c "curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -" \
+    && apt install -y nodejs
+
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
