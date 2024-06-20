@@ -1,0 +1,74 @@
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
+{
+	"name": "Ruby on Rails & Postgres",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+	"mounts": [
+		"type=bind,source=${localEnv:HOME}/.ssh,target=/root/.ssh,readonly"
+	],
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// This can be used to network with other containers or the host.
+	"forwardPorts": [3000, 5432],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "bundle install && rake db:setup",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"settings": {
+				"cSpell.words": [
+					"ebentier",
+					"jebentier"
+				]
+			},
+			"extensions": [
+				/* General IDE Enhancements */
+				"usernamehw.errorlens",
+				"kaiwood.endwise",
+				"christian-kohler.path-intellisense",
+				"aliariff.auto-add-brackets",
+				"streetsidesoftware.code-spell-checker",
+				"blakeh.jump-to-test",
+				"ionutvmi.path-autocomplete",
+				"esbenp.prettier-vscode",
+				"buenon.scratchpads",
+				"ms-vscode.test-adapter-converter",
+				"hbenl.vscode-test-explorer",
+				"vscode-icons-team.vscode-icons",
+				"redhat.vscode-xml",
+				"redhat.vscode-yaml",
+
+				/* Ruby Extensions */
+				"Shopify.ruby-extensions-pack",
+				"Shopify.ruby-lsp",
+				"sorbet.sorbet-vscode-extension",
+				"connorshea.vscode-ruby-test-adapter",
+				"KoichiSasada.vscode-rdbg",
+				"bung87.vscode-gemfile",
+
+				/* Frontend Extensions */
+				"dbaeumer.vscode-eslint",
+				"firsttris.vscode-jest-runner",
+				"bradlc.vscode-tailwindcss",
+
+				/* CI/CD Extensions */
+				"github.vscode-github-actions",
+				"github.copilot",
+				"GitHub.copilot-chat",
+				"GitHub.vscode-pull-request-github",
+				"eamodio.gitlens"
+			]
+		}
+	},
+
+	// Connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root"
+}

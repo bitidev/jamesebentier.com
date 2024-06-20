@@ -7,6 +7,8 @@ require_relative "boot"
 require "warning"
 Warning.ignore(/.*statement not reached.*/, /.*mail-2.8.1.*/)
 Warning.ignore(/.*assigned but unused variable.*/, /.*mail-2.8.1.*/)
+Warning.ignore(/discarding old sitemap_sample/, /.*sitemap_generator-6.3.0.*/)
+Warning.ignore(/.*circular require.*declare_schema.*/, /.*bundled_gems.*/)
 
 require "rails"
 # Pick the frameworks you want:

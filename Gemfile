@@ -47,7 +47,7 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-gem "activerecord-nulldb-adapter"
+gem "activerecord-nulldb-adapter", require: false
 gem "declare_schema"
 
 gem "faraday"
