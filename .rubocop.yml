@@ -20,6 +20,10 @@ AllCops:
 Layout/LineLength:
   Max: 150
 
+Rails/Present:
+  Exclude:
+  - 'bin/**/*'
+
 Style/StringLiterals:
   Enabled: false
 
