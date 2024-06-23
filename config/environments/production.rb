@@ -95,7 +95,6 @@ Rails.application.configure do
     /.*\.jamesebneiter\.com/, # Allow requests from subdomains like `www.example.com`
     "jamesebentier-site-85eab09d3f4f.herokuapp.com"
   ]
-  config.routes.default_url_options[:host] = 'jamesebentier.com'
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
