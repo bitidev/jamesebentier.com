@@ -3,12 +3,9 @@
     <img src="/favicon.ico" alt="James Ebentier" class='h-9 justify-self-start' />
     <ul class='flex flex-row list-none ml-auto content-center items-center justify-end my-auto'>
       <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-[#fab73a] cursor-default' : 'link link-hover' %></li>
+      <li class='ml-4'><%= link_to 'Blog', blog_url, class: current_page?(blog_path) ? 'text-[#fab73a] cursor-default' : 'link link-hover' %></li>
       <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-[#fab73a] cursor-default' : 'link link-hover' %></li>
       <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-[#fab73a] cursor-default' : 'link link-hover' %></li>
-      <%# <li class='ml-4'><NavLink class={({ isActive }) => `text-[#333] hover:underline ${isActive && 'text-[#fab73a] hover:no-underline cursor-default'}`} to='/'>Home</NavLink></li>
-      <li class='ml-4'><NavLink class={({ isActive }) => `text-[#333] hover:underline ${isActive && 'text-[#fab73a] hover:no-underline cursor-default'}`} to='/blog'>Blog</NavLink></li>
-      <li class='ml-4'><NavLink class={({ isActive }) => `text-[#333] hover:underline ${isActive && 'text-[#fab73a] hover:no-underline cursor-default'}`} to='/projects'>Projects</NavLink></li>
-      <li class='ml-4'><NavLink class={({ isActive }) => `text-[#333] hover:underline ${isActive && 'text-[#fab73a] hover:no-underline cursor-default'}`} to='/resume'>Resume</NavLink></li> %>
     </ul>
   </div>
 </header>

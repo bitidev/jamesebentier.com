@@ -32,3 +32,13 @@ Project.find_or_initialize_by(slug: "the-game-about-people").update!(
     The Game About People is a fun multiplayer game and is a hit at parties where you want to see just how well you all know each other.
   DESC
 )
+
+Dir[Rails.public_path.join('blog/*.md')].each do |file|
+  data = YAML.safe_load_file(file, symbolize_names: true, permitted_classes: [Date])
+  require 'pry'
+
+  Post.find_or_initialize_by(slug: data[:slug] || data[:title].parameterize).update!(
+    file_path: File.basename(file),
+    **data
+  )
+end

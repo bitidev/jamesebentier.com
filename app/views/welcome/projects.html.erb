@@ -4,7 +4,7 @@
 
 <h1 class='text-3xl mb-4'>Recent Projects</h1>
 <% Project.find_each do |project| %>
-  <%= link_to project.url, target: '_blank', rel: 'noreferrer', class: 'project flex flex-row mb-6 p-6 border border-[#eaeaea] rounded bg-white shadow text-justify w-full text-black no-underline' do %>
+  <%= link_to project.url, target: '_blank', rel: 'noreferrer', class: 'flex flex-row mb-6 p-6 border border-[#eaeaea] rounded bg-white shadow text-justify w-full text-black no-underline' do %>
     <div class='p-4 w-1/3 align-middle m-auto'>
       <img src="<%= project.image %>" alt="<%= project.title %>" class='m-auto' />
     </div>

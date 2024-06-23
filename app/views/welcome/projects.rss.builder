@@ -3,7 +3,7 @@
 xml.instruct! :xml, version: "1.0"
 xml.rss version: "2.0" do
   xml.channel do
-    xml.title "Biti LLC Projects | Jamess Ebentier | RSS"
+    xml.title "Biti LLC Projects | James Ebentier | RSS"
     xml.description "The current list of projects James Ebentier is building through Biti LLC."
     xml.link projects_url
     xml.image do

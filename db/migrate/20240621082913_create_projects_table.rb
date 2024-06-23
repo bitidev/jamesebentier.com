@@ -1,6 +1,8 @@
 class CreateProjectsTable < ActiveRecord::Migration[4.2]
   def self.up
-    create_table :projects do |t|
+    enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
+
+    create_table :projects, id: :uuid, default: 'gen_random_uuid()' do |t|
       t.string   :slug, limit: 255, null: false
       t.string   :title, limit: 1024, null: false
       t.string   :status, limit: 255, null: false, default: "Beta"
@@ -13,7 +15,7 @@ class CreateProjectsTable < ActiveRecord::Migration[4.2]
     end
 
 
-    add_index :projects, [:slug], unique: true
+    add_index :projects, [:slug], name: :index_projects_on_slug, unique: true
   end
 
   def self.down

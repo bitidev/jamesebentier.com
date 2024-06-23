@@ -58,6 +58,8 @@ gem "faraday-retry"
 
 gem "font-awesome-sass"
 
+gem "redcarpet"
+
 gem "meta-tags"
 gem "sitemap_generator"
 

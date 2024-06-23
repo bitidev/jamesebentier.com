@@ -5,6 +5,9 @@ require 'rails_helper'
 RSpec.describe Project do
   before { create(:project) }
 
+  # ID
+  it { is_expected.to have_db_column(:id).of_type(:uuid) }
+
   # Slug
   it { is_expected.to have_db_column(:slug).of_type(:string).with_options(limit: 255, null: false) }
   it { is_expected.to validate_presence_of(:slug) }

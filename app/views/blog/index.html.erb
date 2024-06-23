@@ -1,0 +1,17 @@
+<% content_for :head do %>
+  <%= auto_discovery_link_tag(:rss, blog_url(format: "rss")) %>
+<% end %>
+
+<h1 class='text-3xl mb-4'>Recent Blog Posts</h1>
+<% Post.published.order(published_at: :desc).each do |post| %>
+  <%= link_to blog_post_path(slug: post.slug), class: 'flex flex-row mb-6 p-6 border border-[#eaeaea] rounded bg-white shadow text-justify w-full text-black no-underline' do %>
+    <div class='p-4 mr-4 w-40 align-middle m-auto flex-shrink-0'>
+      <img src="<%= post.image %>" alt="<%= post.title %>" class='m-auto' />
+    </div>
+    <div class='m-auto flex-grow'>
+      <h2 class='text-2xl text-left'><%= post.title %></h2>
+      <p class='text-sm text-[#999] my-2'>Published At: <%= post.published_at.strftime("%B %d, %Y") %></p>
+      <p class='mb-0'><%= post.description %></p>
+    </div>
+  <% end %>
+<% end %>

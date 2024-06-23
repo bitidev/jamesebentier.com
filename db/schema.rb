@@ -10,11 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_21_082913) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_23_144007) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pgcrypto"
   enable_extension "plpgsql"
 
-  create_table "projects", id: :serial, force: :cascade do |t|
+  create_table "posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "slug", limit: 255, null: false
+    t.string "title", limit: 1024, null: false
+    t.string "description", limit: 1024, null: false
+    t.string "keywords", limit: 1024, null: false
+    t.string "image", limit: 1024, default: "", null: false
+    t.string "file_path", limit: 1024, null: false
+    t.datetime "published_at", precision: nil, null: false
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
+    t.integer "lock_version", default: 1, null: false
+    t.json "tags", default: [], null: false
+    t.index ["slug"], name: "index_posts_on_slug", unique: true
+  end
+
+  create_table "projects", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "slug", limit: 255, null: false
     t.string "title", limit: 1024, null: false
     t.string "status", limit: 255, default: "Beta", null: false

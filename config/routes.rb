@@ -3,8 +3,10 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  get "projects" => "welcome#projects", as: :projects
-  get "resume"   => "welcome#resume", as: :resume
+  get "blog"       => "blog#index",       as: :blog
+  get "blog/:slug" => "blog#show",        as: :blog_post
+  get "projects"   => "welcome#projects", as: :projects
+  get "resume"     => "welcome#resume",   as: :resume
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
