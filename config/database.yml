@@ -82,6 +82,4 @@ test:
 #
 production:
   <<: *default
-  database: james_ebentier_production
-  username: james_ebentier
-  password: <%= ENV["JAMES_EBENTIER_DATABASE_PASSWORD"] %>
+  url: <%= ENV['SCHEMATOGO_URL'].presence || ENV['DATABASE_URL'].presence %>

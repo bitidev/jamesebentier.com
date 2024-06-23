@@ -42,3 +42,8 @@
 # Resume
 resume/resume.json
 resume/dist/
+
+# Terraform
+terraform/.terraform
+terraform/*.lock.hcl
+terraform/*.tfvars
