@@ -24,6 +24,7 @@
               <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/projects'>Projects</NavLink></li>
               <li class='ml-4'><NavLink class='text-[#333] hover:underline' to='/resume'>Resume</NavLink></li> %>
               <%= link_to 'Projects', projects_url, class: 'link link-hover' %>
+              <%= link_to 'Resume', resume_url, class: 'link link-hover' %>
             </ul>
           </div>
 
@@ -33,9 +34,9 @@
             </div>
 
             <div class="flex flex-row space-x-4 items-start mb-10 text-sm">
-              <a href='https://twitter.com/jebentier' rel='noreferrer' target='_blank' title='jebentier twitter account' data-controller='mui-icons'><i class="fa-brands fa-twitter text-[#1da1f2] text-base" ></i></a>
-              <a href='https://linkedin.com/in/jebentier' rel='noreferrer' target='_blank' title='jebentier linkedin account'><i class="fa-brands fa-linkedin text-[#0072b1] text-base"></i></a>
-              <a href='https://github.com/jebentier' rel='noreferrer' target='_blank' title='jebentier github account'><i class="fa-brands fa-github text-base"></i></a>
+              <a href='https://twitter.com/jebentier' rel='noreferrer' target='_blank' title='jebentier twitter account' data-controller='mui-icons'><%= social_profile_icon :twitter %></a>
+              <a href='https://linkedin.com/in/jebentier' rel='noreferrer' target='_blank' title='jebentier linkedin account'><%= social_profile_icon :linkedin %></a>
+              <a href='https://github.com/jebentier' rel='noreferrer' target='_blank' title='jebentier github account'><%= social_profile_icon :github %></a>
             </div>
           </div>
           <div class="lg:w-1/4 md:w-1/2 w-full px-4">

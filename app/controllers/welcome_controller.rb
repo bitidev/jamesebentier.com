@@ -4,4 +4,5 @@
 class WelcomeController < ApplicationController
   def index; end
   def projects; end
+  def resume; end
 end

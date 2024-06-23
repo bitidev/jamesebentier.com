@@ -1,0 +1,30 @@
+<div class="header flex flex-grow">
+  <div>
+    <h1 class='text-4xl font-thin leading-normal'><%= basics[:name] %></h1>
+    <h2 class='text-2xl font-light text-[#202931]'><%= basics[:label] %></h2>
+    <div class='mb-1'><%= basics.dig(:location, :postalCode) %>, <%= basics.dig(:location, :city) %>, <%= basics.dig(:location, :region) %> <%= basics.dig(:location, :countryCode) %></div>
+    <div class='flex flex-row justify-left mb-1'>
+      <div class='mr-2'>
+        <i class="fa-solid fa-up-right-from-square mx-1 my-auto align-middle text-sm"></i>
+        <a href="<%= basics[:website] %>" class='link link-hover my-auto align-middle'><%= basics[:website] %></a>
+      </div>
+      <div class='mx-2'>
+        <i class="fa-solid fa-envelope mx-1 my-auto align-middle text-sm"></i>
+        <a href="mailto:<%= basics[:email] %>" class='link link-hover my-auto align-middle'><%= basics[:email] %></a>
+      </div>
+      <div class='mx-y'>
+        <i class="fa-solid fa-phone mx-1 my-auto align-middle text-sm"></i>
+        <a href="tel:<%= basics[:phone] %>" class='link link-hover my-auto align-middle'><%= basics[:phone] %></a>
+      </div>
+    </div>
+    <div class='flex flex-row justify-left mb-1'>
+      <% basics[:profiles].each do |profile| %>
+        <div class='mr-3'>
+          <%= social_profile_icon profile[:network], classes: 'my-auto align-middle' %>
+          <a href="<%= profile[:url] %>" class='link link-hover my-auto align-middle'><%= profile[:username] %></a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <img class='w-44 h-full m-auto mr-0 rounded justify-self-right' src="<%= basics[:picture] %>" alt="<%= basics[:name] %>" />
+</div>

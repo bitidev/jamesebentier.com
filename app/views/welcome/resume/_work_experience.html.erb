@@ -1,0 +1,33 @@
+<div class='my-4'>
+  <div class="relative mb-2 after:absolute after:left-0 after:top-3 after:h-px after:w-full after:bg-[#ccc] after:block after:content-[''] after:-z-10">
+    <h2 class='pr-4 bg-white text-[#ff6d1f] inline-block uppercase font-semibold text-base mb-0'>Work Experience (<%= work.count %>)</h2>
+  </div>
+  <div>
+    <% work.each_with_index do |data, index| %>
+      <div class='collapse mb-5 w-full' data-controller='collapse'>
+        <div class='flex flex-row' data-action='click->collapse#toggle'>
+          <i class="fa-solid fa-caret-right mt-1 ml-1 mr-3 cursor-pointer print:hidden" data-collapse='arrow'></i>
+          <div>
+            <div class='inline-block font-semibold'><%= data[:position] %></div>
+            <div class='inline-block text-[#606d76] font-normal before:content-["|"] before:mx-2'><%= data[:company] %></div>
+            <div><a href=<%= data[:website] %> target='_blank' rel='noreferrer'><%= data[:website] %></a></div>
+          </div>
+          <div class='ml-auto font-semibold'>
+            <div class='inline-block'><%= Date.parse(data[:startDate]).strftime('%B %Y') %></div>
+            <div class='inline-block before:mx-2 before:content-["-"]'><%= data[:endDate] ? Date.parse(data[:endDate]).strftime('%B %Y') : 'Current' %></div>
+          </div>
+        </div>
+        <div class="<%= index.zero? ? "" : "hidden" %> ml-5 print:block" data-collapse='content'>
+          <div class='rounded py-5 px-4 bg-white'><%= data[:summary] %></div>
+          <%- if data[:highlights] %>
+            <ul class='list-square pl-10'>
+              <% data[:highlights].each do |highlight| %>
+                <li><%= highlight %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class='my-4'>
+  <div class="relative mb-2 after:absolute after:left-0 after:top-3 after:h-px after:w-full after:bg-[#ccc] after:block after:content-[''] after:-z-10">
+    <h2 class='pr-4 bg-white text-[#ff6d1f] inline-block uppercase font-semibold text-base mb-0'>Education (<%= education.count %>)</h2>
+  </div>
+  <div>
+    <% education.each do |data| %>
+      <div class='mb-6 w-full flex flex-row' key={key}>
+        <div class='ml-10'>
+          <div class='inline-block font-semibold'><%= data[:studyType] %> <%= data[:area] %></div>
+          <div class='inline-block text-[#606d76] font-normal before:mx-2 before:content-["|"]'><%= data[:institution] %></div>
+        </div>
+        <div class='ml-auto font-semibold'>
+          <div class='inline-block'><%= Date.parse(data[:startDate]).strftime('%B %Y') %></div>
+          <div class='inline-block before:mx-2 before:content-["-"]'><%= data[:endDate] ? Date.parse(data[:endDate]).strftime('%B %Y') : 'Current' %></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
