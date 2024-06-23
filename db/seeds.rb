@@ -35,7 +35,6 @@ Project.find_or_initialize_by(slug: "the-game-about-people").update!(
 
 Dir[File.expand_path('../public/blog/*.md', __dir__)].each do |file|
   data = YAML.safe_load_file(file, symbolize_names: true, permitted_classes: [Date])
-  require 'pry'
 
   Post.find_or_initialize_by(slug: data[:slug] || data[:title].parameterize).update!(
     file_path: File.basename(file),
