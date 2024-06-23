@@ -33,7 +33,7 @@ Project.find_or_initialize_by(slug: "the-game-about-people").update!(
   DESC
 )
 
-Dir[Rails.public_path.join('blog/*.md')].each do |file|
+Dir[File.expand_path('../public/blog/*.md', __dir__)].each do |file|
   data = YAML.safe_load_file(file, symbolize_names: true, permitted_classes: [Date])
   require 'pry'
 
