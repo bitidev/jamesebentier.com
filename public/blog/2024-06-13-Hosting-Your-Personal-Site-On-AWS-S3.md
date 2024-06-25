@@ -12,7 +12,7 @@ tags:
 - terraform
 ---
 
-Alright, so in the [previous post](https://jamesebentier.com/blog/2022-02-06-Hosting-A-Personal-Site-On-The-Cheap) we were figuring out what the cheapest way to host a personal site is. In this blog post, we'll talk about how to actually host your website on AWS S3 after you've built it.
+Alright, so in the [previous post](https://jamesebentier.com/blog/2024-06-06-hosting-a-personal-site-on-the-cheap) we were figuring out what the cheapest way to host a personal site is. In this blog post, we'll talk about how to actually host your website on AWS S3 after you've built it.
 
 ## First Things First
 Before we can start talking about the setup and configuration of everything, we need to talk about the technologies we're actually going to be using from the AWS suite and beyond. The list that I'll be going over today is:
