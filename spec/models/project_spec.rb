@@ -20,7 +20,7 @@ RSpec.describe Project do
   # Status
   it { is_expected.to have_db_column(:status).of_type(:string).with_options(limit: 255, null: false, default: 'Beta') }
   it { is_expected.to validate_presence_of(:status) }
-  it { is_expected.to validate_inclusion_of(:status).in_array(%w[Beta Live]) }
+  it { is_expected.to validate_inclusion_of(:status).in_array(%w[Pre-Launch Beta Live]) }
 
   # URL
   it { is_expected.to have_db_column(:url).of_type(:string).with_options(limit: 1024, null: false) }

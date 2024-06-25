@@ -12,7 +12,7 @@
 
 Project.find_or_initialize_by(slug: "not-my-real-email").update!(
   title: "NotMyRealEmail.com - Secure Email Aliasing and Forwarding Service",
-  status: "Beta",
+  status: "Pre-Launch",
   url: "https://notmyrealemail.com",
   image: "https://notmyrealemail.com/logo-120.png",
   description: <<~DESC.chomp
