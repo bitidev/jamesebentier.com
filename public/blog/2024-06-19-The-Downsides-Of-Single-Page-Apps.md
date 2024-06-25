@@ -12,7 +12,7 @@ tags:
 ---
 
 Single Page Applications (SPAs) have become increasingly popular in recent years and this site itself is hosted
-using a Single Page Application for a combined ease of development and [cheapness of delivery](https://jamesebentier.com/blog/2024-06-06-Hosting-A-Personal-Site-On-The-Cheap).
+using a Single Page Application for a combined ease of development and [cheapness of delivery](https://jamesebentier.com/blog/2024-06-06-hosting-a-personal-site-on-the-cheap).
 But there are some downsides to this strategy that I'm starting to learn about, which I feel is important to pass
 along. So here is what I've learned so far.
 
