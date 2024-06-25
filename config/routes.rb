@@ -5,7 +5,7 @@ Rails.application.routes.draw do
 
   get "blog"       => "blog#index",       as: :blog
   get "blog/:slug" => "blog#show",        as: :blog_post
-  get "projects"   => "welcome#projects", as: :projects
+  get "projects"   => "projects#index",   as: :projects
   get "resume"     => "welcome#resume",   as: :resume
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
