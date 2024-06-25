@@ -2,6 +2,13 @@
   <%= auto_discovery_link_tag(:rss, projects_url(format: "rss")) %>
 <% end %>
 
+<%
+  set_meta_tags(
+    title: 'Projects',
+    description: "Stay up-to-date with James Ebentier's latest projects released to the public through BiTi LLC",
+  )
+%>
+
 <h1 class='text-3xl mb-4'>Recent Projects</h1>
 <% Project.find_each do |project| %>
   <%= link_to project_url(slug: project.slug), class: 'flex flex-row mb-6 p-6 border border-[#eaeaea] rounded bg-white shadow text-justify w-full text-black no-underline' do %>

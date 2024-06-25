@@ -1,3 +1,10 @@
+<%
+  set_meta_tags(
+    title: @project.title,
+    description: @project.description,
+  )
+%>
+
 <div class='flex flex-row mb-6 space-x-4'>
   <div class='p-4 w-1/4 align-top m-auto mt-0 flex-shrink-0 border rounded shadow'>
     <img src="<%= @project.image %>" alt="<%= @project.title %>" class='m-auto' />
