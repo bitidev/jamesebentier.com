@@ -11,7 +11,7 @@ RSpec.describe Post do
   # Slug
   it { is_expected.to have_db_column(:slug).of_type(:string).with_options(limit: 255, null: false) }
   it { is_expected.to validate_presence_of(:slug) }
-  it { is_expected.to validate_uniqueness_of(:slug) }
+  it { is_expected.to validate_uniqueness_of(:slug).case_insensitive }
 
   # Title
   it { is_expected.to have_db_column(:title).of_type(:string).with_options(limit: 1024, null: false) }

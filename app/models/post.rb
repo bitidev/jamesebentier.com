@@ -3,7 +3,7 @@
 # This is the Post model that represents the blog posts that James Ebentier writes.
 class Post < ApplicationRecord
   declare_schema id: :uuid, default: 'gen_random_uuid()' do
-    string :slug,        limit: 255,  null: false, validates: { presence: true, uniqueness: true }, index: { unique: true }
+    string :slug,        limit: 255,  null: false, validates: { presence: true, uniqueness: { case_sensitive: false } }, index: { unique: true }
     string :title,       limit: 1024, null: false, validates: { presence: true }
     string :description, limit: 1024, null: false, validates: { presence: true }
     string :keywords,    limit: 1024, null: false, validates: { presence: true }
@@ -14,6 +14,8 @@ class Post < ApplicationRecord
 
     datetime :published_at, null: false, validates: { presence: true }
   end
+
+  before_validation -> { self.slug = slug.downcase if slug.present? }
 
   scope :published, -> { where(published_at: ..Time.zone.now) }
 
