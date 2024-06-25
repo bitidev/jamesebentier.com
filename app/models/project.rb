@@ -5,7 +5,7 @@ class Project < ApplicationRecord
   declare_schema id: :uuid, default: 'gen_random_uuid()' do
     string :slug,   limit: 255,  null: false, validates: { presence: true, uniqueness: true }, index: { unique: true }
     string :title,  limit: 1024, null: false, validates: { presence: true }
-    string :status, limit: 255, null: false,  validates: { presence: true, inclusion: { in: %w[Beta Live] } },
+    string :status, limit: 255, null: false,  validates: { presence: true, inclusion: { in: %w[Pre-Launch Beta Live] } },
                     default: 'Beta'
     string :url,    limit: 1024, null: false, validates: { presence: true }
     string :image,  limit: 1024, null: false, validates: { presence: true }
