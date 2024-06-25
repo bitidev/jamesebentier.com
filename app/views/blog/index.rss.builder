@@ -16,7 +16,7 @@ xml.rss version: "2.0" do
       xml.item do
         xml.title blog.title
         xml.description blog.description
-        xml.link blog_post_path(slug: blog.slug)
+        xml.link post_path(slug: blog.slug)
         xml.guid blog.slug
         if blog.image.present?
           xml.enclosure url: blog.image,

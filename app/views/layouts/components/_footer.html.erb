@@ -20,7 +20,7 @@
             </div>
 
             <ul class='flex flex-col list-none justify-center items-center md:items-start gap-2 mb-10 text-sm'>
-              <%= link_to 'Blog', blog_url, class: 'link link-hover' %>
+              <%= link_to 'Blog', posts_url, class: 'link link-hover' %>
               <%= link_to 'Projects', projects_url, class: 'link link-hover' %>
               <%= link_to 'Resume', resume_url, class: 'link link-hover' %>
             </ul>
@@ -43,7 +43,7 @@
             </div>
 
             <div class="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
-              <%= link_to blog_url(format: "rss"), target: "_blank", title: "blog rss feed" do %>
+              <%= link_to posts_url(format: "rss"), target: "_blank", title: "blog rss feed" do %>
                 <i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Blog
               <% end %>
               <%= link_to projects_url(format: "rss"), target: "_blank", title: "projects rss feed", class: 'link link-hover' do %>

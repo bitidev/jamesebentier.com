@@ -38,13 +38,13 @@ SitemapGenerator::Sitemap.create do
 
     add send(:"#{model.name.underscore.pluralize}_path"), priority: 0.7, changefreq: "daily"
     model.find_each do |record|
-      add send(:"#{model.name.underscore}_path", record), lastmod: record.updated_at
+      add send(:"#{model.name.underscore}_path", record.try(:slug) || record), lastmod: record.updated_at
     end
   end
 
   # Add any contoller index methods that are not already included or have noindex set to true
   ApplicationController.descendants.each do |controller|
-    next if controller.noindex || controller.instance_methods.exclude?(:index)
+    next if controller.noindex || controller.instance_methods.exclude?(:index) || !respond_to?(:"#{controller.name.underscore}_path")
 
     add send(:"#{controller.name.underscore}_path"), priority: 0.7, changefreq: "daily"
   end
