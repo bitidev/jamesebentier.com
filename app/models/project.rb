@@ -11,4 +11,12 @@ class Project < ApplicationRecord
     string :image,  limit: 1024, null: false, validates: { presence: true }
     text   :description, null: false, validates: { presence: true }
   end
+
+  def content
+    @content ||= if (file_path = Rails.public_path.join('projects', "#{slug}.md")).exist?
+                   file_path.read
+                 else
+                   '_Project Details Coming Soon_'
+                 end
+  end
 end
