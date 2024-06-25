@@ -2,6 +2,7 @@
   set_meta_tags(
     title: @post.title,
     description: @post.description,
+    canonical: post_url(@post.slug),
   )
 %>
 <main class="mx-auto p-4">
