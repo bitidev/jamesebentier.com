@@ -3,7 +3,8 @@
     title: @post.title,
     description: @post.description,
     canonical: post_url(@post.slug),
-    og: { url: post_url(@post.slug) }
+    og: { url: post_url(@post.slug), image: @post.image },
+    twitter: { image: @post.image }
   )
 %>
 <main class="mx-auto p-4">
