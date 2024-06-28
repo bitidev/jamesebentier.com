@@ -3,7 +3,8 @@ slug: 2024-06-28-how-to-decide-what-is-necessary
 title: How to Decide What is Necessary
 description: One of the hardest parts of a project is deciding what not to do. Learn with me as I navigate this process while converting my site from a Single Page Application to a full-stack application.
 published_at: 2024-06-28
-image: /how-to-decide-what-is-necessary.webp
+image: /blog/images/how-to-decide-what-is-necessary.webp
+keywords: project planning, decision-making, project management, agile methodology, prioritization, definition of done
 tags:
 - web-hosting
 - decision-making
@@ -55,8 +56,8 @@ more effectively.
 When choosing a stack, familiarity with the tools we use allows us to work faster. Therefore, I wanted to use something
 I was already familiar with. This narrowed down the list of frameworks to two options:
 
-1) Ruby on Rails
-2) Next.js
+1. Ruby on Rails
+2. Next.js
 
 Considering my experience, Rails was the more tried and true option compared to Next.js. Consequently, I quickly decided
 to use Ruby on Rails.
