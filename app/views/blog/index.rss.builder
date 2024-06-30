@@ -18,6 +18,8 @@ xml.rss version: "2.0" do
         xml.description blog.description
         xml.link post_path(slug: blog.slug)
         xml.guid blog.slug
+        xml.date blog.published_at.iso8601
+        xml.pubDate blog.published_at.iso8601
         if blog.image.present?
           xml.enclosure url: blog.image,
                         type: Mime::Type.lookup_by_extension(File.extname(blog.image).delete("."))
