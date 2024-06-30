@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -exo pipefail
+
+bundle exec rails db:migrate db:seed
+bundle exec rake sitemap:refresh:no_ping
