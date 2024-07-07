@@ -1,7 +1,7 @@
 ---
 slug: 2024-07-08-first-deployment-and-cut-over
 title: The First Deployment and Cut-Over
-description:
+description: The process and challenges of deploying a Ruby on Rails application to Heroku and transitioning a domain with zero downtime, using Terraform for infrastructure automation.
 published_at: 2024-07-08
 image: /blog/images/first-deployment-and-cut-over.webp
 keywords: ruby on rails, web development, full stack application, project planning, deployment, terraform
@@ -40,7 +40,7 @@ So how on earth do we even start to understand the stack necessary for routing a
 when we discussed the stack to use, we said we would be using Heroku to host/run the Rails application, along with
 AWS Route 53 and Cloudfront for the DNS and CDN respectively.
 
-![High-Level VPC Networking Diagram](/blog/image/vpc-network-diagram.webp)
+![High-Level VPC Networking Diagram](/blog/images/vpc-network-diagram.webp)
 
 With this diagram, we can see that the first thing we need to accomplish for the cut over is to ensure that the
 application is fully deployed to Heroku. Once that is done, and we can confirm that we're able to access the application
