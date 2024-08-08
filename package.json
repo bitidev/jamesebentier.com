@@ -4,7 +4,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.5",
-    "@tailwindcss/typography": "^0.5.13",
+    "@tailwindcss/typography": "^0.5.14",
     "autoprefixer": "^10.4.20",
     "daisyui": "^4.12.10",
     "postcss": "^8.4.41",
