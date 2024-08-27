@@ -382,7 +382,7 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
-    uri (0.13.0)
+    uri (0.13.1)
     warning (1.4.0)
     web-console (4.2.1)
       actionview (>= 6.0.0)
