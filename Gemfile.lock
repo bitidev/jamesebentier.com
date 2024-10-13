@@ -123,7 +123,7 @@ GEM
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
     date (3.3.4)
-    declare_schema (2.2.0)
+    declare_schema (2.2.1)
       rails (>= 6.0)
     diff-lcs (1.5.1)
     docile (1.4.1)
@@ -203,7 +203,7 @@ GEM
     nap (1.1.0)
     net-http (0.4.1)
       uri
-    net-imap (0.4.16)
+    net-imap (0.4.17)
       date
       net-protocol
     net-pop (0.1.2)
@@ -394,7 +394,7 @@ GEM
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.6.18)
+    zeitwerk (2.7.0)
 
 PLATFORMS
   aarch64-linux
