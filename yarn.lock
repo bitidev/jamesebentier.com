@@ -547,7 +547,7 @@ __metadata:
     "@hotwired/turbo-rails": "npm:^8.0.12"
     "@tailwindcss/typography": "npm:^0.5.15"
     autoprefixer: "npm:^10.4.20"
-    daisyui: "npm:^4.12.20"
+    daisyui: "npm:^4.12.21"
     postcss: "npm:^8.4.49"
     tailwindcss: "npm:^3.4.16"
     webpack: "npm:^5.97.1"
@@ -820,15 +820,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daisyui@npm:^4.12.20":
-  version: 4.12.20
-  resolution: "daisyui@npm:4.12.20"
+"daisyui@npm:^4.12.21":
+  version: 4.12.21
+  resolution: "daisyui@npm:4.12.21"
   dependencies:
     css-selector-tokenizer: "npm:^0.8"
     culori: "npm:^3"
     picocolors: "npm:^1"
     postcss-js: "npm:^4"
-  checksum: 10c0/067d89d481a7759e315862802f315e66a0e0a19eec04cd6b98de6993dd8462665d87ca885cc773af8a982f8875c495fca70945d85ed6ee2f39600beb8c194412
+  checksum: 10c0/296c5d88d4a3a1c804c6d81ae57199f8124b73325e82845709e2c68ac2f4a324be94a2f0bb81014b68011de954000ee0af08127c0688bbc3bc5afa202ef59fc3
   languageName: node
   linkType: hard
 
