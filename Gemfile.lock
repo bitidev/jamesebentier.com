@@ -163,7 +163,7 @@ GEM
     ffi (1.17.0-x86-linux-gnu)
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
-    font-awesome-sass (6.5.2)
+    font-awesome-sass (6.7.2)
       sassc (~> 2.0)
     git (1.19.1)
       addressable (~> 2.8)
