@@ -131,7 +131,7 @@ GEM
     date (3.4.1)
     declare_schema (2.3.2)
       rails (>= 6.0)
-    diff-lcs (1.6.0)
+    diff-lcs (1.6.1)
     docile (1.4.1)
     drb (2.2.1)
     erubi (1.13.1)
