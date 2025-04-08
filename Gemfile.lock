@@ -129,7 +129,7 @@ GEM
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
     date (3.4.1)
-    declare_schema (2.3.2)
+    declare_schema (3.0.0)
       rails (>= 6.0)
     diff-lcs (1.6.1)
     docile (1.4.1)
