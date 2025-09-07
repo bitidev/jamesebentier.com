@@ -173,7 +173,7 @@ GEM
       rchardet (~> 1.8)
     globalid (1.2.1)
       activesupport (>= 6.1)
-    hashdiff (1.2.0)
+    hashdiff (1.2.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     io-console (0.8.1)
