@@ -414,7 +414,7 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.1.5)
       unicode-emoji (~> 4.0, >= 4.0.4)
-    unicode-emoji (4.0.4)
+    unicode-emoji (4.1.0)
     uri (1.0.3)
     warning (1.5.0)
     web-console (4.2.1)
