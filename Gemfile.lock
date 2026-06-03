@@ -268,7 +268,7 @@ GEM
       method_source (~> 1.0)
       reline (>= 0.6.0)
     pstore (0.2.1)
-    psych (5.3.1)
+    psych (5.4.0)
       date
       stringio
     public_suffix (7.0.5)
