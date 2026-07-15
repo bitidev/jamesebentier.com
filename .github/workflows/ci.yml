@@ -1,5 +1,10 @@
 name: CI
-on: push
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -9,6 +14,7 @@ jobs:
   danger:
     name: Danger
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -21,6 +27,17 @@ jobs:
           plugins_file: 'Gemfile'
           danger_file: 'Dangerfile'
           danger_id: 'danger-pr'
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: RuboCop
+        run: bundle exec rubocop
 
   test:
     name: Test
@@ -56,3 +73,17 @@ jobs:
           bundle exec rake assets:precompile
           bundle exec rake db:prepare
           bundle exec rake spec
+
+  ci-gate:
+    name: ci-gate
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: always()
+    steps:
+      - name: Check required jobs
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Required CI jobs failed (lint=${{ needs.lint.result }}, test=${{ needs.test.result }})"
+            exit 1
+          fi
+          echo "All required CI jobs passed."
