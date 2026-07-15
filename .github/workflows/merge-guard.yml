@@ -21,7 +21,7 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request'
     steps:
       - name: Post merge-guard status and manage ci-failing label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const run = context.payload.workflow_run;
