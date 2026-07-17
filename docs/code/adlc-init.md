@@ -51,7 +51,7 @@ Personal website for James Ebentier (`jamesebentier.com`): landing page, resume,
 - **declare_schema**: Source of truth for `Post`/`Project` columns and validations
 - **redcarpet** + `lib/blog/renderer.rb`: Markdown → Tailwind-styled HTML
 - **meta-tags**: Central SEO tags in the application layout
-- **sitemap_generator**: Reflects on models/controllers, honors `noindex`
+- **sitemap_generator**: Reflects on models/controllers, honors `noindex?`
 - **font-awesome-sass** + FA kit script: Social/brand icons
 
 ---
@@ -154,7 +154,7 @@ See `docs/code/anti-patterns.md`. Critical:
 | Blog markdown | `public/blog/*.md` → seed into `Post` → `Post#content` → `BlogHelper#render_markdown` |
 | Project markdown | optional `public/projects/{slug}.md` via `Project#content` |
 | Resume | `resume/resume.yml` via `ResumeHelper#resume_data` |
-| Sitemap | `config/sitemap.rb` reflection + `noindex` |
+| Sitemap | `config/sitemap.rb` reflection + `noindex?` |
 | Faraday | Present in Gemfile; no first-class client wrapper yet |
 | Production DB | `SCHEMATOGO_URL` or `DATABASE_URL` |
 

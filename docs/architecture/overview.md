@@ -61,13 +61,13 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 
 ### rails-runtime
 
-- `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex`
+- `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex?`
 - `lib/assets/.keep` — Rails lib/assets keepfile
 - `lib/tasks/.keep` — Rails lib/tasks keepfile
 
 ### content-domain
 
-- `app/models/application_record.rb` — ActiveRecord base; model-level `noindex` for sitemap
+- `app/models/application_record.rb` — ActiveRecord base; model-level `noindex?` for sitemap
 - `app/models/post.rb` — Blog post metadata + markdown file content loader
 - `app/models/project.rb` — Project portfolio record + optional markdown detail loader
 - `app/models/concerns/.keep` — Concerns directory keepfile

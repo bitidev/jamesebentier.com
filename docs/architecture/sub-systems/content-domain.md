@@ -14,7 +14,7 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 
 - `app/models/post.rb` — Blog post schema, validations, `published` scope, markdown body via `file_path`
 - `app/models/project.rb` — Project schema, status enum (`Pre-Launch`/`Beta`/`Live`), optional `public/projects/{slug}.md`
-- `app/models/application_record.rb` — AR base + model-level `noindex`
+- `app/models/application_record.rb` — AR base + model-level `noindex?`
 
 ---
 
@@ -23,7 +23,7 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - **Exports**: `Post`, `Project`, `ApplicationRecord`
 - **Exports**: `Post#content` / `Project#content` — markdown body strings for rendering
 - **Exports**: `Post.published` — scope filtering `published_at <= now`
-- **Exports**: `ApplicationRecord.noindex` — sitemap opt-out
+- **Exports**: `ApplicationRecord.noindex?` — sitemap opt-out
 - **Types**: UUID primary keys (`gen_random_uuid()`)
 
 ---
