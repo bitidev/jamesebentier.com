@@ -136,15 +136,15 @@ end
 
 ---
 
-## Pattern: Sitemap Reflection with noindex
+## Pattern: Sitemap Reflection with noindex?
 
 **When to use**: Controlling which models/controllers appear in `sitemap.xml`.
 
-**Example**: Controllers/models override `self.noindex` (default `false` on `ApplicationController` / `ApplicationRecord`). `config/sitemap.rb` skips when `noindex` is true.
+**Example**: Controllers/models override `self.noindex?` (default `false` on `ApplicationController` / `ApplicationRecord`). `config/sitemap.rb` skips when `noindex?` is true.
 
-**DO**: Opt out via `noindex` rather than hardcoding skip lists in the sitemap config.
+**DO**: Opt out via `noindex?` rather than hardcoding skip lists in the sitemap config.
 
-**DON'T**: Forget to set `noindex` when adding private/admin controllers later.
+**DON'T**: Forget to set `noindex?` when adding private/admin controllers later.
 
 ---
 

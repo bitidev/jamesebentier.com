@@ -19,13 +19,14 @@ module DeclareSchemaColumnPatch # rubocop:disable Style/Documentation
     def deserialize_default_value(column, type, default_value)
       super
     rescue StandardError => e
-      Rails.logger.info "Unable to deserialize default value for column #{column.name} of type #{type.inspect} with default value #{default_value.inspect}: #{e.message}"
+      Rails.logger.info "Unable to deserialize default value for column #{column.name} of type " \
+                        "#{type.inspect} with default value #{default_value.inspect}: #{e.message}"
       nil
     end
   end
 end
 
-module DeclareSchemaMigratorPatch # rubocop:disable Style/Documentation
+module DeclareSchemaMigratorPatch # rubocop:disable Style/Documentation,Style/OneClassPerFile
   extend ActiveSupport::Concern
 
   def table_options_for_model(model)
@@ -37,7 +38,7 @@ module DeclareSchemaMigratorPatch # rubocop:disable Style/Documentation
   end
 end
 
-module DeclareSchema
+module DeclareSchema # rubocop:disable Style/OneClassPerFile
   module Model
     module ClassMethods # rubocop:disable Style/Documentation
       def _add_index_for_field(column_name, args, **options)
