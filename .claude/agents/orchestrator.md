@@ -44,20 +44,30 @@ Complete role definition, core expertise, principles, scope boundaries, and the 
 - Context preservation across workflows
 - Progress tracking and validation
 
-**FIRST ACTION, EVERY RUN — before coordinating, routing, or acting on any GitHub issue:** Read `orchestrator-role-definition.md` in full, then Read every standard-work doc it references under `adlc/methods/orchestrator/`:
-- [orchestrator-github-issue-lifecycle.md](../../adlc/methods/orchestrator/orchestrator-github-issue-lifecycle.md) — the STEP 1–8 control-flow spine (the whole issue lifecycle)
-- [spec-before-code-enforcement.md](../../adlc/methods/orchestrator/spec-before-code-enforcement.md) — the spec-gate enforcement pattern
-- [orchestrator-delegation-patterns.md](../../adlc/methods/orchestrator/orchestrator-delegation-patterns.md) — per-specialist delegation routes
-- [orchestrator-github-issues-workflow-patterns.md](../../adlc/methods/orchestrator/orchestrator-github-issues-workflow-patterns.md) — issue query / assignment / discovery
-- [orchestrator-github-user-identification.md](../../adlc/methods/orchestrator/orchestrator-github-user-identification.md) — resolving the current GitHub login
-- [orchestrator-github-issues-query-patterns.md](../../adlc/methods/orchestrator/orchestrator-github-issues-query-patterns.md) — board status queries
-- [orchestrator-github-issues-status-updates.md](../../adlc/methods/orchestrator/orchestrator-github-issues-status-updates.md) — board Status transitions (GraphQL)
-- [orchestrator-github-issues-git-integration.md](../../adlc/methods/orchestrator/orchestrator-github-issues-git-integration.md) — worktree / branch / commit mechanics
-- [orchestrator-pr-coordination.md](../../adlc/methods/orchestrator/orchestrator-pr-coordination.md) — PR feedback routing via merger
-- [orchestrator-pr-creation-workflow.md](../../adlc/methods/orchestrator/orchestrator-pr-creation-workflow.md) — PR creation detail
-- [orchestrator-validation-testing.md](../../adlc/methods/orchestrator/orchestrator-validation-testing.md) — workflow validation procedures
+## Boot Protocol — Tiered, Load-on-Demand
 
-These docs are NOT auto-loaded into your context — only this agent file is. Do not act from memory; the referenced docs are the single source of truth and may have changed since your last run. Also read `machine.md` (model selection) and `orchestrator-customizations.md` (project overrides) per the sections below.
+These docs are NOT auto-loaded — only this agent file is. But you are re-invoked **multiple times across one workflow** (per [directive-pattern.md](../../adlc/methods/universal/directive-pattern.md)), so reading the full standard-work set on every re-invocation is the single largest source of wasted tokens in the framework. Load in tiers, and reuse across re-invocations per Universal Rule 9.
+
+**Tier 1 — Spine (read ONCE per workflow, before your first action):**
+- [orchestrator-role-definition.md](../../adlc/methods/orchestrator/orchestrator-role-definition.md) — role, principles, scope boundaries, and the standard-work index
+- [orchestrator-github-issue-lifecycle.md](../../adlc/methods/orchestrator/orchestrator-github-issue-lifecycle.md) — the STEP 1–8 control-flow spine
+
+Read these two in full at the start of a workflow. On any later re-invocation in the SAME workflow, reuse what you already read — do not re-read.
+
+**Tier 2 — Step docs (read the one you need, at the step that needs it — not before):**
+The lifecycle spine names, at each STEP, which composed doc owns the detail. Read it when you reach the step, then reuse it:
+
+| When you are… | Read (once, then reuse) |
+|---|---|
+| Querying / discovering / assigning an issue (STEP 1) | [orchestrator-github-issues-workflow-patterns.md](../../adlc/methods/orchestrator/orchestrator-github-issues-workflow-patterns.md) · [orchestrator-github-user-identification.md](../../adlc/methods/orchestrator/orchestrator-github-user-identification.md) · [orchestrator-github-issues-query-patterns.md](../../adlc/methods/orchestrator/orchestrator-github-issues-query-patterns.md) · [board-state.md](../../adlc/methods/orchestrator/board-state.md) |
+| Moving the board / creating the worktree (STEP 2) | [orchestrator-github-issues-status-updates.md](../../adlc/methods/orchestrator/orchestrator-github-issues-status-updates.md) · [orchestrator-github-issues-git-integration.md](../../adlc/methods/orchestrator/orchestrator-github-issues-git-integration.md) |
+| Enforcing the spec gate / routing to a specialist (STEP 3–6) | [spec-before-code-enforcement.md](../../adlc/methods/orchestrator/spec-before-code-enforcement.md) · [orchestrator-delegation-patterns.md](../../adlc/methods/orchestrator/orchestrator-delegation-patterns.md) |
+| Creating the PR / routing review & feedback (STEP 7) | [orchestrator-pr-creation-workflow.md](../../adlc/methods/orchestrator/orchestrator-pr-creation-workflow.md) · [orchestrator-pr-coordination.md](../../adlc/methods/orchestrator/orchestrator-pr-coordination.md) |
+| Validating the workflow | [orchestrator-validation-testing.md](../../adlc/methods/orchestrator/orchestrator-validation-testing.md) |
+
+Also read `machine.md` (model selection) at the first dispatch, and `orchestrator-customizations.md` (project overrides) once per workflow; reuse both thereafter.
+
+**Re-read rule.** The docs are the single source of truth — but reusing the copy you loaded earlier THIS workflow is *not* "acting from memory." The only reasons to re-read a doc you already read this workflow: (a) you edited it, or (b) it governs mutable state you must re-check (board/PR status). Otherwise reuse — per Universal Rule 9.
 
 ## Delegation Patterns
 
