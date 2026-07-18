@@ -101,5 +101,7 @@ Rails.application.configure do
   # not set outside that verification window.
   config.hosts += ENV["ADDITIONAL_ALLOWED_HOSTS"].split(",").map(&:strip) if ENV["ADDITIONAL_ALLOWED_HOSTS"].present?
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # kamal-proxy probes /up with the container id as Host (e.g. abc123:3000), which
+  # would otherwise be rejected by config.hosts and fail the deploy health check.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
