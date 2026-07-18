@@ -1,0 +1,33 @@
+---
+description: rtk — Token-Optimized CLI Output
+alwaysApply: true
+---
+
+# rtk — Token-Optimized CLI Output
+
+**rtk** is the token-optimized CLI proxy for this environment. Prefer it for
+verbose shell output (git, tests, docker, kubectl, directory listings, etc.).
+
+A Cursor `preToolUse` hook rewrites `Shell` commands to `rtk …` automatically
+when possible. When issuing shell commands yourself, prefer the `rtk` forms:
+
+```bash
+# Instead of:              Use:
+git status                 rtk git status
+git log -10                rtk git log -10
+cargo test                 rtk cargo test
+docker ps                  rtk docker ps
+ls -la                     rtk ls
+rg "pattern"               rtk rg "pattern"
+```
+
+## Meta commands (always use rtk directly)
+
+```bash
+rtk gain              # Token savings dashboard
+rtk gain --history    # Per-command savings history
+rtk discover          # Find missed rtk opportunities
+rtk proxy <cmd>       # Run raw (no filtering) but track usage
+```
+
+Do NOT pipe through `sqz` — it has been removed. Do not add `| sqz compress`.
