@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_23_144007) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_18_001247) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -23,8 +23,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_144007) do
     t.string "image", limit: 1024, default: "", null: false
     t.string "file_path", limit: 1024, null: false
     t.datetime "published_at", precision: nil, null: false
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "lock_version", default: 1, null: false
     t.json "tags", default: [], null: false
     t.index ["slug"], name: "index_posts_on_slug", unique: true
@@ -37,8 +37,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_144007) do
     t.string "url", limit: 1024, null: false
     t.string "image", limit: 1024, null: false
     t.text "description", null: false
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "lock_version", default: 1, null: false
     t.index ["slug"], name: "index_projects_on_slug", unique: true
   end
