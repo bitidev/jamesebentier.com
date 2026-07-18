@@ -57,12 +57,14 @@ env:
 
 # Postgres accessory, running alongside the app on the same Linode host.
 # Reachable from the app container as "jamesebentier-site-postgres:5432"
-# (Kamal's default accessory hostname: "<service>-<accessory>").
+# (Kamal's default accessory hostname: "<service>-<accessory>"). No `port:` here
+# deliberately: the app reaches it over Kamal's private Docker network by that
+# hostname (R4), so publishing 5432 on the host's public interface is unnecessary
+# and would otherwise expose Postgres to the internet.
 accessories:
   postgres:
     image: postgres:16
     host: <%= ENV["KAMAL_HOST"] %>
-    port: 5432
     env:
       clear:
         POSTGRES_DB: jamesebentier_site_production
