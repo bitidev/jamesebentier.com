@@ -1,0 +1,102 @@
+# Soft merge enforcement: posts a `merge-guard` commit status after the CI
+# workflow completes, and manages a `ci-failing` label on the PR.
+# Use when hard branch protection is unavailable or as a complement to it.
+name: Merge Guard
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  merge-guard:
+    name: merge-guard
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Post merge-guard status and manage ci-failing label
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const sha = run.head_sha;
+            const conclusion = run.conclusion;
+            const passed = conclusion === 'success';
+            const state = passed ? 'success' : 'failure';
+            const description = passed
+              ? 'CI passed'
+              : `CI ${conclusion || 'failed'}`;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state,
+              context: 'merge-guard',
+              description,
+              target_url: run.html_url,
+            });
+
+            // Resolve PR number(s) for this head SHA
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${run.head_branch}`,
+              per_page: 10,
+            });
+
+            const matching = prs.filter((pr) => pr.head.sha === sha);
+            if (matching.length === 0) {
+              core.info(`No open PR found for sha ${sha}; status posted only.`);
+              return;
+            }
+
+            // Ensure label exists
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'ci-failing',
+              });
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'ci-failing',
+                  color: 'B60205',
+                  description: 'CI failed on this PR (merge-guard)',
+                });
+              } else {
+                throw e;
+              }
+            }
+
+            for (const pr of matching) {
+              const labels = (pr.labels || []).map((l) => l.name);
+              const has = labels.includes('ci-failing');
+              if (!passed && !has) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  labels: ['ci-failing'],
+                });
+                core.info(`Added ci-failing to PR #${pr.number}`);
+              } else if (passed && has) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  name: 'ci-failing',
+                });
+                core.info(`Removed ci-failing from PR #${pr.number}`);
+              }
+            }

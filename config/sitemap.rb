@@ -29,12 +29,10 @@ SitemapGenerator::Sitemap.create do
   #   end
 
   # Automatically load all models and add any records that have a show path.
-  # If the model has a noindex method that returns true, it will be skipped.
+  # If the model has a noindex? method that returns true, it will be skipped.
   Rails.application.eager_load!
   ApplicationRecord.descendants.each do |model|
-    if model.noindex || !Rails.application.routes.url_helpers.respond_to?(:"#{model.name.underscore.pluralize}_path")
-      next
-    end
+    next if model.noindex? || !Rails.application.routes.url_helpers.respond_to?(:"#{model.name.underscore.pluralize}_path")
 
     add send(:"#{model.name.underscore.pluralize}_path"), priority: 0.7, changefreq: "daily"
     model.find_each do |record|
@@ -42,9 +40,9 @@ SitemapGenerator::Sitemap.create do
     end
   end
 
-  # Add any contoller index methods that are not already included or have noindex set to true
+  # Add any contoller index methods that are not already included or have noindex? set to true
   ApplicationController.descendants.each do |controller|
-    next if controller.noindex || controller.instance_methods.exclude?(:index) || !respond_to?(:"#{controller.name.underscore}_path")
+    next if controller.noindex? || controller.instance_methods.exclude?(:index) || !respond_to?(:"#{controller.name.underscore}_path")
 
     add send(:"#{controller.name.underscore}_path"), priority: 0.7, changefreq: "daily"
   end

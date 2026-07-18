@@ -7,7 +7,7 @@ FactoryBot.define do
     description { "Something about the blogs return" }
     keywords { "blog, return, back, new, fresh" }
     image { "logo192.png" }
-    published_at { Time.now }
+    published_at { Time.current }
     file_path { 'blog/the-blog-is-back.md' }
   end
 end

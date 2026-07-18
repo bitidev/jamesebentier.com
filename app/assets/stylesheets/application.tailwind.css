@@ -1,8 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes: light --default, dark;
+}
 
-@import "font-awesome";
+@source "../../helpers";
+
+@theme {
+  --font-sans-serif: Montserrat, sans-serif;
+  --font-resume: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+@utility list-square {
+  list-style-type: square;
+}
 
 .prose {
   img {
@@ -10,7 +21,7 @@
     max-width: 50%;
     &::after {
       @apply block text-center text-sm text-gray-500;
-      content: attr(alt);;
+      content: attr(alt);
     }
   }
 
