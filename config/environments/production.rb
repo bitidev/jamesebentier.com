@@ -48,10 +48,15 @@ Rails.application.configure do
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  # config.assume_ssl = true
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
+
+  # Skip http-to-https redirect for the default health check endpoint.
+  # kamal-proxy probes /up over plain HTTP on the container network; a redirect to HTTPS
+  # makes the proxy retry with TLS against Puma and fail the deploy health check.
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new($stdout)
@@ -101,5 +106,7 @@ Rails.application.configure do
   # not set outside that verification window.
   config.hosts += ENV["ADDITIONAL_ALLOWED_HOSTS"].split(",").map(&:strip) if ENV["ADDITIONAL_ALLOWED_HOSTS"].present?
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # kamal-proxy probes /up with the container id as Host (e.g. abc123:3000), which
+  # would otherwise be rejected by config.hosts and fail the deploy health check.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
