@@ -95,6 +95,11 @@ Rails.application.configure do
     /.*\.jamesebneiter\.com/, # Allow requests from subdomains like `www.example.com`
     "jamesebentier-site-85eab09d3f4f.herokuapp.com"
   ]
+  # Additive, explicit opt-in allowlist extension so the operator can verify the app
+  # answers on the Linode's bare IP (or a placeholder hostname) ahead of the DNS
+  # cutover in #1161, without editing/redeploying application code. Comma-separated;
+  # not set outside that verification window.
+  config.hosts += ENV["ADDITIONAL_ALLOWED_HOSTS"].split(",").map(&:strip) if ENV["ADDITIONAL_ALLOWED_HOSTS"].present?
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

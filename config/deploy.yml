@@ -1,0 +1,77 @@
+# Kamal deploy configuration for a single Linode host.
+#
+# Host/user/registry credentials are supplied via environment variables (never
+# hardcoded here) so this file is safe to commit. See docs/ops/kamal-first-deploy.md
+# for the full list of variables to set and a first-deploy walkthrough.
+#
+# Loads a git-ignored .env for local `kamal` invocations, if present.
+<% require "dotenv"; Dotenv.load(".env") %>
+
+# Name of your application. Used to uniquely configure containers.
+service: jamesebentier-site
+
+# Name of the container image (registry host comes from the registry: block below).
+image: bitidev/jamesebentier-site
+
+# Deploy to this single Linode host. IP/hostname comes from KAMAL_HOST, never committed.
+servers:
+  - <%= ENV["KAMAL_HOST"] %>
+
+# SSH user for connecting to the host. Defaults to root; override with KAMAL_SSH_USER
+# to match whatever the human's manual Linode/SSH setup established.
+ssh:
+  user: <%= ENV.fetch("KAMAL_SSH_USER", "root") %>
+
+# Public hostname for this app is jamesebentier.com, on the same shared Linode as
+# bot.biti.dev. Configuring it here lets Kamal's proxy request its Let's Encrypt
+# certificate and route this hostname; it doesn't require the DNS record to already
+# point here (DNS/CloudFront/Route53 cutover for jamesebentier.com remains #1161).
+# app_port matches the Dockerfile's EXPOSE 3000.
+proxy:
+  app_port: 3000
+  host: jamesebentier.com
+  ssl: true
+
+# Credentials for the image registry. Recommended: GitHub Container Registry
+# (ghcr.io), so #1162's future CI deploy job can reuse GITHUB_TOKEN auth for free.
+registry:
+  server: ghcr.io
+  username: <%= ENV["KAMAL_REGISTRY_USERNAME"] %>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Configure builder setup. Most Linode plans are amd64; if building locally on a
+# different architecture (e.g. Apple Silicon), either configure Docker buildx for
+# cross-compilation or set `remote: ssh://<user>@<host>` below to build on the
+# target host instead. See docs/ops/kamal-first-deploy.md.
+builder:
+  arch: amd64
+
+# Inject ENV variables into the app container (secrets come from .kamal/secrets).
+env:
+  clear:
+    # Comma-separated list of extra Host header values to allow, ahead of the
+    # DNS cutover in #1161 (e.g. the Linode's bare IP). See config/environments/production.rb.
+    ADDITIONAL_ALLOWED_HOSTS: "<%= ENV["ADDITIONAL_ALLOWED_HOSTS"].to_s %>"
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+
+# Postgres accessory, running alongside the app on the same Linode host.
+# Reachable from the app container as "jamesebentier-site-postgres:5432"
+# (Kamal's default accessory hostname: "<service>-<accessory>"). No `port:` here
+# deliberately: the app reaches it over Kamal's private Docker network by that
+# hostname (R4), so publishing 5432 on the host's public interface is unnecessary
+# and would otherwise expose Postgres to the internet.
+accessories:
+  postgres:
+    image: postgres:16
+    host: <%= ENV["KAMAL_HOST"] %>
+    env:
+      clear:
+        POSTGRES_DB: jamesebentier_site_production
+        POSTGRES_USER: jamesebentier_site
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
