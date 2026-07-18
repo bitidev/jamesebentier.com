@@ -14,7 +14,9 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 - `config/routes.rb` — (outside source roots, but the entry map) root + blog/projects/resume
 - `app/controllers/welcome_controller.rb` / `blog_controller.rb` / `projects_controller.rb` — thin action controllers
-- `app/views/layouts/application.html.erb` — layout, meta-tags, Font Awesome, production analytics
+- `app/views/layouts/application.html.erb` — layout, meta-tags, Font Awesome, production analytics, FOUC-prevention theme script
+- `app/assets/stylesheets/application.tailwind.css` — theme/token source of truth (type scale, self-hosted fonts, DaisyUI theme set)
+- `app/views/components/` — shared ERB component partials (section, card, pill, cta_button)
 - `app/helpers/blog_helper.rb` — markdown rendering bridge
 - `app/helpers/resume_helper.rb` — `resume/resume.yml` loader
 
@@ -24,8 +26,9 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 - **HTTP routes**: `/`, `/resume`, `/blog`, `/blog/:slug`, `/projects`, `/projects/:slug`, `/up`
 - **Exports**: helpers `render_markdown`, `resume_data`, `style_for_level`, `social_profile_icon`
-- **Stimulus**: `data-controller="collapse"` toggle behavior
-- **Assets**: webpack JS bundle + Tailwind CSS build (`yarn build` / `yarn build:css`)
+- **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status→badge-role map)
+- **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware)
+- **Assets**: webpack JS bundle + Tailwind CSS build (`yarn build` / `yarn build:css`); self-hosted webfonts under `public/fonts/` (Commit Mono, Inter)
 
 ---
 
@@ -34,7 +37,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - Controllers stay thin: load models by slug, leave markup to views/helpers.
 - Resume content is YAML at `resume/resume.yml` (rendered HTML may also be produced separately under `resume/` tooling) — not the DB.
 - Production-only analytics (Metricool, Google Analytics) are gated by `Rails.env.production?` in the layout.
-- Layout uses DaisyUI `data-theme='light'` and a centered `max-w-screen-lg` content column.
+- Theme is client-driven: a render-blocking inline script in the layout `<head>` applies the visitor's stored choice (the `theme` `localStorage` key) to `<html data-theme>` before first paint, the `theme-picker` controller switches and persists it, and it defaults to `light` for first-time visitors. The centered `max-w-screen-lg` content column is unchanged.
 
 ## Security Posture
 

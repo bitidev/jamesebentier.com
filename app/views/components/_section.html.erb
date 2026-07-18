@@ -1,0 +1,25 @@
+<%#
+  Shared section wrapper.
+
+  Call shape (block form -- rendered as a layout so the block becomes the section body):
+    render(layout: "components/section", locals: { eyebrow: nil, title: nil }) { section body }
+
+  Locals:
+    eyebrow: optional -- small Commit Mono label shown above the title
+    title:   optional -- heading
+
+  Block (required): the section body.
+
+  Participates in the scroll fade/slide-in motion system -- see
+  app/javascript/controllers/motion_controller.js. The element starts visible; the
+  controller adds/removes the hidden state itself, so nothing depends on JS to be seen.
+%>
+<section class="mb-16" data-controller="motion">
+  <% if local_assigns[:eyebrow].present? %>
+    <p class="font-mono text-sm uppercase tracking-widest text-primary mb-2"><%= eyebrow %></p>
+  <% end %>
+  <% if local_assigns[:title].present? %>
+    <h2 class="font-mono text-2xl mb-6"><%= title %></h2>
+  <% end %>
+  <%= yield %>
+</section>

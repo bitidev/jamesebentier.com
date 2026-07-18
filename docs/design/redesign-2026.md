@@ -57,17 +57,19 @@ edge.
 - **Mode:** dark-first. Keep the existing light theme for the print/resume path.
 - **Terminal theme picker (playful):** let the viewer pick a theme from a small,
   terminal-style switcher. Defaults are **light** and **dark**; additionally offer a
-  handful of beloved developer color schemes (candidates: Dracula, Solarized Dark/Light,
-  Gruvbox, Nord, Monokai, Tokyo Night, Catppuccin). Persist the choice (localStorage /
-  cookie). Implemented as DaisyUI themes + a Stimulus controller. This is a personality
+  curated set of beloved developer color schemes — **Dracula, Nord, Gruvbox,
+  Catppuccin** (see spec [#1180 §D1](../specs/1180-design-system-pass-refined-terminal.md#d1--curated-developer-theme-set-dracula-nord-gruvbox-dark-catppuccin-mocha)
+  for the excluded-candidates rationale). Persist the choice (localStorage).
+  Implemented as DaisyUI themes + a Stimulus controller. This is a personality
   moment — the switcher itself should feel like a tiny terminal.
 - **Palette:** retire the multi-color accent hero (green/purple/orange/pink/yellow).
   Move to a disciplined base — near-black canvas, soft off-white text — plus **one
   signature accent: amber `#fab73a`** (already in use), applied consistently to links,
   focus states, and CTAs.
 - **Typography:** **Commit Mono** is the signature typeface — used for headings, nav,
-  metadata, labels, code, and all "system" cues — paired with a clean sans (Montserrat,
-  or revisit) for long-form body so Deep Dives stay comfortable. Commit Mono is
+  metadata, labels, code, and all "system" cues — paired with **Inter** for long-form
+  body so Deep Dives stay comfortable (see spec [#1180 §D2](../specs/1180-design-system-pass-refined-terminal.md#d2--body-sans-pairing-inter-not-montserrat)
+  for why Inter over the never-loaded Montserrat reference). Commit Mono is
   free/open, neutral-but-characterful, and [its own site](https://commitmono.com/) is a
   direct design touchstone for us (see the keyboard command layer below).
 - **Type scale:** base **18px**, **Major Third (1.250)** → 18 · 23 · 28 · 35 · 44 · 55.
@@ -316,7 +318,6 @@ experiment** — dogfooding the "build it myself" ethos.
   for a consent banner; confirm with the privacy-policy/Impressum work. German **TTDSG** +
   **GDPR** apply.
 - **Hero copy** beyond the positioning line.
-- **Terminal theme picker** — final list of bundled themes.
 - **Owner-only vs public** scopes for terminal metrics queries.
 - **Newsletter provider** — deferred until demand justifies it (own-DB capture until then).
 
@@ -334,8 +335,10 @@ experiment** — dogfooding the "build it myself" ethos.
 | Positioning term | Fractional architect / CTO (not "fractal") | 2026-07-18 |
 | Positioning line | "I help engineers get their systems right…" | 2026-07-18 |
 | Signature typeface | Commit Mono (mono roles) + sans body | 2026-07-18 |
+| Body sans | Inter | 2026-07-18 |
 | Type scale | 18px base, Major Third (1.250) | 2026-07-18 |
 | Theme picker | Playful terminal theme switcher (light/dark + dev schemes) | 2026-07-18 |
+| Bundled dev themes | Dracula, Nord, Gruvbox, Catppuccin | 2026-07-18 |
 | Keyboard UX | Full keyboard command layer / site-as-terminal | 2026-07-18 |
 | Newsletter | Aspirational; own-DB capture, launch on demand | 2026-07-18 |
 | Analytics | Drop GA + Metricool; first-party, terminal-queryable | 2026-07-18 |

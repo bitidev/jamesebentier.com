@@ -1,0 +1,24 @@
+<%#
+  Shared CTA button.
+
+  Call shape:
+    render("components/cta_button", label: "View Project", href: project_url(...), style: :primary)
+
+  Locals:
+    label: required -- button text
+    href:  required -- link target
+    style: :primary (default) or :ghost (secondary)
+
+  No block -- text-only label (a block-content variant is not needed by any current
+  page and is left for a future amendment if one needs it).
+
+  style: :primary always renders on the DaisyUI `primary` role -- never a hardcoded hex
+  -- so the button re-themes correctly across all six bundled themes (amber in
+  light/dark, each developer scheme's own primary color otherwise) with no per-theme
+  special-casing here.
+%>
+<%
+  cta_style = local_assigns[:style] || :primary
+  btn_class = cta_style == :ghost ? "btn-ghost" : "btn-primary"
+%>
+<%= link_to label, href, class: "btn #{btn_class} font-mono" %>

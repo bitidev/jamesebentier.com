@@ -1,0 +1,32 @@
+<%#
+  Shared tag/status pill.
+
+  Call shape:
+    render("components/pill", label: project.status, variant: :status)
+    render("components/pill", label: tag, variant: :tag)
+
+  Locals:
+    label:   required -- the text shown on the pill
+    variant: :status or :tag (default :tag)
+
+  variant: :status maps `label` (a Project#status value) to a DaisyUI badge role -- this
+  mapping is the contract later pages build against:
+    Pre-Launch -> badge-warning
+    Beta       -> badge-info
+    Live       -> badge-success
+  An unrecognized value falls back to a neutral badge rather than raising, so a future
+  status value can't break rendering.
+
+  variant: :tag renders a neutral outline badge -- no status semantics implied (used for
+  free-form Post#tags entries).
+%>
+<%
+  pill_variant = local_assigns[:variant] || :tag
+  status_badge_roles = {
+    "Pre-Launch" => "badge-warning",
+    "Beta" => "badge-info",
+    "Live" => "badge-success"
+  }.freeze
+  badge_role = pill_variant == :status ? status_badge_roles.fetch(label, "badge-neutral") : "badge-outline"
+%>
+<span class="badge <%= badge_role %> font-mono"><%= label %></span>

@@ -39,6 +39,9 @@
 
 /node_modules
 
+# Stray lockfile emitted by the Tailwind standalone CLI (this project uses yarn).
+/bun.lock
+
 # Resume
 resume/resume.json
 resume/dist/
