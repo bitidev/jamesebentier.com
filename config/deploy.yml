@@ -50,7 +50,7 @@ env:
   clear:
     # Comma-separated list of extra Host header values to allow, ahead of the
     # DNS cutover in #1161 (e.g. the Linode's bare IP). See config/environments/production.rb.
-    ADDITIONAL_ALLOWED_HOSTS: <%= ENV["ADDITIONAL_ALLOWED_HOSTS"] %>
+    ADDITIONAL_ALLOWED_HOSTS: "<%= ENV["ADDITIONAL_ALLOWED_HOSTS"].to_s %>"
   secret:
     - RAILS_MASTER_KEY
     - DATABASE_URL
