@@ -22,13 +22,15 @@ servers:
 ssh:
   user: <%= ENV.fetch("KAMAL_SSH_USER", "root") %>
 
-# HTTP only for now — no domain resolves to this host yet (DNS cutover is #1161).
-# Once a domain is pointed here, uncomment `host:` and `ssl: true` to enable
-# automatic Let's Encrypt certificates. app_port matches the Dockerfile's EXPOSE 3000.
+# Public hostname for this app is jamesebentier.com, on the same shared Linode as
+# bot.biti.dev. Configuring it here lets Kamal's proxy request its Let's Encrypt
+# certificate and route this hostname; it doesn't require the DNS record to already
+# point here (DNS/CloudFront/Route53 cutover for jamesebentier.com remains #1161).
+# app_port matches the Dockerfile's EXPOSE 3000.
 proxy:
   app_port: 3000
-  # host: app.example.com
-  # ssl: true
+  host: jamesebentier.com
+  ssl: true
 
 # Credentials for the image registry. Recommended: GitHub Container Registry
 # (ghcr.io), so #1162's future CI deploy job can reuse GITHUB_TOKEN auth for free.

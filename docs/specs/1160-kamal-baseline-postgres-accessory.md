@@ -1,8 +1,8 @@
 <!-- GITHUB ISSUE TRACKING METADATA -->
 <!-- Issue Key: bitidev/jamesebentier.com#1160 -->
-<!-- Last Updated: 2026-07-18T01:36:15+02:00 -->
+<!-- Last Updated: 2026-07-18T10:54:00+02:00 -->
 <!-- Description Hash: f11df67ddb5d -->
-<!-- Spec Version: 1 -->
+<!-- Spec Version: 2 -->
 <!-- END METADATA -->
 
 # Kamal Baseline + Postgres Accessory for Linode
@@ -99,7 +99,7 @@ This section is spec-level guidance for the **code** agent / implementer — not
    - `service:` a short app identifier (e.g. `jamesebentier-site`, matching the existing Heroku app name for continuity).
    - `image:` `<registry-username>/jamesebentier-site` (or the `ghcr.io/<org>/<repo>` form if using GHCR per R5 — Kamal derives the full registry host from the `registry:` block, don't duplicate it in `image:`).
    - `servers:` a single host resolved from `ENV["KAMAL_HOST"]` (R1); `ssh: { user: <%= ENV["KAMAL_SSH_USER"] %> }` if a non-default SSH user is needed.
-   - `proxy:` `app_port: 3000` (matches `Dockerfile`'s `EXPOSE 3000`/Puma's `PORT` default); leave `ssl`/`host` for the DNS-bearing hostname unset or placeholder-commented for now — real TLS/hostname wiring is #1161's job once a domain resolves to this host. Kamal's health check defaults to `/up`, which already exists (no config needed).
+   - `proxy:` `app_port: 3000` (matches `Dockerfile`'s `EXPOSE 3000`/Puma's `PORT` default). Once the target host and public hostname are both known (as they are here — `jamesebentier.com` on the shared Linode), `proxy.host`/`proxy.ssl: true` can be configured now so Kamal's proxy requests its Let's Encrypt certificate and routes that hostname; this is independent of whether the DNS record itself already resolves there. Actual DNS record ownership/verification (Route53/CloudFront Terraform) remains #1161's job — this spec only configures the app/proxy side of the hostname, not the DNS side. Kamal's health check defaults to `/up`, which already exists (no config needed).
    - `registry:` per R5.
    - `builder:` set `arch:` to match the Linode's actual CPU architecture (most Linode plans are `amd64`) — if the operator's local machine is a different architecture (e.g. Apple Silicon), either configure Docker buildx for cross-compilation or use Kamal's `builder.remote` option to build directly over SSH on the target host, sidestepping cross-arch emulation entirely. Document whichever is chosen in the R7 runbook, since it changes what the operator needs installed locally.
    - `env.secret:` `RAILS_MASTER_KEY`, `DATABASE_URL` (or the accessory's discrete `POSTGRES_USER`/`POSTGRES_PASSWORD`/`DB_HOST` vars if that shape is preferred — either satisfies R4, pick one and be consistent with `accessories.postgres.env`).
@@ -141,6 +141,18 @@ Per [universal-agent-rules.md Rule 10](../../adlc/methods/universal-agent-rules.
 4. **`RAILS_SERVE_STATIC_FILES` / `RAILS_LOG_TO_STDOUT`.** Some Kamal+Rails tutorials set these explicitly in `env.clear`. This app's `Dockerfile` already installs a `puma`-served app with no separate static-file server configured, and `config/environments/production.rb` already logs to `$stdout` unconditionally (`config/environments/production.rb:57`), so these are likely no-ops here — but the implementer should confirm `RAILS_SERVE_STATIC_FILES` isn't needed given `config.public_file_server.enabled` is left at its Rails default (commented out, i.e. enabled) in `config/environments/production.rb:26`.
 
 ## Changelog
+
+### Version 2 - 2026-07-18
+**Source Issue:** bitidev/jamesebentier.com#1160
+**Change Type:** Minor (amendment for user-approved shared-host facts, pre-merge)
+
+**Changes:**
+- Amended the R1/proxy implementation guidance: the previous framing left `proxy.host`/`proxy.ssl` unset/placeholder-commented pending #1161. With the shared Linode IP (`97.107.129.135`, shared with `bot.biti.dev`) and public hostname (`jamesebentier.com`) now user-confirmed, `config/deploy.yml`'s `proxy.host`/`proxy.ssl: true` are configured in this PR. #1161 remains the owner of actual DNS record (Route53/CloudFront) ownership/verification — this amendment only acknowledges that the app/proxy-side hostname config no longer needs to wait for that.
+- No change to R1–R8 requirements themselves, acceptance criteria, or scope (still no DB restore, no Terraform/CI/Heroku work here).
+
+**Impact:** `config/deploy.yml` and `docs/ops/kamal-first-deploy.md` updated to match; no requirement or acceptance-criteria text changed.
+
+---
 
 ### Version 1 - 2026-07-18
 **Source Issue:** bitidev/jamesebentier.com#1160
