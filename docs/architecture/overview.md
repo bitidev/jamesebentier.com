@@ -91,6 +91,8 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 - `app/javascript/controllers/collapse_controller.js` — Collapse toggle Stimulus controller
 - `app/javascript/controllers/hello_controller.js` — Scaffold Stimulus controller
 - `app/javascript/controllers/index.js` — Stimulus controller index
+- `app/javascript/controllers/motion_controller.js` — Scroll fade/slide-in Stimulus controller (reduced-motion aware)
+- `app/javascript/controllers/theme_picker_controller.js` — Theme switcher Stimulus controller (localStorage-persisted)
 - `app/jobs/application_job.rb` — Base Active Job (scaffold)
 - `app/mailers/application_mailer.rb` — Base mailer (scaffold)
 - `app/channels/application_cable/channel.rb` — Action Cable channel base
@@ -99,8 +101,12 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 - `app/assets/config/manifest.js` — Sprockets/jsbundling manifest
 - `app/assets/images/.keep` — Images keepfile
 - `app/assets/images/landing-image.webp` — Landing hero image
-- `app/assets/stylesheets/application.tailwind.css` — Tailwind entry CSS
-- `app/views/layouts/application.html.erb` — Main HTML layout (meta-tags, analytics)
+- `app/assets/stylesheets/application.tailwind.css` — Tailwind entry CSS + `@theme` tokens/DaisyUI theme source of truth
+- `app/views/components/_card.html.erb` — Shared card partial (stretched-link wrapper, hover-lift)
+- `app/views/components/_cta_button.html.erb` — Shared CTA button partial (primary/ghost)
+- `app/views/components/_pill.html.erb` — Shared tag/status pill partial (status→badge-role map)
+- `app/views/components/_section.html.erb` — Shared section wrapper partial (eyebrow/title + scroll motion)
+- `app/views/layouts/application.html.erb` — Main HTML layout (meta-tags, analytics, FOUC-prevention theme script)
 - `app/views/layouts/components/_header.html.erb` — Site header
 - `app/views/layouts/components/_footer.html.erb` — Site footer
 - `app/views/layouts/mailer.html.erb` — HTML mailer layout
@@ -129,7 +135,7 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 | rails-runtime | 3 |
 | content-domain | 4 |
 | markdown-rendering | 1 |
-| web-presentation | 41 |
-| **Total** | **49** |
+| web-presentation | 47 |
+| **Total** | **55** |
 
 Must equal `git ls-files app lib | wc -l`.

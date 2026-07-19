@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme='light'>
+<html>
   <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
@@ -37,6 +37,25 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/manifest.json" />
 
+    <%# Sets [data-theme] from the visitor's stored preference before first paint, so a
+        returning visitor never sees a flash of the wrong theme on load. Synchronous and
+        render-blocking on purpose (no type="module", no defer/async) -- it must finish
+        before the stylesheet below applies. Falls back to "light" (today's default) when
+        no preference is stored yet. "theme" is the single documented localStorage key;
+        app/javascript/controllers/theme_picker_controller.js is the only other place
+        that reads/writes it. %>
+    <script>
+      (function () {
+        var theme = 'light';
+        try {
+          theme = window.localStorage.getItem('theme') || 'light';
+        } catch (e) {
+          // localStorage can throw in some private-browsing modes; fall back to light.
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
     <script src="https://kit.fontawesome.com/d7b2096eb7.js" crossorigin="anonymous"></script>
@@ -56,7 +75,7 @@
 
   <body>
     <%= render partial: 'layouts/components/header' %>
-    <div class="max-w-screen-lg m-auto font-sans-serif">
+    <div class="max-w-screen-lg m-auto font-sans">
       <%= yield %>
     </div>
     <%= render partial: 'layouts/components/footer' %>

@@ -1,0 +1,41 @@
+<%#
+  Shared card.
+
+  Call shape (block form -- rendered as a layout so the block becomes the card body):
+    render(layout: "components/card", locals: { href: project_url(...), image_url: project.image }) { card body }
+
+  Locals:
+    href:      required -- makes the whole card clickable to this URL (see the
+               stretched-link note below).
+    image_url: optional -- shown at the top of the card when present. Rendered with
+               alt="" (decorative): the card's own title text, supplied by the caller's
+               block, carries the meaning for screen readers, so the image would
+               otherwise just duplicate it.
+
+  Block (required): the card body (title/meta/description/pill markup).
+
+  Whole-card link via the "stretched link" pattern: the card itself is a <div>, and a
+  full-surface absolutely-positioned <a> overlay (below) makes the entire card clickable
+  to `href` for pointer users. This deliberately avoids wrapping the card in an <a>,
+  because callers put their own interactive elements (e.g. the cta_button) *inside* the
+  card, and <a>-inside-<a> is invalid HTML that browsers silently break. The overlay is
+  aria-hidden + tabindex=-1 (a pointer convenience only); keyboard and screen-reader
+  users reach the same destination through the real, labeled links the caller places in
+  the body. Any interactive child that must stay clickable has to sit above the overlay
+  -- give it "relative z-10" (the projects card wraps its CTA in "card-actions relative
+  z-10").
+
+  Hover-lift is CSS-only (motion-safe:hover:-translate-y-1), inert under
+  prefers-reduced-motion via Tailwind's motion-safe: variant (R7) -- no JS involved.
+%>
+<div class="card card-border bg-base-100 border-base-300 shadow-sm transition-transform motion-safe:hover:-translate-y-1 relative">
+  <% if local_assigns[:image_url].present? %>
+    <figure class="bg-base-200">
+      <%= image_tag image_url, alt: "" %>
+    </figure>
+  <% end %>
+  <div class="card-body">
+    <%= yield %>
+  </div>
+  <%= link_to "", href, class: "absolute inset-0 rounded-box", tabindex: "-1", "aria-hidden": "true" %>
+</div>

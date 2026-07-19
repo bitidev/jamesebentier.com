@@ -9,3 +9,9 @@ application.register("collapse", CollapseController)
 
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
+
+import MotionController from "./motion_controller"
+application.register("motion", MotionController)
+
+import ThemePickerController from "./theme_picker_controller"
+application.register("theme-picker", ThemePickerController)

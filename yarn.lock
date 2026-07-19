@@ -40,6 +40,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource-variable/inter@npm:^5.2.8":
+  version: 5.2.8
+  resolution: "@fontsource-variable/inter@npm:5.2.8"
+  checksum: 10c0/35b46df31c8c18f55f87228acf6297e4dac6cc9f38d0faaafdaf5a40e40c386cf1bfb115fb0fe0dcdb9b7e14f582843693ccf070d9c903072a5b2fc0f8dfde56
+  languageName: node
+  linkType: hard
+
 "@hotwired/stimulus@npm:^3.2.2":
   version: 3.2.2
   resolution: "@hotwired/stimulus@npm:3.2.2"
@@ -839,6 +846,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:."
   dependencies:
+    "@fontsource-variable/inter": "npm:^5.2.8"
     "@hotwired/stimulus": "npm:^3.2.2"
     "@hotwired/turbo-rails": "npm:^8.0.23"
     "@tailwindcss/cli": "npm:^4.3.3"
