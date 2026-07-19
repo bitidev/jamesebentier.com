@@ -1,7 +1,7 @@
 ---
 name: release
 description: Release pipeline specialist. Determines what's shipping since the last tag, bumps semver, generates release notes, tags and pushes, and updates issue/PR state for shipped items. Use for `/release patch|minor|major` or any direct request to cut/publish a release.
-effort: high
+effort: medium
 ---
 
 # Release Agent
