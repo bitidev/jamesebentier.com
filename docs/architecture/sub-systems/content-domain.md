@@ -12,7 +12,7 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 
 ## Anchor Files
 
-- `app/models/post.rb` — Blog post schema, validations, `published` scope, markdown body via `file_path`
+- `app/models/post.rb` — Blog post schema (kind: note/deep_dive, computed reading_time, excerpt), validations, `published` scope, markdown body via `file_path`
 - `app/models/project.rb` — Project schema, status enum (`Pre-Launch`/`Beta`/`Live`), optional `public/projects/{slug}.md`
 - `app/models/application_record.rb` — AR base + model-level `noindex?`
 
@@ -27,6 +27,8 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - **Exports**: `Post.for_home` / `Project.for_home` — curated-first/chronological-fallback
   query powering the home page's Latest Writing / Featured Projects sections (see Key
   Invariants)
+- **Exports**: `Post::KINDS` / `Post.by_kind` / `Post#kind_label` / `Post#reading_time` /
+  `Post#excerpt` — Notes vs. Deep Dives content model (P1.4/#1183)
 - **Exports**: `Project.by_status` — scope filtering by `status`, blank returns all, an
   unrecognized value returns none; powers `/projects`' server-rendered status filter.
   `Project::STATUSES` (`%w[Pre-Launch Beta Live]`) is the shared status-values constant
@@ -49,6 +51,13 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
   ever having been explicitly flagged featured, on a database with no curated rows yet.
   `Post.for_home` is always scoped under `published` first, so an unpublished/future-dated
   post can never surface via this path.
+- `Post#kind` defaults to `deep_dive` at the DB level (`declare_schema`'s `default:
+  'deep_dive'`) — every pre-existing row was backfilled to `deep_dive` on the `ADD COLUMN`
+  itself (same mechanism `featured`'s own DB default already relies on), never `note`.
+- `Post#reading_time` is computed at read time, not a stored column: `Post#content` is
+  already an intentionally uncached, always-fresh disk read (see Known Limitations), so a
+  stored `reading_time` could silently go stale the instant a markdown body is hand-edited
+  without a matching front-matter/DB touch.
 - `Project#read_url`/`Project#source_url` are optional (nullable) — `Project#url` remains
   the one required outbound link (the "demo" leg of the read → demo → source triple-link
   pattern). Rendering order everywhere is read → demo → source; `Demo` always renders,
@@ -82,6 +91,9 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - No soft-delete or draft workflow beyond `published_at` future dating.
 - `Post#content` memoizes per request but re-reads disk; no caching layer.
 - Tags are JSON arrays without a join table.
+- `Post#excerpt` is presence-validated with no schema default that satisfies it — any new
+  markdown post's front matter must include a real `excerpt:` key (enforced loudly at
+  `db:seed` time via `ActiveRecord::RecordInvalid`, not silently skipped).
 
 ---
 

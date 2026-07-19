@@ -1,13 +1,14 @@
 <%#
-  Shared tag/status pill.
+  Shared tag/status/kind pill.
 
   Call shape:
     render("components/pill", label: project.status, variant: :status)
     render("components/pill", label: tag, variant: :tag)
+    render("components/pill", label: post.kind_label, variant: :kind)
 
   Locals:
     label:   required -- the text shown on the pill
-    variant: :status or :tag (default :tag)
+    variant: :status, :kind, or :tag (default :tag)
 
   variant: :status maps `label` (a Project#status value) to a DaisyUI badge role -- this
   mapping is the contract later pages build against:
@@ -16,6 +17,13 @@
     Live       -> badge-success
   An unrecognized value falls back to a neutral badge rather than raising, so a future
   status value can't break rendering.
+
+  variant: :kind maps `label` (a Post#kind_label value, docs/specs/1183-writing-redesign-
+  notes-deep-dives.md D7) to a DaisyUI badge role -- both roles are real, themed DaisyUI
+  roles already in active use elsewhere (no new hex/token):
+    Note      -> badge-info
+    Deep Dive -> badge-accent
+  Same unrecognized-value fallback as :status.
 
   variant: :tag renders a neutral outline badge -- no status semantics implied (used for
   free-form Post#tags entries).
@@ -27,6 +35,14 @@
     "Beta" => "badge-info",
     "Live" => "badge-success"
   }.freeze
-  badge_role = pill_variant == :status ? status_badge_roles.fetch(label, "badge-neutral") : "badge-outline"
+  kind_badge_roles = {
+    "Note" => "badge-info",
+    "Deep Dive" => "badge-accent"
+  }.freeze
+  badge_role = case pill_variant
+               when :status then status_badge_roles.fetch(label, "badge-neutral")
+               when :kind   then kind_badge_roles.fetch(label, "badge-neutral")
+               else "badge-outline"
+               end
 %>
 <span class="badge <%= badge_role %> font-mono"><%= label %></span>

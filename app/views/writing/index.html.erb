@@ -1,0 +1,93 @@
+<% content_for :head do %>
+  <%= auto_discovery_link_tag(:rss, posts_url(format: "rss")) %>
+<% end %>
+
+<%
+  set_meta_tags(
+    title: 'Writing',
+    description: "Notes and Deep Dives from James Ebentier on software, systems, and building things.",
+  )
+%>
+
+<h1 class='font-mono text-3xl mb-4'>Writing</h1>
+
+<%# Kind filter (D10): plain server-rendered query-string links, no JS. Whitelisted
+    server-side via Post.by_kind (R2) -- an unrecognized ?kind= value safely falls back to
+    "all". Active-state styling mirrors the header's own current_page?-driven pattern. %>
+<% current_kind = params[:kind] %>
+<nav class='tabs tabs-border mb-8' aria-label="Filter by kind">
+  <%= link_to "All", posts_path, class: "tab font-mono #{'tab-active' if current_kind.blank?}" %>
+  <%= link_to "Notes", posts_path(kind: "note"), class: "tab font-mono #{'tab-active' if current_kind == 'note'}" %>
+  <%= link_to "Deep Dives", posts_path(kind: "deep_dive"), class: "tab font-mono #{'tab-active' if current_kind == 'deep_dive'}" %>
+</nav>
+
+<%= render layout: "components/section" do %>
+  <div class='space-y-6'>
+    <% Post.published.by_kind(params[:kind]).order(published_at: :desc).each do |post| %>
+      <%= render layout: "components/card", locals: { href: post_url(slug: post.slug), image_url: post.image } do %>
+        <h2 class='card-title font-mono text-xl'><%= post.title %></h2>
+        <div class='flex flex-wrap gap-2'>
+          <%= render "components/pill", label: post.kind_label, variant: :kind %>
+          <% post.tags.each do |tag| %>
+            <%= render "components/pill", label: tag, variant: :tag %>
+          <% end %>
+        </div>
+        <p class='mb-0'><%= post.excerpt %></p>
+        <p class='text-sm text-base-content/70'>
+          <%= post.published_at.strftime("%B %d, %Y") %> &middot; <%= post.reading_time %> min read
+        </p>
+        <div class='card-actions relative z-10 mt-2'>
+          <%= render "components/cta_button", label: "Read Post", href: post_url(slug: post.slug), style: :primary %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%# Editorial guidelines (D9, R6) -- design doc §5's table + heuristic, reproduced verbatim.
+    Lives on this same index page; no dedicated route. %>
+<%= render layout: "components/section", locals: { eyebrow: "Editorial Guidelines", title: "Note vs. Deep Dive" } do %>
+  <div class='overflow-x-auto'>
+    <table class='table'>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Note</th>
+          <th>Deep Dive</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Length</th>
+          <td>Short (~&lt; 500 words)</td>
+          <td>Long-form (~1,000+ words)</td>
+        </tr>
+        <tr>
+          <th>Purpose</th>
+          <td>A single thought, reaction, TIL, or link + commentary</td>
+          <td>A worked-through system, argument, or lesson that teaches a reusable mental model</td>
+        </tr>
+        <tr>
+          <th>Cadence</th>
+          <td>Frequent, low ceremony</td>
+          <td>Infrequent, high polish</td>
+        </tr>
+        <tr>
+          <th>Artifacts</th>
+          <td>Optional</td>
+          <td>Usually code, diagrams, or worked examples</td>
+        </tr>
+        <tr>
+          <th>Role</th>
+          <td>Keeps the site alive, shows personality</td>
+          <td>The credibility engine for fractional work</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class='text-base-content/80 mt-4'>
+    <strong>Heuristic:</strong> <em>If it teaches a reusable mental model or walks through a
+    system, it's a Deep Dive. If it's a thought, reaction, or TIL, it's a Note.</em> When in
+    doubt, it's a Note &mdash; Notes can graduate into Deep Dives.
+  </p>
+<% end %>

@@ -36,8 +36,11 @@ Project.find_or_initialize_by(slug: "the-game-about-people").update!(
 Dir[File.expand_path('../public/blog/*.md', __dir__)].each do |file|
   data = YAML.safe_load_file(file, symbolize_names: true, permitted_classes: [Date])
 
-  Post.find_or_initialize_by(slug: (data[:slug] || data[:title].parameterize).downcase).update!(
-    file_path: File.basename(file),
-    **data
-  )
+  post = Post.find_or_initialize_by(slug: (data[:slug] || data[:title].parameterize).downcase)
+  post.assign_attributes(file_path: File.basename(file), **data)
+  # These markdown files predate the `excerpt` column (#1183), so front matter never
+  # supplies one; derive it from `description` the same way the one-time backfill does
+  # (Post.excerpt_from_description) rather than duplicating the truncation logic here.
+  post.excerpt = Post.excerpt_from_description(post.description) if post.excerpt.blank?
+  post.save!
 end

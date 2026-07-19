@@ -80,7 +80,7 @@
         <%= render layout: "components/card", locals: { href: post_url(slug: post.slug), image_url: post.image } do %>
           <h2 class='card-title font-mono text-xl'><%= post.title %></h2>
           <p class='text-sm text-base-content/70'><%= post.published_at.strftime("%B %d, %Y") %></p>
-          <p class='mb-0'><%= post.description %></p>
+          <p class='mb-0'><%= post.excerpt %></p>
           <div class='card-actions relative z-10 mt-2'>
             <%= render "components/cta_button", label: "Read Post", href: post_url(slug: post.slug), style: :primary %>
           </div>

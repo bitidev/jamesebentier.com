@@ -78,9 +78,9 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 
 ### web-presentation
 
-- `app/controllers/blog_controller.rb` — Blog index/show
 - `app/controllers/projects_controller.rb` — Projects index/show
 - `app/controllers/welcome_controller.rb` — Landing + resume
+- `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
 - `app/controllers/concerns/.keep` — Concerns directory keepfile
 - `app/helpers/application_helper.rb` — Social icon helpers
 - `app/helpers/blog_helper.rb` — `render_markdown` via `Blog::Renderer`
@@ -111,9 +111,6 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 - `app/views/layouts/components/_footer.html.erb` — Site footer
 - `app/views/layouts/mailer.html.erb` — HTML mailer layout
 - `app/views/layouts/mailer.text.erb` — Text mailer layout
-- `app/views/blog/index.html.erb` — Blog listing
-- `app/views/blog/index.rss.builder` — Blog RSS
-- `app/views/blog/show.html.erb` — Blog post detail
 - `app/views/projects/index.html.erb` — Projects listing
 - `app/views/projects/index.rss.builder` — Projects RSS
 - `app/views/projects/show.html.erb` — Project detail
@@ -125,6 +122,9 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 - `app/views/welcome/resume/_main_summary.html.erb` — Resume summary partial
 - `app/views/welcome/resume/_skills.html.erb` — Resume skills partial
 - `app/views/welcome/resume/_work_experience.html.erb` — Resume work experience partial
+- `app/views/writing/index.html.erb` — Writing listing (Notes/Deep Dives filter, editorial guidelines)
+- `app/views/writing/index.rss.builder` — Writing RSS
+- `app/views/writing/show.html.erb` — Writing post detail
 
 ---
 

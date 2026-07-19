@@ -4,12 +4,13 @@
     <ul class='flex flex-row list-none ml-auto content-center items-center justify-end my-auto'>
       <%# data-nav-target attributes (R4/Decision 6): the single lookup resolveNavTarget()
         queries for both the `g`-prefix page jumps and (a later increment) the COMMAND
-        registry's :home/:writing/:projects/:resume. "writing" (not "blog") matches the
-        design doc's target IA name, so a future /blog -> /writing route rename requires
-        zero keyboard-layer changes. Rails' own root_url/posts_url/projects_url/
-        resume_path remain the single source of the actual href -- no URL literal here. %>
+        registry's :home/:writing/:projects/:resume. "writing" (not "blog") matched the
+        design doc's target IA name ahead of time, so the /blog -> /writing route rename
+        (P1.4/#1183) required zero keyboard-layer changes. Rails' own root_url/posts_url/
+        projects_url/resume_path remain the single source of the actual href -- no URL
+        literal here. %>
       <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'home' } %></li>
-      <li class='ml-4'><%= link_to 'Blog', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'writing' } %></li>
+      <li class='ml-4'><%= link_to 'Writing', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'writing' } %></li>
       <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'projects' } %></li>
       <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'resume' } %></li>
       <%# Terminal-styled theme switcher (R6). data-theme-picker-target="select" is read

@@ -14,5 +14,11 @@ FactoryBot.define do
     image { "https://example.com/logo192.png" }
     published_at { Time.current }
     file_path { 'blog/the-blog-is-back.md' }
+    # kind mirrors spec/factories/project.rb's own `status { "Beta" }` convention of stating
+    # the schema default explicitly rather than relying on it silently. excerpt is
+    # presence-validated with no schema default that satisfies it (P1.4/#1183 D4), so every
+    # create(:post) call site needs a real value.
+    kind { "deep_dive" }
+    excerpt { "A short teaser for the blog's return." }
   end
 end
