@@ -82,6 +82,51 @@ jobs:
           cache: yarn
       - name: Install Node modules
         run: yarn install --frozen-lockfile
+      # ubuntu-latest ships Chrome preinstalled, which Ferrum (Cuprite's driver,
+      # used by spec/system/**) auto-detects with no extra setup in the common
+      # case -- this step is a defensive pin so a future runner-image change
+      # can't silently break the browser system specs. See docs/specs/
+      # 1187-modal-vim-keyboard-navigation.md (Testing Strategy, Open Question 2).
+      - name: Setup Chrome for Cuprite system specs
+        id: setup_chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          # Pin to Google Chrome stable rather than the default bleeding-edge
+          # Chromium snapshot -- stable is more reliably Ferrum/Cuprite-compatible.
+          chrome-version: stable
+          # setup-chrome only drops in the browser binary; it does NOT install the
+          # system libraries Chrome links against (libnss3, libatk, libgbm, ...).
+          # Without them Chrome exits before opening its DevTools websocket, which
+          # surfaced as Ferrum::ProcessTimeoutError on every system spec. This
+          # installs those runtime deps.
+          install-dependencies: true
+          install-chromedriver: false
+      - name: Run JS unit tests (Vitest)
+        run: yarn test:js
+      # Diagnostic (non-fatal): Ferrum swallows Chrome's stderr, so when the
+      # browser fails to boot we only ever see Ferrum::ProcessTimeoutError with
+      # no cause. Launch the exact setup-chrome binary with the same flags the
+      # driver uses and surface --version + startup output + a CDP probe, so a
+      # startup crash (missing lib, sandbox/namespace denial, etc.) is visible
+      # in the log instead of hidden behind the timeout.
+      - name: Debug Chrome launch (diagnostic, non-fatal)
+        env:
+          CUPRITE_CHROME_PATH: ${{ steps.setup_chrome.outputs.chrome-path }}
+        run: |
+          set +e
+          echo "chrome-path=$CUPRITE_CHROME_PATH"
+          "$CUPRITE_CHROME_PATH" --version
+          "$CUPRITE_CHROME_PATH" --headless --no-sandbox --disable-gpu \
+            --disable-dev-shm-usage --remote-debugging-port=9222 about:blank \
+            > /tmp/chrome.log 2>&1 &
+          CHROME_PID=$!
+          sleep 8
+          echo "=== chrome.log ==="
+          cat /tmp/chrome.log
+          echo "=== CDP probe (expect DevTools websocket JSON) ==="
+          curl -sS --max-time 5 http://127.0.0.1:9222/json/version || echo "NO CDP ENDPOINT"
+          kill "$CHROME_PID" 2>/dev/null
+          exit 0
       - name: Run Tests
         env:
           DATABASE_HOST: localhost
@@ -90,6 +135,11 @@ jobs:
           RAILS_ENV: test
           SECRET_KEY_BASE: we-dont-need-a-secret-here
           CI: true
+          # Points Cuprite/Ferrum at the exact Chromium binary browser-actions/
+          # setup-chrome just installed (path is version-dependent -- read from
+          # the action's output rather than hardcoded) -- see spec/support/
+          # capybara.rb.
+          CUPRITE_CHROME_PATH: ${{ steps.setup_chrome.outputs.chrome-path }}
         run: |
           bundle exec rake assets:precompile
           bundle exec rake db:prepare

@@ -1,0 +1,53 @@
+<%# Shared COMMAND/SEARCH terminal-style input bar (R6/R7, architecture plan file/module
+    layout table). One physical bar/input, reused for both modes -- only the leading
+    glyph (":" vs "/"), the sr-only label text, and the placeholder copy differ per mode,
+    swapped by keyboard_nav_controller.js#enterBarMode() at mode entry (COMMAND_BAR_COPY);
+    the input's own input/keydown Stimulus actions dispatch on the controller's current
+    mode Value rather than duplicating this markup for a second bar. COMMAND mode
+    (Increment 3) wired the `:` path; this increment (Increment 4, SEARCH) adds the `/`
+    path plus the results list below the input.
+
+    Plain-CSS `hidden` by default (nothing to flash without JS, matching the status
+    line's own convention); enterBarMode()/exitToNormal() toggle visibility directly and
+    synchronously at the entry/exit point (not via modeValueChanged() -- see that
+    method's comment for why anything focus/visibility-ordering-sensitive can't wait on
+    Stimulus's async Value-changed callback). The <input> is a real,
+    <label class="sr-only">-labeled field (R11) -- never a focus trap. %>
+<div
+  id="keyboard-command-bar"
+  data-keyboard-nav-target="commandBar"
+  class="hidden fixed bottom-0 inset-x-0 z-40 font-mono text-sm bg-base-200 text-base-content border-t border-base-300"
+>
+  <div class="max-w-7xl mx-auto px-3 py-2 flex items-center gap-2">
+    <label for="keyboard-command-input" class="sr-only" data-keyboard-nav-target="commandLabel">Command</label>
+    <span aria-hidden="true" class="text-primary" data-keyboard-nav-target="commandGlyph">:</span>
+    <input
+      type="text"
+      id="keyboard-command-input"
+      data-keyboard-nav-target="commandInput"
+      data-action="input->keyboard-nav#handleBarInput keydown->keyboard-nav#handleBarKeydown"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      class="flex-1 bg-transparent outline-none"
+      placeholder="home | writing | projects | resume | theme &lt;name&gt; | help"
+    />
+  </div>
+  <div
+    data-keyboard-nav-target="commandFeedback"
+    aria-live="polite"
+    class="max-w-7xl mx-auto px-3 pb-2 text-xs text-base-content/80 empty:hidden"
+  ></div>
+  <%# SEARCH mode's live-filtered results list (R7). Empty (and CSS-hidden via
+      `empty:hidden`) in COMMAND mode and until SEARCH's index has loaded --
+      keyboard_nav_controller.js#renderSearchResults populates each <li> with a real
+      <a href> (never a hand-built href -- each item's `url` was already built
+      server-side via post_url/project_url, R9), so Enter's .click() (commitSearch) is a
+      genuine link activation, and a mouse/touch visitor can click a result directly. %>
+  <ul
+    id="keyboard-search-results"
+    data-keyboard-nav-target="searchResults"
+    aria-label="Search results"
+    class="max-w-7xl mx-auto px-3 pb-2 max-h-64 overflow-y-auto empty:hidden space-y-0.5"
+  ></ul>
+</div>

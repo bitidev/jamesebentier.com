@@ -1,0 +1,13 @@
+<%# Terminal-style mode indicator (R1). Default markup state is plain-CSS `hidden`
+    (nothing to flash without JS, since this element has no meaning without it);
+    keyboard_nav_controller#connect() reveals it -- unless the visitor is on a
+    touch/no-precise-pointer device (R12), in which case it's never revealed at all.
+    aria-live="polite" so mode changes are announced without interrupting (deliberately
+    never "assertive"). %>
+<div
+  id="keyboard-status-line"
+  data-keyboard-nav-target="statusLine"
+  class="hidden fixed bottom-2 right-2 z-40 font-mono text-xs px-2 py-1 rounded bg-base-200 text-base-content/80 pointer-events-none select-none"
+>
+  <span data-keyboard-nav-target="statusLineText" aria-live="polite">-- NORMAL --</span>
+</div>

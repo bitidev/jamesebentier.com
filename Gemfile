@@ -80,6 +80,12 @@ group :development, :test do
 end
 
 group :test do
+  # Browser-driven system specs (headless Chrome via CDP, no Selenium server) --
+  # see spec/support/capybara.rb and docs/specs/1187-modal-vim-keyboard-navigation.md
+  # (Testing Strategy) for the rationale.
+  gem "capybara"
+  gem "cuprite"
+
   gem "database_cleaner-active_record"
   gem "factory_bot-awesome_linter"
   gem "factory_bot_rails"

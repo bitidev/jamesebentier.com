@@ -73,11 +73,20 @@
     <% end %>
   </head>
 
-  <body>
+  <%# data-controller="keyboard-nav" mounts the modal NORMAL/COMMAND/SEARCH keyboard
+      layer once, site-wide (see app/javascript/controllers/keyboard_nav_controller.js).
+      <body> is not data-turbo-permanent, so standard Turbo Drive visits
+      disconnect/reconnect it -- and reset mode to NORMAL -- on every navigation, by
+      design. %>
+  <body data-controller="keyboard-nav">
     <%= render partial: 'layouts/components/header' %>
     <div class="max-w-screen-lg m-auto font-sans">
       <%= yield %>
     </div>
     <%= render partial: 'layouts/components/footer' %>
+    <%= render partial: 'layouts/components/keyboard_status_line' %>
+    <%= render partial: 'layouts/components/keyboard_guide_dialog' %>
+    <%= render partial: 'layouts/components/keyboard_command_bar' %>
+    <%= render partial: 'layouts/components/keyboard_hint_overlay' %>
   </body>
 </html>

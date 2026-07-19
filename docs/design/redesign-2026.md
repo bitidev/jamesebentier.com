@@ -85,20 +85,37 @@ edge.
 
 ### Signature interaction — the site as a terminal
 Inspired directly by commitmono.com's keyboard-driven UI. The site is fully driveable
-from the keyboard via a **command layer** — this is the personality centerpiece and it
-unifies theming, navigation, and analytics into one coherent nerdy-but-polished idea.
+from the keyboard via a **modal NORMAL/COMMAND/SEARCH navigation layer** — modeled on
+neovim's own mode model, not a flat set of global shortcuts — and this is the personality
+centerpiece, unifying theming, navigation, search, and (later) analytics into one coherent
+nerdy-but-polished idea. Full technical design: architecture plan
+[`docs/plans/1187-modal-vim-keyboard-navigation-architecture-plan.md`](../plans/1187-modal-vim-keyboard-navigation-architecture-plan.md);
+implementation spec [`docs/specs/1187-modal-vim-keyboard-navigation.md`](../specs/1187-modal-vim-keyboard-navigation.md).
 
-- **Command palette / console** — `Cmd/Ctrl-K` (and `` ` ``/`:`) opens a real terminal-style
-  overlay. Type commands, don't just click.
-- **Single-key shortcuts** — e.g. `t` cycle theme, `g h` go home, `g w` writing, `g p`
-  projects, `g l` lab, `/` focus search, `?` toggle a keyboard-guide overlay (à la
-  Commit Mono's guide), `Esc` dismiss.
-- **Queryable everything** — the console can navigate, switch theme, *and query the
-  site's own first-party analytics* (see §6.4) — e.g. `stats views --last 7d`,
-  `top posts`. Metrics stay on our infrastructure and become interactive, not hidden.
-- **Progressive enhancement + a11y** — everything works without the keyboard layer;
-  shortcuts never trap focus, respect `prefers-reduced-motion`, and are fully
-  screen-reader friendly. Built as a Stimulus controller.
+- **Modal state machine** — NORMAL (default) / COMMAND (`:`) / SEARCH (`/`), with a
+  visible terminal-style mode indicator (`-- NORMAL --` / `-- COMMAND --` / `-- SEARCH
+  --`) and `Esc` always returning to NORMAL. `t`, `g h/w/p/l`, `?`, and `f` (below) are
+  all **NORMAL-mode bindings** under this machine, not free-floating shortcuts.
+- **COMMAND mode** — `:` (bare, no modifier chord) opens a real terminal-style command
+  input; an extensible command registry (nav commands today, §6.4 metrics queries plug in
+  later). The original `Cmd/Ctrl-K` framing is dropped: the modal design intentionally
+  uses bare `:` only, so it never contends with browser/OS shortcuts.
+- **SEARCH mode** — `/` opens in-page/site content search over Posts and Projects,
+  `n`/`N` step through results, Enter navigates.
+- **NORMAL-mode navigation** — `h/j/k/l` and `j/k` scroll, `gg`/`G` top/bottom, `g h/w/p/l`
+  page jumps, `t` cycle theme, `?` toggle the keyboard-guide overlay (à la Commit Mono's
+  guide).
+- **`f` hint-jump** — a Vimium-style overlay labels every on-screen link with a short hint
+  tag; typing the tag activates that link, mouse-through unaffected.
+- **Queryable everything** — the COMMAND registry can navigate, switch theme, *and* (once
+  §6.4/§6.5 land) query the site's own first-party analytics — e.g. `stats views --last
+  7d`, `top posts`. Metrics stay on our infrastructure and become interactive, not hidden.
+- **Progressive enhancement + a11y** — the layer never intercepts keys in native form
+  fields; `Esc` is always available; nothing traps focus (except the native `<dialog>`
+  used for the `?` guide); `prefers-reduced-motion` is respected; full site navigation,
+  search, and links work with the layer entirely absent. Built as a Stimulus controller
+  with pure-function logic (parsing, ranking, hint generation) factored out for
+  unit-testability.
 
 ### Design references distilled
 - **taniarascia.com** — warmth, a content taxonomy (Blog/Notes/Deep Dives/Projects),
@@ -287,9 +304,11 @@ experiment** — dogfooding the "build it myself" ethos.
 8. **SEO / meta polish** — per-page OG images, JSON-LD `Person` / `Article` structured data.
 9. **Legal compliance** — **Impressum + privacy policy** (legally required for a
    Berlin-based site; see §8). Dedicated ticket, not folded into another issue.
-10. **Keyboard command layer (signature)** — command palette + single-key shortcuts +
-    keyboard-guide overlay, driving nav and theme switching. Extensible so §6.4 metrics
-    queries plug in. Depends on the design-system pass (#1).
+10. **Modal keyboard navigation layer (signature)** — NORMAL/COMMAND/SEARCH mode state
+    machine, command registry, `f` hint-jump, keyboard-guide overlay, driving nav, theme
+    switching, and search. Extensible so §6.4 metrics queries plug into COMMAND mode.
+    Depends on the design-system pass (#1). See spec
+    [#1187](../specs/1187-modal-vim-keyboard-navigation.md).
 11. **First-party analytics** — remove GA + Metricool; add cookieless first-party event
     capture to Postgres; expose queries through the command layer. (AI Lab experiment #1.)
 12. **Build-in-public** — a `/changelog` page + a site version in the footer + a
@@ -338,6 +357,7 @@ experiment** — dogfooding the "build it myself" ethos.
 | Body sans | Inter | 2026-07-18 |
 | Type scale | 18px base, Major Third (1.250) | 2026-07-18 |
 | Theme picker | Playful terminal theme switcher (light/dark + dev schemes) | 2026-07-18 |
+| Keyboard layer model | Modal NORMAL/COMMAND/SEARCH state machine (not palette + flat shortcuts); drops `Cmd/Ctrl-K`, adds mode indicator + `f` hint-jump — see spec [#1187](../specs/1187-modal-vim-keyboard-navigation.md) | 2026-07-19 |
 | Bundled dev themes | Dracula, Nord, Gruvbox, Catppuccin | 2026-07-18 |
 | Keyboard UX | Full keyboard command layer / site-as-terminal | 2026-07-18 |
 | Newsletter | Aspirational; own-DB capture, launch on demand | 2026-07-18 |
