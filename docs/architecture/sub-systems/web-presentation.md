@@ -73,7 +73,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Known Limitations
 
-- `ProjectsController#show` uses `find_by` (returns nil) while blog uses `find_by!` — inconsistent 404 behavior.
+- `ProjectsController#show` uses `find_by` (returns nil) while blog uses `find_by!` — inconsistent 404 behavior. Unchanged by #1182 (P1.3's projects-page redesign) — that issue's `read_url`/`source_url` triple-link columns and status filter don't touch this action's finder.
 - `WelcomeController` still declares unused `projects` action (routing uses `ProjectsController`).
 - Stimulus includes unused scaffold `hello_controller`.
 - Capybara/Cuprite's `:js` (real headless Chrome) specs always run JS, so they cannot

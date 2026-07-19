@@ -27,6 +27,10 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - **Exports**: `Post.for_home` / `Project.for_home` — curated-first/chronological-fallback
   query powering the home page's Latest Writing / Featured Projects sections (see Key
   Invariants)
+- **Exports**: `Project.by_status` — scope filtering by `status`, blank returns all, an
+  unrecognized value returns none; powers `/projects`' server-rendered status filter.
+  `Project::STATUSES` (`%w[Pre-Launch Beta Live]`) is the shared status-values constant
+  referenced by both this scope's callers and the model's own inclusion validation.
 - **Exports**: `ApplicationRecord.noindex?` — sitemap opt-out
 - **Types**: UUID primary keys (`gen_random_uuid()`)
 
@@ -45,6 +49,10 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
   ever having been explicitly flagged featured, on a database with no curated rows yet.
   `Post.for_home` is always scoped under `published` first, so an unpublished/future-dated
   post can never surface via this path.
+- `Project#read_url`/`Project#source_url` are optional (nullable) — `Project#url` remains
+  the one required outbound link (the "demo" leg of the read → demo → source triple-link
+  pattern). Rendering order everywhere is read → demo → source; `Demo` always renders,
+  `Read`/`Source` render only when present.
 
 ## Security Posture
 

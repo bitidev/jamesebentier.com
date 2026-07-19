@@ -43,11 +43,11 @@ RSpec.describe 'Projects' do
         expect(response.parsed_body.at_css('.badge').classes).to include('badge-success')
       end
 
-      it "links the CTA button to the project's own show page" do
+      it "links the card title to the project's own show page" do
         get projects_path
-        cta = response.parsed_body.at_css('.btn-primary')
+        title_link = response.parsed_body.at_css('.card-title a')
 
-        expect(URI.parse(cta['href']).path).to eq(project_path(slug: project.slug))
+        expect(URI.parse(title_link['href']).path).to eq(project_path(slug: project.slug))
       end
 
       it 'wraps the listing in the shared section component (R5)' do
@@ -76,10 +76,10 @@ RSpec.describe 'Projects' do
         expect(roles).to contain_exactly('badge-warning', 'badge-info', 'badge-success')
       end
 
-      it "links each project's CTA button to its own show page, not a shared/duplicated one" do
+      it "links each project's card title to its own show page, not a shared/duplicated one" do
         get projects_path
-        ctas = response.parsed_body.css('.btn-primary')
-        hrefs = ctas.map { |cta| URI.parse(cta['href']).path }
+        title_links = response.parsed_body.css('.card-title a')
+        hrefs = title_links.map { |link| URI.parse(link['href']).path }
         expected = [pre_launch, beta, live].map { |proj| project_path(slug: proj.slug) }
 
         expect(hrefs).to match_array(expected)
