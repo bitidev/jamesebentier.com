@@ -24,8 +24,14 @@ Capybara.register_driver(:cuprite) do |app|
     # .github/workflows/ci.yml). Locally this is unset, so `browser_path: nil`
     # falls back to Ferrum's normal auto-detection of the system Chrome/Chromium.
     browser_path: ENV.fetch("CUPRITE_CHROME_PATH", nil),
-    process_timeout: 10,
-    timeout: 10,
+    # Upper bound on how long Ferrum waits for Chrome to boot and print its
+    # DevTools websocket URL. Only a ceiling -- a browser that boots fast (local
+    # dev, ~1s) never pays it -- so bumped from 10 to give a cold CI Chrome
+    # headroom before Ferrum::ProcessTimeoutError.
+    process_timeout: 30,
+    # Per-CDP-command timeout; likewise raised from 10 so a slow first paint on a
+    # loaded CI runner doesn't spuriously time out. Harmless locally.
+    timeout: 30,
     headless: true,
     # Raise a real Ruby exception on an uncaught in-page JS error instead of silently
     # swallowing it -- e.g. surfaces a duplicate keydown listener double-firing a
