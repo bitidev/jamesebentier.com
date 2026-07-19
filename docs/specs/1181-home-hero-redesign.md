@@ -309,12 +309,25 @@ with this safe default (omit it) so implementation is not blocked on an answer.
   that should be visible immediately on load.
 - One `<h1>` per page (existing convention, see `projects/index.html.erb`'s own comment on
   this) — the positioning line is that `<h1>`.
-- The existing `landing-image.webp` banner (`image_tag 'landing-image.webp', alt: 'James
-  Ebentier Banner', class: 'w-full rounded-xl mb-8'`) is kept, repositioned/resized to fit
-  the new copy layout (e.g., beside the copy on wide viewports, stacked below on narrow ones)
-  — exact treatment is an implementer/visual-QA call, not a hard requirement; removing it
-  entirely is also acceptable if visual-QA judges the new copy stands on its own, but is not
-  required by this spec.
+- **Decorative hero visual** — an ASCII-art "Option A" framed terminal-window monogram,
+  rendered as a `<pre aria-hidden="true">` element positioned beside the copy at the `md`
+  breakpoint and above (`hidden md:flex`), hidden entirely below `md` (rather than stacked)
+  since a fixed-width text-art block would either overflow or squash illegibly at phone
+  width. Purely decorative: the eyebrow/H1/subhead already carry the hero's full meaning for
+  assistive tech, so no text alternative is needed. Colored solely via daisyUI theme tokens
+  (`text-primary`/`bg-base-200`/`border-base-300`) — no hardcoded hex/arbitrary-value
+  utilities, no inline `style` — so it re-themes automatically across all six bundled themes
+  and introduces no new literal color utility (keeping [R10](#r10--supersede-the-old-hero-assertions-in-welcome_specrb)'s
+  no-rainbow-utilities guarantee).
+
+  > **P2 amendment (PR #1194, pre-merge revision):** this ASCII-art treatment supersedes the
+  > `landing-image.webp` raster banner (`image_tag 'landing-image.webp', alt: 'James
+  > Ebentier Banner', class: 'w-full rounded-xl mb-8'`) originally specified here —
+  > implementer/visual-QA judged the new copy needed a lighter-weight, on-brand visual rather
+  > than keeping the retired raster banner; the exact glyph/monogram choice was a visual-QA
+  > call within this contract, not a further scribe/user sign-off requirement. See
+  > `welcome/index.html.erb` and `spec/requests/welcome_spec.rb` ("hero ASCII-art terminal
+  > monogram") for the current, matching implementation.
 - **Contrast requirement:** the subhead's muted tone (e.g., a `base-content` opacity utility
   like `text-base-content/70`) must still meet WCAG AA (4.5:1) against `base-100` in every one
   of the six bundled themes — the same discipline 1180's R2 established for the amber tokens,
@@ -399,10 +412,17 @@ with this safe default (omit it) so implementation is not blocked on an answer.
   and `projects#index` already do this; home is the one page missing it). Minimal scope:
   `title:` and `description:` only — no OG image override, no JSON-LD (explicitly P1.10's
   job, see [Out of Scope](#out-of-scope)).
-- `title:` a short identity string, e.g. `"James Ebentier — Fractional Architect & CTO"`;
-  `description:` a short paraphrase of the positioning line (not necessarily verbatim, since
-  meta descriptions have their own length/SEO conventions) — exact wording an
-  implementer/content call within that shape.
+- `title:` a short identity string — shipped as `"James Ebentier — Software Architect"`;
+  `description:` a short paraphrase of the positioning line — shipped as `"Software architect
+  based in Berlin. I help engineering teams get their systems right — a fraction of the time,
+  all of the leverage."` (not necessarily verbatim, since meta descriptions have their own
+  length/SEO conventions) — exact wording was an implementer/content call within that shape.
+
+  > **P2 amendment (PR #1194, pre-merge revision):** the shapes above supersede an earlier
+  > `"James Ebentier — Fractional Architect & CTO"` title draft — dropped for the same
+  > "fractional architect & CTO" reasons as the [Hero Copy](#hero-copy-final) subhead
+  > amendment above. See `welcome/index.html.erb` and `spec/requests/welcome_spec.rb` ("meta
+  > tags") for the current, matching text.
 
 ## Dependencies / Coordination
 
@@ -548,9 +568,10 @@ and the scribe's own delegation rules:
   limitation): part of the implementer's own pre-PR verification (per the `verify` skill).
 - **Final exact wording** for the section eyebrows ("Portfolio"/"Writing"/"Get in touch"),
   the hero H1's exact `text-3xl` vs `text-4xl` size, the meta title/description phrasing
-  beyond the shapes given here, and whether/how the `landing-image.webp` banner is
-  repositioned: implementer/visual-QA call within the constraints already stated — not a
-  decision requiring further scribe/user sign-off.
+  beyond the shapes given here (see the P2 amendment in [R7](#r7--baseline-home-meta-tags)),
+  and the exact glyph/monogram chosen for the hero's decorative ASCII-art visual (see the P2
+  amendment in [R1](#r1--hero-rewrite)): implementer/visual-QA call within the constraints
+  already stated — not a decision requiring further scribe/user sign-off.
 
 ## Open Questions
 
@@ -608,5 +629,35 @@ and the scribe's own delegation rules:
 
 **Impact:** No code changes yet; this is the planning artifact ahead of implementation by
 the code agent.
+
+### Version 2 - 2026-07-19
+**Source Issue:** bitidev/jamesebentier.com#1181 (PR #1194)
+**Change Type:** Minor (post-approval reconciliation — documents pre-merge amendments made
+during implementation; no new requirements)
+
+**Changes:**
+- Reconciled the hero subhead copy in [Hero Copy (Final)](#hero-copy-final) and
+  [R1](#r1--hero-rewrite) to the shipped text — "James Ebentier — software architect based in
+  Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the
+  people who'll own the system long after I'm gone." — superseding an earlier "fractional
+  architect & CTO based in Berlin, Germany" draft dropped during pre-merge copy review
+- Updated [R1](#r1--hero-rewrite) to describe the shipped decorative hero visual: an
+  ASCII-art "Option A" framed terminal-window monogram (`aria-hidden`, token-themed `<pre>`,
+  `hidden md:flex` so it stays responsive), replacing the originally-specified
+  `landing-image.webp` raster banner, which was retired rather than repositioned
+- Updated [R7](#r7--baseline-home-meta-tags) to the shipped meta title
+  ("James Ebentier — Software Architect") and description ("Software architect based in
+  Berlin. I help engineering teams get their systems right — a fraction of the time, all of
+  the leverage."), superseding an earlier "James Ebentier — Fractional Architect & CTO" title
+  draft
+- Updated the corresponding [Delegation / Handoff](#delegation--handoff) note, which still
+  referenced repositioning the retired raster banner, to point at the shipped ASCII-art
+  visual instead
+- Confirmed no "Fractional"/"CTO" framing remains anywhere in this spec outside of amendment
+  notes explicitly describing the retired drafts
+
+**Impact:** Documentation-only reconciliation against PR #1194's shipped implementation
+(`welcome/index.html.erb`, `spec/requests/welcome_spec.rb`); no further code changes
+required.
 
 ---
