@@ -48,6 +48,13 @@ class Post < ApplicationRecord
     published.featured.any? ? published.featured.order(published_at: :desc).limit(limit) : published.order(published_at: :desc).limit(limit)
   end
 
+  # Single source of truth for deriving a fallback `excerpt` from `description` -- used by
+  # both the one-time backfill below and db/seeds.rb, which seeds Post records from markdown
+  # front matter that predates the `excerpt` column and therefore never supplies one.
+  def self.excerpt_from_description(description)
+    description.truncate(280)
+  end
+
   # One-time, idempotent backfill for posts whose `excerpt` is still blank (the schema
   # default): copies (a truncated copy of) `description` in. Safe to re-invoke -- a post
   # with a real excerpt already set is left untouched (D4). update_column deliberately
@@ -55,7 +62,7 @@ class Post < ApplicationRecord
   # row's blank excerpt from its own (already-validated) description, never changes any
   # other attribute, so there is nothing to (re-)validate.
   def self.backfill_excerpt_from_description!
-    where(excerpt: '').find_each { |post| post.update_column(:excerpt, post.description.truncate(280)) } # rubocop:disable Rails/SkipsModelValidations
+    where(excerpt: '').find_each { |post| post.update_column(:excerpt, excerpt_from_description(post.description)) } # rubocop:disable Rails/SkipsModelValidations
   end
 
   def kind_label
