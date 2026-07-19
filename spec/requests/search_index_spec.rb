@@ -4,13 +4,12 @@ require 'rails_helper'
 
 # GET /search-index.json (#1187 R9, docs/specs/1187-modal-vim-keyboard-navigation.md) --
 # SEARCH mode's content index. Proves the documented item shape (title/url/excerpt/tags/
-# type), the Post.published scope (unpublished/future posts never leak into the index),
-# and the excerpt fallback: Post has no `excerpt` column in this worktree today (verified
-# directly against app/models/post.rb), so every Post item's excerpt sources from
-# Post#description instead -- the fallback branch this spec exercises, per R9's explicit
-# "cross-issue dependency check performed and documented" acceptance criterion (Increment
-# 4). Project has no excerpt/tags equivalent; its item uses a truncated #description and
-# tags: [].
+# type), the Post.published scope (unpublished/future posts never leak into the index), and
+# that Post#excerpt (a real, always-present, presence-validated column as of P1.4/#1183 --
+# docs/specs/1183-writing-redesign-notes-deep-dives.md D6/R9) is preferred over
+# Post#description -- description remains a separate concern (the meta-tag/SEO field), not
+# a fallback for this index. Project has no excerpt/tags equivalent; its item uses a
+# truncated #description and tags: [].
 RSpec.describe 'GET /search-index.json' do
   it 'responds with a successful JSON response' do # rubocop:disable RSpec/MultipleExpectations
     get search_index_path
@@ -32,12 +31,13 @@ RSpec.describe 'GET /search-index.json' do
         slug: 'hosting-your-personal-site',
         title: 'Hosting Your Personal Site',
         description: 'A guide to static hosting on S3',
+        excerpt: 'Everything you need to host a personal site on S3',
         tags: %w[aws cloud],
         published_at: 1.day.ago
       )
     end
 
-    it "serializes the post's item shape exactly, falling back to description for excerpt (R9)" do # rubocop:disable RSpec/ExampleLength
+    it "serializes the post's item shape exactly, preferring excerpt over description" do # rubocop:disable RSpec/ExampleLength
       get search_index_path
 
       items = response.parsed_body
@@ -46,15 +46,11 @@ RSpec.describe 'GET /search-index.json' do
         {
           'title' => 'Hosting Your Personal Site',
           'url' => post_url(slug: post.slug),
-          'excerpt' => 'A guide to static hosting on S3',
+          'excerpt' => 'Everything you need to host a personal site on S3',
           'tags' => %w[aws cloud],
           'type' => 'post',
         }
       )
-    end
-
-    it 'confirms Post has no excerpt column yet, so the fallback branch is genuinely exercised' do
-      expect(post).not_to have_attribute(:excerpt)
     end
   end
 

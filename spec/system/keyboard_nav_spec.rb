@@ -74,7 +74,7 @@ RSpec.describe "Keyboard navigation foundation", :js do
     visit root_path
     wait_for_keyboard_nav_connected
 
-    %w[Blog Home Projects Home].each do |label|
+    %w[Writing Home Projects Home].each do |label|
       within("header") { click_link label }
       # Standard (non-permanent) Turbo visits replace <body>, disconnecting and
       # reconnecting this controller on every navigation (see the controller's own

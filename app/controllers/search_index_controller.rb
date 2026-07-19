@@ -15,16 +15,11 @@ class SearchIndexController < ApplicationController
 
   private
 
-  # `excerpt` sources from Post#excerpt only if that column exists at implementation time
-  # (P1.4 -- verified directly against app/models/post.rb, not yet shipped in this
-  # worktree); otherwise it falls back to Post#description, already present/required and
-  # similar in purpose (a one-sentence SEO description). A single has_attribute? branch,
-  # not two code paths to maintain -- when P1.4 ships Post#excerpt, this branch simply
-  # stops firing, no shape change (R9).
+  # `excerpt` is a real, always-present, presence-validated Post column as of P1.4/#1183
+  # (docs/specs/1183-writing-redesign-notes-deep-dives.md D6/R9) -- description remains a
+  # separate concern (the meta-tag/SEO field), not a fallback for this index anymore.
   def serialize_post(post)
-    excerpt = post.has_attribute?(:excerpt) ? post.excerpt : post.description
-
-    { title: post.title, url: post_url(slug: post.slug), excerpt: excerpt, tags: post.tags, type: "post" }
+    { title: post.title, url: post_url(slug: post.slug), excerpt: post.excerpt, tags: post.tags, type: "post" }
   end
 
   # Project has no excerpt/tags equivalent today: description (already present) truncated

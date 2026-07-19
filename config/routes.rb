@@ -3,8 +3,8 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  get "blog"           => "blog#index",       as: :posts
-  get "blog/:slug"     => "blog#show",        as: :post
+  get "writing"        => "writing#index",    as: :posts
+  get "writing/:slug"  => "writing#show",     as: :post
   get "projects"       => "projects#index",   as: :projects
   get "projects/:slug" => "projects#show",    as: :project
   get "resume"         => "welcome#resume",   as: :resume

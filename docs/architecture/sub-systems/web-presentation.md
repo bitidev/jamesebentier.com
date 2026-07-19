@@ -12,8 +12,8 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Anchor Files
 
-- `config/routes.rb` — (outside source roots, but the entry map) root + blog/projects/resume/search-index
-- `app/controllers/welcome_controller.rb` / `blog_controller.rb` / `projects_controller.rb` — thin action controllers
+- `config/routes.rb` — (outside source roots, but the entry map) root + writing/projects/resume/search-index
+- `app/controllers/welcome_controller.rb` / `writing_controller.rb` / `projects_controller.rb` — thin action controllers
 - `app/controllers/search_index_controller.rb` — `GET /search-index.json`; SEARCH mode's
   (#1187 R9) plain-text-fields-only JSON index (`title`/`url`/`excerpt`/`tags`/`type`)
   over `Post.published`/`Project`
@@ -31,9 +31,9 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Public Contract
 
-- **HTTP routes**: `/`, `/resume`, `/blog`, `/blog/:slug`, `/projects`, `/projects/:slug`, `/search-index.json`, `/up`
+- **HTTP routes**: `/`, `/resume`, `/writing`, `/writing/:slug`, `/projects`, `/projects/:slug`, `/search-index.json`, `/up`
 - **Exports**: helpers `render_markdown`, `resume_data`, `style_for_level`, `social_profile_icon`
-- **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status→badge-role map)
+- **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status/kind→badge-role maps — `components/_pill`'s `variant: :kind` option, alongside the existing `:status`/`:tag` variants, P1.4/#1183)
 - **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware); `data-controller="keyboard-nav"` (mounted once on `<body>` — modal NORMAL/COMMAND/SEARCH keyboard layer, #1187; ships incrementally, see that controller's file header for what's live today)
 - **Assets**: webpack JS bundle + Tailwind CSS build (`yarn build` / `yarn build:css`); self-hosted webfonts under `public/fonts/` (Commit Mono, Inter)
 
@@ -73,7 +73,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Known Limitations
 
-- `ProjectsController#show` uses `find_by` (returns nil) while blog uses `find_by!` — inconsistent 404 behavior.
+- `ProjectsController#show` uses `find_by` (returns nil) while `WritingController#show` uses `find_by!` — inconsistent 404 behavior.
 - `WelcomeController` still declares unused `projects` action (routing uses `ProjectsController`).
 - Stimulus includes unused scaffold `hello_controller`.
 - Capybara/Cuprite's `:js` (real headless Chrome) specs always run JS, so they cannot

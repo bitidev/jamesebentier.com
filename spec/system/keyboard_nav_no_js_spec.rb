@@ -44,7 +44,7 @@ RSpec.describe "Keyboard navigation layer absent -- progressive enhancement smok
   it "navigates via the real header links alone (root -> writing -> projects -> resume -> home), with no JS involved" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
     visit root_path
 
-    within("header") { click_link "Blog" }
+    within("header") { click_link "Writing" }
     expect(page).to have_current_path(posts_path)
 
     within("header") { click_link "Projects" }
@@ -58,16 +58,18 @@ RSpec.describe "Keyboard navigation layer absent -- progressive enhancement smok
   end
 
   it "reaches a real post and a real project via their own rendered links, with no JS involved" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+    # Neither card's title itself is a link (components/_card's whole-card overlay is
+    # aria-hidden/tabindex=-1, a pointer-only convenience -- see that partial's own
+    # comment, and P1.4/#1183's writing/index.html.erb migrated onto the same shared
+    # components/card as projects/index.html.erb); "Read Post"/"View Project" are the
+    # real, labeled, accessible links every keyboard/screen-reader user reaches the same
+    # destination through, so those are the ones this progressive-enhancement check
+    # follows. Only one post/project exists in this example, so there is exactly one such
+    # link each -- no scoping needed to disambiguate.
     visit posts_path
-    click_link post.title
+    click_link "Read Post"
     expect(page).to have_current_path(post_path(slug: post.slug))
 
-    # The project card's title itself isn't a link (components/_card's whole-card overlay
-    # is aria-hidden/tabindex=-1, a pointer-only convenience -- see that partial's own
-    # comment); "View Project" is the real, labeled, accessible link every keyboard/
-    # screen-reader user reaches the same destination through, so it's the one this
-    # progressive-enhancement check follows. Only one project exists in this example, so
-    # there is exactly one such link -- no scoping needed to disambiguate.
     visit projects_path
     click_link "View Project"
     expect(page).to have_current_path(project_path(slug: project.slug))

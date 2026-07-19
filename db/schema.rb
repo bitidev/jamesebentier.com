@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_19_004505) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_19_175525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -18,10 +18,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_004505) do
   create_table "posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", precision: nil, null: false
     t.string "description", limit: 1024, null: false
+    t.string "excerpt", limit: 280, default: "", null: false
     t.boolean "featured", default: false, null: false
     t.string "file_path", limit: 1024, null: false
     t.string "image", limit: 1024, default: "", null: false
     t.string "keywords", limit: 1024, null: false
+    t.string "kind", limit: 20, default: "deep_dive", null: false
     t.integer "lock_version", default: 1, null: false
     t.datetime "published_at", precision: nil, null: false
     t.string "slug", limit: 255, null: false
