@@ -3,6 +3,7 @@ import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
 import { COMMAND_REGISTRY, findCommand, parseCommand, rankCommands } from "../keyboard_nav/commands"
 import { fetchSearchIndex, rankSearchResults } from "../keyboard_nav/search_index"
+import { assignHintLabels } from "../keyboard_nav/hints"
 
 // Milliseconds the `g`-prefix sequence buffer (gg/gh/gw/gp/gl) stays armed after a bare
 // `g` keypress before silently clearing -- matches vim's own forgiving,
@@ -63,8 +64,17 @@ const COMMAND_BAR_COPY = {
 // tab-session-cached content index and its rankSearchResults ranking; `n`/`N` step the
 // highlighted result within the open results list (SEARCH-mode-scoped, architecture plan
 // Decision 3 -- not a global "repeat search"); Enter activates the highlighted result via
-// .click() on its real, rendered <a> (never a hand-built URL string). See
-// docs/specs/1187-modal-vim-keyboard-navigation.md.
+// .click() on its real, rendered <a> (never a hand-built URL string). This increment
+// adds `f` hint-jump (spec R8, "Increment 5"): a NORMAL sub-state (the mode Value itself
+// stays "normal" -- the status line's "(HINT)" qualifier is set directly, bypassing
+// modeValueChanged() for the same focus/visibility-ordering reason enterBarMode/
+// exitToNormal already do) that labels every on-screen <a href> via
+// ../keyboard_nav/hints.js's assignHintLabels, renders aria-hidden/pointer-events-none
+// badges, and activates the typed match via .click() on the real anchor -- the same
+// "never build a URL string, never open a second activation path" discipline
+// navigateTo/commitSearch already established. Esc and the first scroll event both
+// cancel; hint-jump moves no focus and sets no tabindex, ever (R11).
+// See docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
 // content, disconnecting and reconnecting this controller on every navigation -- that
@@ -83,6 +93,7 @@ export default class extends Controller {
     "commandInput",
     "commandFeedback",
     "searchResults",
+    "hintOverlay",
   ]
 
   connect() {
@@ -113,6 +124,14 @@ export default class extends Controller {
     }
 
     this.clearGPrefixTimeout()
+
+    // Defensive, not load-bearing in the common case: a standard Turbo visit replaces
+    // <body> (where the hint badges/status line live) wholesale anyway. It IS load-
+    // bearing for the scroll-cancel listener, though -- that's attached to `window`,
+    // which Turbo does NOT replace, so it would otherwise outlive this controller
+    // instance across a navigation that happens mid-hint-jump without a scroll firing
+    // first.
+    this.cancelHintMode()
   }
 
   // Deliberately does NOT also toggle the command bar's visibility here (only the
@@ -123,11 +142,16 @@ export default class extends Controller {
   // the entry/exit point, not deferred here. This mirrors how the guide dialog's
   // showModal()/close() are also called directly, never through this callback.
   modeValueChanged() {
-    if (!this.hasStatusLineTextTarget) return
-
-    const label = { normal: "NORMAL", command: "COMMAND", search: "SEARCH" }[this.modeValue] || "NORMAL"
-    this.statusLineTextTarget.textContent = `-- ${label} --`
+    if (this.hasStatusLineTextTarget) this.statusLineTextTarget.textContent = `-- ${this.modeLabel()} --`
     document.body.dataset.keyboardMode = this.modeValue
+  }
+
+  // Shared by modeValueChanged() and setHintStatusQualifier() -- one place mapping the
+  // mode Value to its status-line label, rather than two copies of the same lookup
+  // table (hint-jump needs its own copy since it deliberately never changes modeValue,
+  // spec R8, so it can't just rely on modeValueChanged() firing).
+  modeLabel() {
+    return { normal: "NORMAL", command: "COMMAND", search: "SEARCH" }[this.modeValue] || "NORMAL"
   }
 
   // Single document-level, bubble-phase keydown listener (Decision 2). Guard order is
@@ -156,6 +180,17 @@ export default class extends Controller {
     if (this.isEditableTarget(event.target)) return
     if (this.hasGuideDialogTarget && this.guideDialogTarget.open) return
 
+    // Hint-jump is a NORMAL sub-state (spec R8): while its badges are showing, every
+    // keydown is typed hint input, not a NORMAL binding -- including "f" itself and
+    // every other key hint-jump's own alphabet happens to share with dispatchNormalMode
+    // (e.g. "g", "t"). Checked here, before dispatchNormalMode, rather than inside it,
+    // since dispatchNormalMode's own `this.modeValue !== "normal"` guard can't tell hint-
+    // jump apart from bare NORMAL (mode Value deliberately stays "normal" throughout).
+    if (this.hintModeActive) {
+      this.handleHintKeydown(event)
+      return
+    }
+
     this.dispatchNormalMode(event)
   }
 
@@ -174,8 +209,9 @@ export default class extends Controller {
   handleEscape(event) {
     const guideOpen = this.hasGuideDialogTarget && this.guideDialogTarget.open
     const modeOpen = this.modeValue !== "normal"
+    const hintOpen = this.hintModeActive
 
-    if (!modeOpen && !guideOpen) return
+    if (!modeOpen && !guideOpen && !hintOpen) return
 
     event.preventDefault()
 
@@ -185,6 +221,9 @@ export default class extends Controller {
     // flashes if COMMAND is reopened before its next explicit reset.
     if (modeOpen) this.cancelMode()
     if (guideOpen) this.guideDialogTarget.close()
+    // Hint-jump never moved mode off "normal" (spec R8), so it needs its own explicit
+    // cancel branch here -- modeOpen alone would never catch it.
+    if (hintOpen) this.cancelHintMode()
   }
 
   // Shared cancel path for both Esc (handleEscape) and a not-found Enter that the
@@ -275,6 +314,10 @@ export default class extends Controller {
       case "/":
         event.preventDefault()
         this.enterSearchMode()
+        return
+      case "f":
+        event.preventDefault()
+        this.enterHintMode()
         return
     }
   }
@@ -624,5 +667,186 @@ export default class extends Controller {
     this.currentSearchResults = []
     this.highlightedSearchIndex = -1
     if (this.hasSearchResultsTarget) this.searchResultsTarget.innerHTML = ""
+  }
+
+  // `f` (NORMAL) -> hint-jump (spec R8, architecture plan Decision 5). A no-op with
+  // nothing rendered/entered when there is nothing on screen to hint -- an empty
+  // overlay would otherwise leave hint-jump silently "open" with no way to exit other
+  // than Esc for no reason. No links currently in the viewport is a documented no-op,
+  // exactly like `g l` today (R3/R4).
+  enterHintMode() {
+    if (this.modeValue !== "normal" || this.hintModeActive) return
+
+    const links = this.collectViewportLinks()
+    if (links.length === 0) return
+
+    this.hintModeActive = true
+    this.hintTypedInput = ""
+    this.hintAssignments = assignHintLabels(links)
+    this.renderHintBadges()
+    this.setHintStatusQualifier(true)
+
+    // First scroll event cancels hint-jump outright (spec R8: "no live reposition-on-
+    // scroll -- named v1 simplification"), rather than recomputing badge positions.
+    // {once: true} means this never needs its own removeEventListener call on the
+    // normal cancel path (Esc, exact match); cancelHintMode()/disconnect() still null
+    // out and remove it defensively for the abnormal path (a Turbo navigation away
+    // mid-hint-jump with no scroll ever firing -- see disconnect()'s comment).
+    this.boundHandleHintScroll = this.handleHintScroll.bind(this)
+    window.addEventListener("scroll", this.boundHandleHintScroll, { passive: true, once: true })
+  }
+
+  // Links only, viewport-scoped (architecture plan Decision 5: "matches the issue's own
+  // wording ['labels every link on screen']" -- off-screen links are an explicit v1
+  // out-of-scope, no scroll-to-reveal). `a[href]` in real DOM order (document order,
+  // with no explicit tabindex reordering anywhere on this site, IS tab order) --
+  // deterministic, never sorted by visual position. A zero-size getBoundingClientRect
+  // at the origin (the value display:none/detached elements report) fails the `bottom >
+  // 0`/`right > 0` checks below, so hidden links (e.g. inside the not-currently-open
+  // command bar's search results) are naturally excluded with no extra visibility check.
+  collectViewportLinks() {
+    return Array.from(document.querySelectorAll("a[href]")).filter((link) => {
+      const rect = link.getBoundingClientRect()
+      return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth
+    })
+  }
+
+  // Absolutely (fixed-)positioned via getBoundingClientRect() at each link's own
+  // corner (architecture plan Decision 5) -- aria-hidden and pointer-events-none (R11),
+  // so a mouse user can still click straight through a badge to the real link
+  // underneath, and screen readers never see hint noise layered over their own
+  // existing landmark/link navigation. hintBadgesByLabel is keyed for
+  // updateHintBadgeVisibility() below to toggle without re-querying the DOM per
+  // keystroke.
+  renderHintBadges() {
+    if (!this.hasHintOverlayTarget) return
+
+    this.hintBadgesByLabel = new Map()
+
+    this.hintAssignments.forEach(({ element, label }) => {
+      const rect = element.getBoundingClientRect()
+      const badge = document.createElement("span")
+
+      badge.textContent = label
+      badge.setAttribute("aria-hidden", "true")
+      badge.dataset.hintLabel = label
+      badge.className =
+        "fixed z-50 pointer-events-none font-mono text-[11px] font-semibold leading-none " +
+        "px-1 py-0.5 rounded bg-primary text-primary-content"
+      badge.style.left = `${rect.left}px`
+      badge.style.top = `${rect.top}px`
+
+      this.hintOverlayTarget.appendChild(badge)
+      this.hintBadgesByLabel.set(label, badge)
+    })
+  }
+
+  removeHintBadges() {
+    if (this.hasHintOverlayTarget) this.hintOverlayTarget.innerHTML = ""
+    this.hintBadgesByLabel = null
+  }
+
+  // Every keydown while hint-jump is open is typed hint input (handleKeydown routes
+  // here instead of dispatchNormalMode while hintModeActive). Non-single-character keys
+  // (Tab, arrow keys, etc.) are deliberately left alone -- not preventDefault()'d, not
+  // consumed -- since hint-jump moves no focus and traps nothing (R11); Escape never
+  // reaches here at all (handled earlier in handleKeydown, before this branch).
+  handleHintKeydown(event) {
+    if (event.key.length !== 1) return
+
+    event.preventDefault()
+    this.hintTypedInput += event.key.toLowerCase()
+    this.applyHintFilter()
+  }
+
+  // Typing filters to matching hint(s); an exact label match activates immediately
+  // (spec R8) -- not "narrows to the last remaining candidate," since a complete,
+  // exact-length label can itself be a prefix of a longer two-character code (e.g. "a"
+  // vs "aa") and the spec's own wording is "exact match calls .click()," not
+  // "narrowing." Typed input matching zero hints at all is treated as invalid input and
+  // cancels (mirrors vim's own single-key-mode convention of a wrong key aborting,
+  // unlike COMMAND's forgiving free-text "not found" state -- hint-jump's "alphabet" is
+  // closed and known in advance, so there is no such thing as a not-yet-complete-but-
+  // possibly-valid entry beyond an existing prefix).
+  applyHintFilter() {
+    const typed = this.hintTypedInput
+    const matches = this.hintAssignments.filter((assignment) => assignment.label.startsWith(typed))
+
+    if (matches.length === 0) {
+      this.cancelHintMode()
+      return
+    }
+
+    const exact = matches.find((assignment) => assignment.label === typed)
+    if (exact) {
+      this.activateHint(exact)
+      return
+    }
+
+    this.updateHintBadgeVisibility(matches)
+  }
+
+  updateHintBadgeVisibility(matches) {
+    if (!this.hintBadgesByLabel) return
+
+    const matchingLabels = new Set(matches.map((assignment) => assignment.label))
+
+    this.hintBadgesByLabel.forEach((badge, label) => {
+      badge.classList.toggle("hidden", !matchingLabels.has(label))
+    })
+  }
+
+  // Exact match (spec R8): tear down the overlay/listener first, then .click() the
+  // real anchor -- never construct or assign location.href by hand. .click() preserves
+  // target="_blank"/rel/Turbo's own link handling/download attributes for free, exactly
+  // as a mouse click would (the same "one activation path" discipline navigateTo/
+  // commitSearch already established for g-jumps/COMMAND-nav/SEARCH). Cleanup runs
+  // before the click, not after, so a Turbo navigation triggered by the click can never
+  // race an as-yet-unremoved scroll listener/leftover badge DOM.
+  activateHint(assignment) {
+    const { element } = assignment
+    this.cancelHintMode()
+    element.click()
+  }
+
+  // Esc, an invalid keystroke, activation, or disconnect() all funnel through here --
+  // idempotent (safe to call when hint-jump isn't even open) so every one of those
+  // callers can call it unconditionally rather than each re-deriving "is there anything
+  // to tear down." Removes every injected badge, with zero leftover focus/tabindex/DOM
+  // trace (R8's own acceptance criterion) -- hint-jump never moved focus or set
+  // tabindex in the first place (R11), so there is nothing to restore, only the badges/
+  // listener/typed-input state this method itself created.
+  cancelHintMode() {
+    this.hintModeActive = false
+    this.hintTypedInput = ""
+    this.hintAssignments = []
+    this.removeHintBadges()
+    this.setHintStatusQualifier(false)
+
+    if (this.boundHandleHintScroll) {
+      window.removeEventListener("scroll", this.boundHandleHintScroll)
+      this.boundHandleHintScroll = null
+    }
+  }
+
+  handleHintScroll() {
+    // {once: true} (enterHintMode) already detached this listener from `window` by the
+    // time it fires -- null it out first so cancelHintMode()'s own removeEventListener
+    // is a harmless no-op, not a double-removal.
+    this.boundHandleHintScroll = null
+    this.cancelHintMode()
+  }
+
+  // Direct/synchronous, like exitToNormal()/enterBarMode() -- hint-jump never changes
+  // modeValue (spec R8: "mode value stays normal"), so modeValueChanged() never fires
+  // for it; this is the one place its status-line/body-dataset reflection happens.
+  // document.body.dataset.keyboardHint mirrors keyboardMode's own existing convention,
+  // giving CSS/tests a stable hook independent of the status line's exact text.
+  setHintStatusQualifier(active) {
+    if (this.hasStatusLineTextTarget) {
+      this.statusLineTextTarget.textContent = active ? `-- ${this.modeLabel()} -- (HINT)` : `-- ${this.modeLabel()} --`
+    }
+
+    document.body.dataset.keyboardHint = active ? "true" : "false"
   }
 }

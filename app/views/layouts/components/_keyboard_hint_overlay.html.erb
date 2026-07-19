@@ -1,0 +1,17 @@
+<%# `f` hint-jump overlay (R8, architecture plan Decision 5). Empty by default (and
+    CSS-hidden via `empty:hidden`, matching the command bar's own results-list/feedback
+    convention) -- keyboard_nav_controller.js populates this container with one badge
+    per on-screen <a href> on `f`, and empties it again on activation/Esc/scroll-cancel.
+
+    The whole container is aria-hidden (R11: "Hint badges: aria-hidden=true -- sighted-
+    power-user affordance layered over, never replacing, the existing accessible link
+    structure"); `pointer-events-none` on both the container and every badge means a
+    mouse user can always click straight through to the real link underneath, exactly as
+    they could with JS entirely off. Fixed positioning matches getBoundingClientRect()'s
+    own viewport-relative coordinate space -- no scroll-offset math needed. %>
+<div
+  id="keyboard-hint-overlay"
+  data-keyboard-nav-target="hintOverlay"
+  aria-hidden="true"
+  class="fixed inset-0 z-50 pointer-events-none empty:hidden"
+></div>
