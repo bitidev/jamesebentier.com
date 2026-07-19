@@ -88,6 +88,7 @@ jobs:
       # can't silently break the browser system specs. See docs/specs/
       # 1187-modal-vim-keyboard-navigation.md (Testing Strategy, Open Question 2).
       - name: Setup Chrome for Cuprite system specs
+        id: setup_chrome
         uses: browser-actions/setup-chrome@v1
         with:
           install-chromedriver: false
@@ -101,6 +102,11 @@ jobs:
           RAILS_ENV: test
           SECRET_KEY_BASE: we-dont-need-a-secret-here
           CI: true
+          # Points Cuprite/Ferrum at the exact Chromium binary browser-actions/
+          # setup-chrome just installed (path is version-dependent -- read from
+          # the action's output rather than hardcoded) -- see spec/support/
+          # capybara.rb.
+          CUPRITE_CHROME_PATH: ${{ steps.setup_chrome.outputs.chrome-path }}
         run: |
           bundle exec rake assets:precompile
           bundle exec rake db:prepare

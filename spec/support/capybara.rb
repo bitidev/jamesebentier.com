@@ -16,6 +16,14 @@ Capybara.register_driver(:cuprite) do |app|
   Capybara::Cuprite::Driver.new(
     app,
     window_size: [1200, 800],
+    # CI (GitHub Actions) launches Chrome from the browser-actions/setup-chrome
+    # binary rather than a system-installed Chrome; Ferrum can't auto-detect it,
+    # which manifested as Ferrum::ProcessTimeoutError on every system spec (the
+    # process never starts, so Ferrum waits out process_timeout and gives up).
+    # CI exports the installed binary's path as CUPRITE_CHROME_PATH (see
+    # .github/workflows/ci.yml). Locally this is unset, so `browser_path: nil`
+    # falls back to Ferrum's normal auto-detection of the system Chrome/Chromium.
+    browser_path: ENV["CUPRITE_CHROME_PATH"],
     process_timeout: 10,
     timeout: 10,
     headless: true,
@@ -28,7 +36,9 @@ Capybara.register_driver(:cuprite) do |app|
     # CI runners execute as root inside a container; Chrome refuses to run
     # without a real (or explicitly disabled) sandbox in that case. Harmless
     # locally too, so applied unconditionally rather than gated on ENV["CI"].
-    browser_options: { "no-sandbox" => nil, "disable-gpu" => nil }
+    # `disable-dev-shm-usage` avoids Chrome crashing/hanging on the small
+    # /dev/shm partition GitHub-hosted runners provide.
+    browser_options: { "no-sandbox" => nil, "disable-gpu" => nil, "disable-dev-shm-usage" => nil }
   )
 end
 
