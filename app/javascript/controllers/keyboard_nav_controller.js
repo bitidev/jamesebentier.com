@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
 import { COMMAND_REGISTRY, findCommand, parseCommand, rankCommands } from "../keyboard_nav/commands"
+import { fetchSearchIndex, rankSearchResults } from "../keyboard_nav/search_index"
 
 // Milliseconds the `g`-prefix sequence buffer (gg/gh/gw/gp/gl) stays armed after a bare
 // `g` keypress before silently clearing -- matches vim's own forgiving,
@@ -16,6 +17,23 @@ const G_PREFIX_NAV_KEYS = { h: "home", w: "writing", p: "projects", l: "lab" }
 
 // Pixels moved per NORMAL-mode line-scroll keypress (j/k vertical, h/l horizontal).
 const LINE_SCROLL_PX = 100
+
+// The one shared terminal-style bar (app/views/layouts/components/_keyboard_command_bar.html.erb,
+// architecture plan file-layout table) is reused for both COMMAND and SEARCH (spec R6/R7)
+// -- only the leading glyph, the sr-only label, and the placeholder copy differ per mode,
+// set here at entry (enterBarMode) rather than standing up a second bar/input pair.
+const COMMAND_BAR_COPY = {
+  command: {
+    glyph: ":",
+    label: "Command",
+    placeholder: "home | writing | projects | resume | theme <name> | help",
+  },
+  search: {
+    glyph: "/",
+    label: "Search",
+    placeholder: "search posts & projects -- n/N steps through results, Enter opens",
+  },
+}
 
 // Connects to data-controller="keyboard-nav" -- mounted once on <body> in
 // app/views/layouts/application.html.erb.
@@ -33,12 +51,19 @@ const LINE_SCROLL_PX = 100
 // jumps via resolveNavTarget (spec R3/R4, "Increment 1"). Another increment added the
 // `t` theme cycle (spec R5, "Increment 2"), reusing the existing P1.1 theme-picker
 // controller/<select> as the single source of truth -- no parallel theme-apply/persist
-// logic. This increment adds COMMAND mode (spec R6, "Increment 3"): `:` opens a
+// logic. Another increment added COMMAND mode (spec R6, "Increment 3"): `:` opens a
 // terminal-style input wired to the extensible command registry in
 // ../keyboard_nav/commands.js -- nav commands reuse resolveNavTarget exactly as the
 // g-prefix jumps do, and `:theme <name>` reuses this same controller's theme-apply path
 // (cycleTheme/applyTheme both drive the one P1.1 <select>), so there is still only one
-// code path per concern, now with two entry points into each. See
+// code path per concern, now with two entry points into each. This increment adds
+// SEARCH mode (spec R7, "Increment 4"): `/` reuses the exact same terminal-style bar/
+// input COMMAND already stood up (enterBarMode, shared between both modes) rather than
+// a second bar, wired instead to ../keyboard_nav/search_index.js's lazily-fetched,
+// tab-session-cached content index and its rankSearchResults ranking; `n`/`N` step the
+// highlighted result within the open results list (SEARCH-mode-scoped, architecture plan
+// Decision 3 -- not a global "repeat search"); Enter activates the highlighted result via
+// .click() on its real, rendered <a> (never a hand-built URL string). See
 // docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
@@ -53,8 +78,11 @@ export default class extends Controller {
     "guideDialog",
     "themeSelect",
     "commandBar",
+    "commandGlyph",
+    "commandLabel",
     "commandInput",
     "commandFeedback",
+    "searchResults",
   ]
 
   connect() {
@@ -160,11 +188,12 @@ export default class extends Controller {
   }
 
   // Shared cancel path for both Esc (handleEscape) and a not-found Enter that the
-  // visitor abandons by pressing Esc next -- COMMAND mode's only exit today; SEARCH
-  // (a later increment) reuses this same shape when it lands.
+  // visitor abandons by pressing Esc next -- exits COMMAND or SEARCH identically (spec
+  // R6/R7): clear input/feedback/results, return to NORMAL, restore prior focus.
   cancelMode() {
     if (this.hasCommandInputTarget) this.commandInputTarget.value = ""
     this.clearCommandFeedback()
+    this.clearSearchResults()
     this.exitToNormal()
   }
 
@@ -179,7 +208,19 @@ export default class extends Controller {
     const priorFocus = this.priorFocus
     this.priorFocus = null
 
-    if (priorFocus && typeof priorFocus.focus === "function") priorFocus.focus()
+    // Blur the bar's own <input> first, unconditionally -- calling .focus() on
+    // priorFocus alone is not reliable when priorFocus is document.body: a bare
+    // <body> has no tabindex, so per spec .focus() on it is a no-op while another
+    // element (our own input) still holds focus, silently leaving the input focused
+    // after "Esc" (a real, reproduced bug -- the next document-level keydown then
+    // bails via the editable-target guard, since the still-focused input matches it).
+    // Explicitly blurring first guarantees focus actually leaves the input; the
+    // browser's own default then reverts activeElement to <body> when nothing else
+    // claims it, so priorFocus.focus() below only has real work to do when priorFocus
+    // is an actual focusable element other than body.
+    if (this.hasCommandInputTarget) this.commandInputTarget.blur()
+
+    if (priorFocus && priorFocus !== document.body && typeof priorFocus.focus === "function") priorFocus.focus()
   }
 
   // NORMAL-mode binding table (spec R3). The `g`-prefix sequence (gg/gh/gw/gp/gl) is
@@ -230,6 +271,10 @@ export default class extends Controller {
       case ":":
         event.preventDefault()
         this.enterCommandMode()
+        return
+      case "/":
+        event.preventDefault()
+        this.enterSearchMode()
         return
     }
   }
@@ -323,24 +368,85 @@ export default class extends Controller {
     this.themeSelectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
 
-  // `:` (NORMAL) -> COMMAND (spec R6, Decision 1/2): save focus, clear any stale
-  // input/feedback from a prior open, reveal the bar, move focus into its <input>.
-  // Enter/typing are the input's own element-scoped Stimulus actions (data-action on the
-  // partial), not document-level dispatch, since the editable-target guard
-  // (handleKeydown) already bails out of mode dispatch the instant this input has focus.
+  // `:` (NORMAL) -> COMMAND (spec R6, Decision 1/2).
   enterCommandMode() {
+    this.enterBarMode("command")
+  }
+
+  // `/` (NORMAL) -> SEARCH (spec R7, Decision 1/2/3): identical entry shape to COMMAND
+  // (save/restore focus, shared bar), plus kicking off the index fetch -- fetchSearchIndex
+  // itself is idempotent for the rest of the tab session (search_index.js's module-level
+  // cache), so re-entering SEARCH repeatedly never re-fetches.
+  enterSearchMode() {
+    this.enterBarMode("search")
+    this.loadSearchIndex()
+  }
+
+  // Shared COMMAND/SEARCH entry (architecture plan file-layout table: "one partial, a
+  // mode: local selects the placeholder/submit behavior"): save focus, clear any stale
+  // input/feedback/results from a prior open, swap the bar's glyph/label/placeholder copy
+  // for the requested mode, reveal the bar, move focus into its <input>. Enter/typing are
+  // the input's own element-scoped Stimulus actions (data-action on the partial), not
+  // document-level dispatch, since the editable-target guard (handleKeydown) already
+  // bails out of mode dispatch the instant this input has focus.
+  enterBarMode(mode) {
     if (!this.hasCommandInputTarget) return
 
     this.priorFocus = document.activeElement
     this.commandInputTarget.value = ""
     this.clearCommandFeedback()
+    this.clearSearchResults()
+
+    const copy = COMMAND_BAR_COPY[mode]
+    if (this.hasCommandGlyphTarget) this.commandGlyphTarget.textContent = copy.glyph
+    if (this.hasCommandLabelTarget) this.commandLabelTarget.textContent = copy.label
+    this.commandInputTarget.placeholder = copy.placeholder
+
     // Un-hidden synchronously, here, rather than via modeValueChanged() -- see that
     // method's comment. A descendant of a still-`display: none` ancestor cannot receive
     // focus, so the bar must already be visible by the time focus() below runs, and the
     // async Value-changed callback cannot be relied on for that ordering.
     if (this.hasCommandBarTarget) this.commandBarTarget.classList.remove("hidden")
-    this.modeValue = "command"
+    this.modeValue = mode
     this.commandInputTarget.focus()
+  }
+
+  // Single input->/keydown-> actions on the shared bar's <input> (spec R6/R7 file-layout
+  // table), dispatching on the controller's current mode Value rather than duplicating
+  // this markup/wiring for a second bar. Stimulus's action key-filter list only supports
+  // a fixed set of named keys (enter/esc/space/arrows/home/end/page_up/page_down) -- not
+  // arbitrary letters like "n"/"N" -- so both Enter and SEARCH's n/N stepping are handled
+  // here as plain keydown checks, not further data-action filters.
+  handleBarInput() {
+    if (this.modeValue === "search") {
+      this.filterSearchResults()
+    } else if (this.modeValue === "command") {
+      this.handleCommandInput()
+    }
+  }
+
+  handleBarKeydown(event) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      if (this.modeValue === "search") this.commitSearch()
+      else if (this.modeValue === "command") this.commitCommand()
+      return
+    }
+
+    if (this.modeValue !== "search") return
+
+    // n/N are SEARCH-mode-scoped result-stepping keys (spec R7, architecture plan
+    // Decision 3: "not a global 'repeat last search'"), reserved even while the search
+    // <input> itself has focus -- a deliberate, named trade-off: a literal "n"/"N" cannot
+    // be typed into the query while SEARCH is open, in exchange for vim's own n/N-steps-
+    // through-matches convention working without ever leaving the input.
+    if (event.key === "n") {
+      event.preventDefault()
+      this.stepSearchSelection(1)
+    } else if (event.key === "N") {
+      event.preventDefault()
+      this.stepSearchSelection(-1)
+    }
   }
 
   // Live-filter/rank feedback as the visitor types (spec R6: "live-filter/rank the
@@ -368,9 +474,7 @@ export default class extends Controller {
   // returns `false` (e.g. `:theme bogus-name`, an unrecognized theme) is treated
   // identically to an unrecognized command name -- one visible "not found" state, not
   // two. On success: clear the input and return to NORMAL, restoring prior focus.
-  commitCommand(event) {
-    event.preventDefault()
-
+  commitCommand() {
     const { name, args } = parseCommand(this.commandInputTarget.value)
     if (!name) return
 
@@ -405,5 +509,120 @@ export default class extends Controller {
 
   clearCommandFeedback() {
     this.setCommandFeedback("")
+  }
+
+  // SEARCH mode (spec R7, architecture plan Decision 3). `/`'s first open in a tab
+  // session triggers this; fetchSearchIndex's own module-level cache (search_index.js) is
+  // what actually makes "never re-fetch on a subsequent `/` open" hold across Turbo-
+  // driven navigations, since a fresh keyboard-nav controller instance connects on every
+  // Turbo visit (see this controller's own Turbo lifecycle note) and so cannot itself
+  // hold that cache across navigations. Guards against a stale response landing after the
+  // visitor has already left SEARCH (Esc, or a Turbo navigation reconnecting a new
+  // controller instance).
+  loadSearchIndex() {
+    fetchSearchIndex()
+      .then((index) => {
+        if (this.modeValue !== "search") return
+
+        this.searchIndex = index
+        this.filterSearchResults()
+      })
+      .catch(() => {
+        if (this.modeValue !== "search") return
+
+        this.setCommandFeedback("search index unavailable")
+      })
+  }
+
+  // Live-filter/rank as the visitor types (spec R7); rankSearchResults (search_index.js)
+  // is the same "one pure ranking function, unit-tested independently" discipline
+  // rankCommands already established for COMMAND. Before the index has loaded, shows a
+  // loading state rather than nothing; an empty/whitespace query renders the full,
+  // just-loaded index unranked (rankSearchResults' own empty-query convention), so SEARCH
+  // shows its whole result set immediately once open, narrowing as the visitor types.
+  filterSearchResults() {
+    if (!this.searchIndex) {
+      this.setCommandFeedback("Loading search index…")
+      return
+    }
+
+    const results = rankSearchResults(this.commandInputTarget.value, this.searchIndex)
+    this.renderSearchResults(results)
+  }
+
+  // Renders each result as a real, rendered <a href> (never a hand-built href -- each
+  // item's `url` was already built server-side via post_url/project_url, R9) so Enter's
+  // .click() (commitSearch) is a genuine link activation, exactly like resolveNavTarget's
+  // own .click()-the-real-anchor pattern (Decision 6). The first result is highlighted by
+  // default so n/N and Enter are meaningful the instant results appear, with no extra key
+  // required to "start" browsing.
+  renderSearchResults(results) {
+    this.currentSearchResults = results
+    this.highlightedSearchIndex = results.length > 0 ? 0 : -1
+
+    if (this.hasSearchResultsTarget) {
+      this.searchResultsTarget.innerHTML = ""
+
+      results.forEach((item, index) => {
+        const li = document.createElement("li")
+        const link = document.createElement("a")
+
+        link.href = item.url
+        link.textContent = item.title
+        link.dataset.searchResultIndex = String(index)
+        link.className = "block px-2 py-1 rounded truncate"
+
+        li.appendChild(link)
+        this.searchResultsTarget.appendChild(li)
+      })
+    }
+
+    this.applySearchHighlight()
+    this.setCommandFeedback(results.length > 0 ? "" : "no matching posts or projects")
+  }
+
+  applySearchHighlight() {
+    if (!this.hasSearchResultsTarget) return
+
+    this.searchResultsTarget.querySelectorAll("a[data-search-result-index]").forEach((link) => {
+      const isHighlighted = Number(link.dataset.searchResultIndex) === this.highlightedSearchIndex
+      link.parentElement.dataset.searchHighlighted = isHighlighted ? "true" : "false"
+      link.classList.toggle("bg-primary/20", isHighlighted)
+      link.classList.toggle("text-primary", isHighlighted)
+    })
+  }
+
+  // n/N (spec R7): move the highlighted selection within the currently-open results list
+  // only -- SEARCH-mode-scoped, not a global "repeat last search" (architecture plan
+  // Decision 3's explicitly-resolved ambiguity). Wraps at both ends.
+  stepSearchSelection(direction) {
+    if (!this.currentSearchResults || this.currentSearchResults.length === 0) return
+
+    const count = this.currentSearchResults.length
+    this.highlightedSearchIndex = (this.highlightedSearchIndex + direction + count) % count
+    this.applySearchHighlight()
+
+    const link = this.highlightedResultLink()
+    if (link) link.scrollIntoView({ block: "nearest" })
+  }
+
+  // Enter (spec R7): activate the highlighted result via .click() on its real, rendered
+  // <a> -- never construct or assign location.href by hand (Decision 3). A no-op if
+  // nothing is highlighted (e.g. no results match the current query).
+  commitSearch() {
+    const link = this.highlightedResultLink()
+    if (link) link.click()
+  }
+
+  highlightedResultLink() {
+    if (!this.hasSearchResultsTarget) return null
+
+    return this.searchResultsTarget.querySelector('[data-search-highlighted="true"] a')
+  }
+
+  clearSearchResults() {
+    this.currentSearchResults = []
+    this.highlightedSearchIndex = -1
+    if (this.hasSearchResultsTarget) this.searchResultsTarget.innerHTML = ""
   }
 }

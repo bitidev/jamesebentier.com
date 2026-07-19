@@ -28,6 +28,15 @@ module KeyboardNavHelpers
   # just insurance, and have_selector returns the instant the text appears.
   KEYBOARD_NAV_CONNECT_TIMEOUT = 10
 
+  # Ceiling for waiting on SEARCH's results list to render (spec/system/
+  # keyboard_nav_search_spec.rb) -- a small margin over Capybara's 5s
+  # default_max_wait_time, mirroring KEYBOARD_NAV_CONNECT_TIMEOUT's own rationale.
+  # Populating #keyboard-search-results involves a genuine extra round trip beyond
+  # ordinary JS execution (fetchSearchIndex's GET /search-index.json plus its own
+  # response.json() parse, spec R7/R9), so it can occasionally take a beat longer
+  # than the default wait under a loaded test-runner, independent of any product bug.
+  SEARCH_RESULTS_TIMEOUT = 10
+
   # Blocks until keyboard_nav_controller#connect() has run. connect() un-hides
   # #keyboard-status-line (removes the "hidden" class) and modeValueChanged()
   # writes its "-- NORMAL --" text -- both happen synchronously with attaching the
@@ -67,6 +76,34 @@ module KeyboardNavHelpers
   # what the feature's document-level listener expects.
   def press(*keys)
     page.driver.browser.page.keyboard.type(*keys)
+  end
+
+  # Waits (up to SEARCH_RESULTS_TIMEOUT) for #keyboard-search-results to contain
+  # exactly `count` <li> items -- see that constant's comment for why this needs a
+  # wider margin than the default 5s wait.
+  def wait_for_search_results(count)
+    expect(page).to have_selector("#keyboard-search-results li", count: count, wait: SEARCH_RESULTS_TIMEOUT)
+  end
+
+  # Counts real network requests to `path_fragment` made so far (Ferrum's own
+  # Network domain traffic log, spec/system/keyboard_nav_search_spec.rb) -- used to
+  # prove SEARCH mode's "never re-fetch the content index in the same tab session"
+  # claim (spec R7) without monkey-patching `window.fetch` in the page itself. An
+  # earlier version of these specs overrode `window.fetch` via `execute_script` to
+  # count calls; that destabilized Turbo's own fetch-based navigation intermittently
+  # (a real, reproduced flake, not a one-off) -- Ferrum's network traffic log is a
+  # passive observer with no such risk.
+  def search_index_request_count
+    page.driver.browser.page.network.traffic.count { |exchange| exchange.url.to_s.include?("search-index.json") }
+  end
+
+  # Ferrum's traffic log accumulates for the lifetime of the underlying page/tab, which
+  # Capybara/Cuprite can reuse across multiple `visit` calls (and possibly examples) --
+  # call this right after `visit`/`wait_for_keyboard_nav_connected` so
+  # search_index_request_count's baseline is this example's own requests only, not
+  # anything a prior visit already made.
+  def clear_network_traffic!
+    page.driver.browser.page.network.clear(:traffic)
   end
 end
 

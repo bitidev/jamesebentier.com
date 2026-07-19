@@ -12,8 +12,11 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Anchor Files
 
-- `config/routes.rb` — (outside source roots, but the entry map) root + blog/projects/resume
+- `config/routes.rb` — (outside source roots, but the entry map) root + blog/projects/resume/search-index
 - `app/controllers/welcome_controller.rb` / `blog_controller.rb` / `projects_controller.rb` — thin action controllers
+- `app/controllers/search_index_controller.rb` — `GET /search-index.json`; SEARCH mode's
+  (#1187 R9) plain-text-fields-only JSON index (`title`/`url`/`excerpt`/`tags`/`type`)
+  over `Post.published`/`Project`
 - `app/views/layouts/application.html.erb` — layout, meta-tags, Font Awesome, production analytics, FOUC-prevention theme script
 - `app/assets/stylesheets/application.tailwind.css` — theme/token source of truth (type scale, self-hosted fonts, DaisyUI theme set)
 - `app/views/components/` — shared ERB component partials (section, card, pill, cta_button)
@@ -28,7 +31,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Public Contract
 
-- **HTTP routes**: `/`, `/resume`, `/blog`, `/blog/:slug`, `/projects`, `/projects/:slug`, `/up`
+- **HTTP routes**: `/`, `/resume`, `/blog`, `/blog/:slug`, `/projects`, `/projects/:slug`, `/search-index.json`, `/up`
 - **Exports**: helpers `render_markdown`, `resume_data`, `style_for_level`, `social_profile_icon`
 - **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status→badge-role map)
 - **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware); `data-controller="keyboard-nav"` (mounted once on `<body>` — modal NORMAL/COMMAND/SEARCH keyboard layer, #1187; ships incrementally, see that controller's file header for what's live today)
