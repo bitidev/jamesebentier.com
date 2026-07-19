@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
+import { nextTheme } from "../keyboard_nav/theme_cycle"
 
 // Milliseconds the `g`-prefix sequence buffer (gg/gh/gw/gp/gl) stays armed after a bare
 // `g` keypress before silently clearing -- matches vim's own forgiving,
@@ -26,10 +27,12 @@ const LINE_SCROLL_PX = 100
 // app/javascript/keyboard_nav/ as later increments add it.
 //
 // Foundation (mode Value + status line, the document-level dispatch guard, Esc-to-
-// NORMAL, `?` as a bare guide-dialog toggle) shipped first; this increment adds
+// NORMAL, `?` as a bare guide-dialog toggle) shipped first; a later increment added
 // NORMAL-mode navigation: h/j/k/l scroll, gg/G top/bottom, and the g-prefixed page
-// jumps via resolveNavTarget (spec R3/R4, "Increment 1" in that spec's own numbering).
-// See docs/specs/1187-modal-vim-keyboard-navigation.md.
+// jumps via resolveNavTarget (spec R3/R4, "Increment 1"). This increment adds the `t`
+// theme cycle (spec R5, "Increment 2"), reusing the existing P1.1 theme-picker
+// controller/<select> as the single source of truth -- no parallel theme-apply/persist
+// logic. See docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
 // content, disconnecting and reconnecting this controller on every navigation -- that
@@ -37,7 +40,7 @@ const LINE_SCROLL_PX = 100
 // mark <body> data-turbo-permanent.
 export default class extends Controller {
   static values = { mode: { type: String, default: "normal" } }
-  static targets = ["statusLine", "statusLineText", "guideDialog"]
+  static targets = ["statusLine", "statusLineText", "guideDialog", "themeSelect"]
 
   connect() {
     // Desktop/hardware-keyboard feature only (R12) -- checked once here, matching
@@ -170,6 +173,10 @@ export default class extends Controller {
         event.preventDefault()
         this.scrollHorizontally(1)
         return
+      case "t":
+        event.preventDefault()
+        this.cycleTheme()
+        return
     }
   }
 
@@ -238,5 +245,20 @@ export default class extends Controller {
 
   scrollToBottom() {
     window.scrollTo({ top: document.documentElement.scrollHeight })
+  }
+
+  // `t` theme cycle (spec R5, Decision 4). Deliberately does NOT touch
+  // document.documentElement.dataset.theme or localStorage directly -- this drives the
+  // *same* P1.1 theme-picker <select> a manual dropdown change would, via a real
+  // `change` event, so theme_picker_controller.js#change is the one and only code path
+  // that ever applies/persists a theme. themeSelectTarget is a second controller's
+  // target on the same <select> element theme-picker already owns (standard Stimulus
+  // multi-controller pattern), not a duplicate control.
+  cycleTheme() {
+    if (!this.hasThemeSelectTarget) return
+
+    const current = document.documentElement.dataset.theme
+    this.themeSelectTarget.value = nextTheme(current)
+    this.themeSelectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
 }
