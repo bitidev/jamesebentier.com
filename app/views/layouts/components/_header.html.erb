@@ -1,11 +1,16 @@
 <header class='w-full shadow mb-8 print:hidden'>
   <div class='flex w-full max-w-7xl mx-auto px-8 py-4 print:hidden'>
     <img src="/favicon.ico" alt="James Ebentier" class='h-9 justify-self-start' />
-    <ul class='flex flex-row list-none ml-auto content-center items-center justify-end my-auto'>
-      <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-primary cursor-default' : 'link link-hover' %></li>
-      <li class='ml-4'><%= link_to 'Blog', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover' %></li>
-      <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-primary cursor-default' : 'link link-hover' %></li>
-      <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-primary cursor-default' : 'link link-hover' %></li>
+    <%# data-nav-target attributes (R4/Decision 6): the single lookup resolveNavTarget()
+        queries for both the `g`-prefix page jumps and (a later increment) the COMMAND
+        registry's :home/:writing/:projects/:resume. "writing" (not "blog") matches the
+        design doc's target IA name, so a future /blog -> /writing route rename requires
+        zero keyboard-layer changes. Rails' own root_url/posts_url/projects_url/
+        resume_path remain the single source of the actual href -- no URL literal here. %>
+      <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'home' } %></li>
+      <li class='ml-4'><%= link_to 'Blog', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'writing' } %></li>
+      <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'projects' } %></li>
+      <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'resume' } %></li>
       <%# Terminal-styled theme switcher (R6). data-theme-picker-target="select" is read
           by app/javascript/controllers/theme_picker_controller.js; the render-blocking
           inline script in application.html.erb's <head> is what applies the visitor's

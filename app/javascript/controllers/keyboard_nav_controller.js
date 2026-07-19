@@ -1,4 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
+import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
+
+// Milliseconds the `g`-prefix sequence buffer (gg/gh/gw/gp/gl) stays armed after a bare
+// `g` keypress before silently clearing -- matches vim's own forgiving,
+// no-error-on-unknown-sequence convention (Decision 2, rule 4).
+const G_PREFIX_TIMEOUT_MS = 600
+
+// `g` + one of these resolves to a resolveNavTarget() key (architecture plan Decision 6,
+// spec R3/R4). Deliberately does NOT include "resume" -- only the four g-jump letters
+// the spec names (h/w/p/l) are wired here; :resume (a later COMMAND-mode increment) is
+// the other resolveNavTarget("resume") entry point.
+const G_PREFIX_NAV_KEYS = { h: "home", w: "writing", p: "projects", l: "lab" }
+
+// Pixels moved per NORMAL-mode line-scroll keypress (j/k vertical, h/l horizontal).
+const LINE_SCROLL_PX = 100
 
 // Connects to data-controller="keyboard-nav" -- mounted once on <body> in
 // app/views/layouts/application.html.erb.
@@ -10,11 +25,11 @@ import { Controller } from "@hotwired/stimulus"
 // logic that doesn't need the DOM lives in plain ES modules under
 // app/javascript/keyboard_nav/ as later increments add it.
 //
-// This increment ships only the foundation: the mode Value + status line, the single
-// document-level dispatch guard every later increment's bindings plug into, Esc-to-
-// NORMAL, and `?` as a bare guide-dialog toggle (the full bindings reference table is
-// a later increment). See docs/specs/1187-modal-vim-keyboard-navigation.md
-// (Requirements R1, R2 -- "Increment 0" in that spec's own numbering).
+// Foundation (mode Value + status line, the document-level dispatch guard, Esc-to-
+// NORMAL, `?` as a bare guide-dialog toggle) shipped first; this increment adds
+// NORMAL-mode navigation: h/j/k/l scroll, gg/G top/bottom, and the g-prefixed page
+// jumps via resolveNavTarget (spec R3/R4, "Increment 1" in that spec's own numbering).
+// See docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
 // content, disconnecting and reconnecting this controller on every navigation -- that
@@ -34,6 +49,9 @@ export default class extends Controller {
 
     if (!this.hasPointerSupport) return
 
+    this.pendingGPrefix = false
+    this.gPrefixTimeoutId = null
+
     this.boundHandleKeydown = this.handleKeydown.bind(this)
     document.addEventListener("keydown", this.boundHandleKeydown)
 
@@ -47,6 +65,8 @@ export default class extends Controller {
       document.removeEventListener("keydown", this.boundHandleKeydown)
       this.boundHandleKeydown = null
     }
+
+    this.clearGPrefixTimeout()
   }
 
   modeValueChanged() {
@@ -109,12 +129,114 @@ export default class extends Controller {
     if (guideOpen) this.guideDialogTarget.close()
   }
 
+  // NORMAL-mode binding table (spec R3). The `g`-prefix sequence (gg/gh/gw/gp/gl) is
+  // handled first, unconditionally consuming whatever key follows an armed `g` --
+  // recognized or not -- so e.g. "gj" never *also* falls through to a j-scroll (spec
+  // Decision 2, rule 4: "anything else, or timeout, silently clears the buffer").
   dispatchNormalMode(event) {
     if (this.modeValue !== "normal") return
 
-    if (event.key === "?") {
-      event.preventDefault()
-      this.guideDialogTarget.showModal()
+    if (this.pendingGPrefix) {
+      this.resolvePendingGPrefix(event)
+      return
     }
+
+    switch (event.key) {
+      case "?":
+        event.preventDefault()
+        this.guideDialogTarget.showModal()
+        return
+      case "g":
+        event.preventDefault()
+        this.armGPrefix()
+        return
+      case "G":
+        event.preventDefault()
+        this.scrollToBottom()
+        return
+      case "j":
+        event.preventDefault()
+        this.scrollByLines(1)
+        return
+      case "k":
+        event.preventDefault()
+        this.scrollByLines(-1)
+        return
+      case "h":
+        event.preventDefault()
+        this.scrollHorizontally(-1)
+        return
+      case "l":
+        event.preventDefault()
+        this.scrollHorizontally(1)
+        return
+    }
+  }
+
+  resolvePendingGPrefix(event) {
+    this.clearGPrefix()
+
+    const { key } = event
+
+    if (key === "g") {
+      event.preventDefault()
+      this.scrollToTop()
+      return
+    }
+
+    const navKey = G_PREFIX_NAV_KEYS[key]
+    if (!navKey) return // unrecognized g-sequence -- silently clear, no error (vim convention)
+
+    event.preventDefault()
+    this.navigateTo(navKey)
+  }
+
+  armGPrefix() {
+    this.pendingGPrefix = true
+    this.clearGPrefixTimeout()
+    this.gPrefixTimeoutId = setTimeout(() => {
+      this.pendingGPrefix = false
+    }, G_PREFIX_TIMEOUT_MS)
+  }
+
+  clearGPrefix() {
+    this.pendingGPrefix = false
+    this.clearGPrefixTimeout()
+  }
+
+  clearGPrefixTimeout() {
+    if (!this.gPrefixTimeoutId) return
+
+    clearTimeout(this.gPrefixTimeoutId)
+    this.gPrefixTimeoutId = null
+  }
+
+  // Single-source-of-truth page jump (Decision 6): resolveNavTarget() reads the actual,
+  // Rails-rendered header anchor -- never a hardcoded path literal. A key with no
+  // matching data-nav-target (e.g. "lab", no /lab route yet) resolves to null and this
+  // is a documented no-op.
+  navigateTo(target) {
+    const element = resolveNavTarget(target)
+    if (element) element.click()
+  }
+
+  // Instant, not animated: R11's prefers-reduced-motion bullet scopes "any transition"
+  // to the status line/command-search bars/hint badges/guide overlay -- page-scroll
+  // triggered by hjkl/gg/G is a functional jump, not a decorative transition, so there's
+  // no separate reduced-motion branch to maintain here.
+  scrollByLines(direction) {
+    window.scrollBy({ top: direction * LINE_SCROLL_PX })
+  }
+
+  scrollHorizontally(direction) {
+    window.scrollBy({ left: direction * LINE_SCROLL_PX })
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0 })
+  }
+
+  scrollToBottom() {
+    window.scrollTo({ top: document.documentElement.scrollHeight })
   }
 }
