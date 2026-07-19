@@ -29,6 +29,10 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
   Invariants)
 - **Exports**: `Post::KINDS` / `Post.by_kind` / `Post#kind_label` / `Post#reading_time` /
   `Post#excerpt` — Notes vs. Deep Dives content model (P1.4/#1183)
+- **Exports**: `Project.by_status` — scope filtering by `status`, blank returns all, an
+  unrecognized value returns none; powers `/projects`' server-rendered status filter.
+  `Project::STATUSES` (`%w[Pre-Launch Beta Live]`) is the shared status-values constant
+  referenced by both this scope's callers and the model's own inclusion validation.
 - **Exports**: `ApplicationRecord.noindex?` — sitemap opt-out
 - **Types**: UUID primary keys (`gen_random_uuid()`)
 
@@ -54,6 +58,10 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
   already an intentionally uncached, always-fresh disk read (see Known Limitations), so a
   stored `reading_time` could silently go stale the instant a markdown body is hand-edited
   without a matching front-matter/DB touch.
+- `Project#read_url`/`Project#source_url` are optional (nullable) — `Project#url` remains
+  the one required outbound link (the "demo" leg of the read → demo → source triple-link
+  pattern). Rendering order everywhere is read → demo → source; `Demo` always renders,
+  `Read`/`Source` render only when present.
 
 ## Security Posture
 

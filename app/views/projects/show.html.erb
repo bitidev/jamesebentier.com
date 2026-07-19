@@ -5,20 +5,36 @@
   )
 %>
 
-<div class='flex flex-row mb-6 space-x-4'>
-  <div class='p-4 w-1/4 align-top m-auto mt-0 flex-shrink-0 border rounded shadow'>
-    <img src="<%= @project.image %>" alt="<%= @project.title %>" class='m-auto' />
-    <p class='text-sm text-[#999] my-2 w-full text-center'>
-      <%= link_to @project.url, @project.url, target: '_blank', rel: 'noreferrer', class: 'link link-hover underline' %>
-    </p>
-    <p class='text-sm text-[#999] my-2 w-full text-center'>
-      <span class='badge badge-accent'><%= @project.status %></span>
-    </p>
-  </div>
-  <div class='p-4 m-auto border rounded shadow'>
-    <h1 class='text-3xl mb-5'><%= @project.title %></h1>
-    <div class='prose w-full max-w-none'>
-      <%= render_markdown(@project.content) %>
+<%# Wrapped in components/section purely for the consistent mb-16 spacing + scroll
+    fade/slide-in motion parity with every other section-wrapped page (R6) -- no
+    eyebrow/title locals needed since this page's own <h1> carries the heading. %>
+<%= render layout: "components/section" do %>
+  <h1 class='font-mono text-3xl mb-4'><%= @project.title %></h1>
+
+  <div class='flex flex-row mb-6 space-x-4'>
+    <div class='p-4 w-1/4 align-top m-auto mt-0 flex-shrink-0 border border-base-300 bg-base-100 rounded shadow'>
+      <%= image_tag @project.image, alt: @project.title, class: 'm-auto' %>
+      <div class='my-2 w-full text-center'>
+        <%= render "components/pill", label: @project.status, variant: :status %>
+      </div>
+    </div>
+    <div class='p-4 m-auto'>
+      <%# Triple-links, identical read -> demo -> source conditional composition as the
+          index card (R6): Demo (project.url) always renders; Read/Source render only
+          when present. relative z-10 keeps these independently clickable above the
+          section's own layout (matches the card-actions convention used elsewhere). %>
+      <div class='card-actions relative z-10 mb-4'>
+        <% if @project.read_url.present? %>
+          <%= render "components/cta_button", label: "Read", href: @project.read_url, style: :ghost %>
+        <% end %>
+        <%= render "components/cta_button", label: "Demo", href: @project.url, style: :primary %>
+        <% if @project.source_url.present? %>
+          <%= render "components/cta_button", label: "Source", href: @project.source_url, style: :ghost %>
+        <% end %>
+      </div>
+      <div class='prose w-full max-w-none'>
+        <%= render_markdown(@project.content) %>
+      </div>
     </div>
   </div>
-</div>
+<% end %>

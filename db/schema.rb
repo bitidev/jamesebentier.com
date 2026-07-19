@@ -39,7 +39,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_175525) do
     t.boolean "featured", default: false, null: false
     t.string "image", limit: 1024, null: false
     t.integer "lock_version", default: 1, null: false
+    t.string "read_url", limit: 1024
     t.string "slug", limit: 255, null: false
+    t.string "source_url", limit: 1024
     t.string "status", limit: 255, default: "Beta", null: false
     t.string "title", limit: 1024, null: false
     t.datetime "updated_at", precision: nil, null: false
