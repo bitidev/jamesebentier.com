@@ -37,6 +37,48 @@ RSpec.describe Project do
 
     # Featured
     it { is_expected.to have_db_column(:featured).of_type(:boolean).with_options(null: false, default: false) }
+
+    # Read / Source (optional triple-link legs -- see docs/specs/1182-projects-page-redesign.md R1).
+    # `url` above remains the one required "demo" leg; these two are additive and nullable.
+    it { is_expected.to have_db_column(:read_url).of_type(:string).with_options(limit: 1024, null: true) }
+    it { is_expected.not_to validate_presence_of(:read_url) }
+    it { is_expected.to have_db_column(:source_url).of_type(:string).with_options(limit: 1024, null: true) }
+    it { is_expected.not_to validate_presence_of(:source_url) }
+  end
+
+  # Project::STATUSES (R2) -- single source of truth referenced by both the status column's
+  # own inclusion validation (see "schema and validations" above) and the /projects
+  # status-filter UI (spec/requests/projects_spec.rb).
+  describe 'STATUSES' do
+    it 'is the fixed set of valid status values, in filter-display order' do
+      expect(described_class::STATUSES).to eq(%w[Pre-Launch Beta Live])
+    end
+  end
+
+  # Project.by_status (R2) -- drives the server-rendered status filter directly from the view
+  # (spec/requests/projects_spec.rb exercises the full request-level wiring); these specs cover
+  # the scope's own filtering behavior in isolation.
+  describe '.by_status' do
+    it 'returns only the projects matching the given status' do
+      live = create(:project, slug: 'live-project', status: 'Live')
+      create(:project, slug: 'beta-project', status: 'Beta')
+
+      expect(described_class.by_status('Live')).to contain_exactly(live)
+    end
+
+    it 'returns every project when the status is blank (nil or empty string)' do
+      live = create(:project, slug: 'live-project', status: 'Live')
+      beta = create(:project, slug: 'beta-project', status: 'Beta')
+
+      expect(described_class.by_status(nil)).to contain_exactly(live, beta)
+      expect(described_class.by_status('')).to contain_exactly(live, beta)
+    end
+
+    it 'returns no projects (not an error) for an unrecognized status value' do
+      create(:project, slug: 'live-project', status: 'Live')
+
+      expect(described_class.by_status('Nonexistent')).to be_empty
+    end
   end
 
   # Project.featured / Project.for_home (1181 R2) -- curated-first, chronological-fallback.
