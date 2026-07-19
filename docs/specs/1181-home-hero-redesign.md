@@ -278,10 +278,16 @@ code agent:
 - **Subhead** (Inter/`font-sans`, `text-lg`, a legible muted tone — see the contrast note in
   [R1](#r1--hero-rewrite)):
   ```
-  James Ebentier — fractional architect & CTO based in Berlin, Germany. I embed with
-  engineering teams to unblock hard technical decisions and mentor the people who'll own the
-  system long after I'm gone.
+  James Ebentier — software architect based in Berlin. I embed with engineering teams to
+  unblock hard technical decisions and mentor the people who'll own the system long after
+  I'm gone.
   ```
+
+  > **P2 amendment (PR #1194, pre-merge copy revision):** the copy above supersedes an
+  > earlier "fractional architect & CTO based in Berlin, Germany" draft that shipped in
+  > this PR's first commit — dropped per approved copy review; the mentoring sentence
+  > is unchanged. See `welcome/index.html.erb` and `spec/requests/welcome_spec.rb` for
+  > the current, matching text.
 
 This intentionally **drops** the current copy's explicit "Software Architect for Invoca Inc."
 employer claim — the whole point of this redesign (design doc §2) is repositioning away from

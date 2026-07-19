@@ -5,9 +5,9 @@ require 'rails_helper'
 RSpec.describe "Welcomes" do
   describe "GET /" do
     let(:expected_subhead) do
-      "James Ebentier — fractional architect & CTO based in Berlin, Germany. I embed with " \
-        "engineering teams to unblock hard technical decisions and mentor the people who'll own " \
-        "the system long after I'm gone."
+      "James Ebentier — software architect based in Berlin. I embed with engineering teams " \
+        "to unblock hard technical decisions and mentor the people who'll own the system long " \
+        "after I'm gone."
     end
 
     it "returns a successful response" do
