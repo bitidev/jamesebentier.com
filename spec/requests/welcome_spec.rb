@@ -47,6 +47,73 @@ RSpec.describe "Welcomes" do
 
       expect(response.body).not_to include("Invoca")
     end
+
+    it "does not reintroduce the retired 'fractional architect & CTO' / Germany framing in the hero subhead (1181 P2 amendment)" do
+      get root_path
+
+      hero_copy = response.parsed_body.at_css("h1").parent.text
+
+      expect(hero_copy).not_to match(/fractional|CTO|Germany/i)
+    end
+  end
+
+  describe "GET / — hero ASCII-art terminal monogram (1181 P2 amendment)" do
+    def ascii_art
+      response.parsed_body.at_css("pre[aria-hidden='true']")
+    end
+
+    it "renders the monogram as a decorative element with no assistive-tech exposure" do
+      get root_path
+
+      expect(ascii_art).to be_present
+    end
+
+    it "colors the monogram solely via daisyUI design-system tokens -- no hardcoded hex, no arbitrary-value utilities" do
+      get root_path
+
+      expect(ascii_art.classes).to include("text-primary", "bg-base-200", "border-base-300")
+      expect(ascii_art.classes.grep(/[\[#]/)).to be_empty
+      expect(ascii_art["style"]).to be_nil
+    end
+
+    it "does not use the retired rainbow hero utilities on the monogram (1181 R10)" do
+      get root_path
+
+      expect(ascii_art.classes).not_to include(
+        "text-green-500", "text-purple-500", "text-orange-500", "text-pink-500", "text-yellow-600", "text-fuchsia-500"
+      )
+    end
+
+    it "hides the monogram below the md breakpoint and reveals it at md+ (1181 P2 amendment)" do
+      get root_path
+
+      expect(ascii_art.parent.classes).to include("hidden", "md:flex")
+    end
+  end
+
+  describe "GET / — meta tags (1181 P2 amendment)" do
+    it "renders the new software-architect page title, not the retired fractional/CTO framing" do
+      get root_path
+
+      title = response.parsed_body.at_css("title").text
+
+      expect(title).to include("James Ebentier — Software Architect")
+      expect(title).not_to include("Fractional")
+      expect(title).not_to include("CTO")
+    end
+
+    it "renders the new software-architect meta description, not the retired fractional/CTO framing" do
+      get root_path
+
+      description = response.parsed_body.at_css("meta[name='description']")["content"]
+
+      expect(description).to eq(
+        "Software architect based in Berlin. I help engineering teams get their systems right — " \
+          "a fraction of the time, all of the leverage."
+      )
+      expect(description).not_to include("Fractional")
+      expect(description).not_to include("CTO")
+    end
   end
 
   # Featured Projects / Latest Writing (1181 R2/R3/R4) -- exercises the components through the
