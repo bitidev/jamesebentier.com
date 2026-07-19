@@ -68,7 +68,9 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - `ProjectsController#show` uses `find_by` (returns nil) while blog uses `find_by!` — inconsistent 404 behavior.
 - `WelcomeController` still declares unused `projects` action (routing uses `ProjectsController`).
 - Stimulus includes unused scaffold `hello_controller`.
-- No system tests / Capybara; coverage is request + model specs.
+- Capybara/Cuprite (`spec/system/`) always runs JS, so it cannot exercise the
+  "full site works with JS entirely off" progressive-enhancement check (#1187 R11) —
+  that check stays manual pre-merge verification, not automated coverage.
 
 ---
 

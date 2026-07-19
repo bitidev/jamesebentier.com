@@ -14,9 +14,13 @@
     "webpack": "^5.108.4",
     "webpack-cli": "^7.2.1"
   },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  },
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
+    "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
+    "test:js": "vitest run"
   },
   "packageManager": "yarn@4.3.0"
 }

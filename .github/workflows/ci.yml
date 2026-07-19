@@ -82,6 +82,17 @@ jobs:
           cache: yarn
       - name: Install Node modules
         run: yarn install --frozen-lockfile
+      # ubuntu-latest ships Chrome preinstalled, which Ferrum (Cuprite's driver,
+      # used by spec/system/**) auto-detects with no extra setup in the common
+      # case -- this step is a defensive pin so a future runner-image change
+      # can't silently break the browser system specs. See docs/specs/
+      # 1187-modal-vim-keyboard-navigation.md (Testing Strategy, Open Question 2).
+      - name: Setup Chrome for Cuprite system specs
+        uses: browser-actions/setup-chrome@v1
+        with:
+          install-chromedriver: false
+      - name: Run JS unit tests (Vitest)
+        run: yarn test:js
       - name: Run Tests
         env:
           DATABASE_HOST: localhost
