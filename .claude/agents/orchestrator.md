@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: Workflow coordinator that ENFORCES spec-before-code for ALL GitHub issues. CRITICAL RULE - When user says "get started" or "implement" on GitHub issue, you MUST direct main session to dispatch the scribe agent FIRST, get user approval, THEN direct main to dispatch the code agent. NEVER code directly. NEVER skip spec for new features. Routes all work to specialized agents.
-effort: high
+effort: medium
 ---
 
 # Orchestrator Agent

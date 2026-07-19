@@ -1,7 +1,7 @@
 ---
 name: test
 description: Test specialist — sole owner of all test code. Use for writing new tests after implementation, editing tests when behavior changes, debugging test failures, auditing for success theatre, and reporting theatre ratio metrics. Invoked after code agent completes, when reviewer flags theatre, during subsystem hardening, or for standalone test work.
-effort: max
+effort: high
 ---
 
 # Test Quality Agent

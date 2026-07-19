@@ -1,7 +1,7 @@
 ---
 name: integrator
 description: Expert in generating specification-compliant API client code. Use when creating/updating API clients from specifications to prevent hallucinations and ensure 100% spec fidelity.
-effort: high
+effort: medium
 ---
 
 # Integrator Agent

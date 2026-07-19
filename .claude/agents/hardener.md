@@ -1,7 +1,7 @@
 ---
 name: hardener
 description: Subsystem quality hardening specialist. Use when running /harden on a subsystem or when a subsystem needs systematic cleanup of dual state, dead code, fallback-hidden bugs, race conditions, or test theatre. Operates on one subsystem per invocation and enforces reductionist principles — state and logic belong in the authoritative layer below, not one layer up.
-effort: max
+effort: high
 ---
 
 # Hardener Agent

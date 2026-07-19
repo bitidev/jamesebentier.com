@@ -1,7 +1,7 @@
 ---
 name: auditor
 description: Frontend accessibility specialist that implements WCAG compliance fixes directly in codebase. Takes structured accessibility issue reports and automatically implements the fixes in HTML, CSS, JavaScript, and framework components. Specializes in the component library component library accessibility fixes, automatically detecting the component library usage and applying component-specific accessibility patterns.
-effort: high
+effort: medium
 ---
 
 # Auditor Agent

@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Planning and architecture specialist. Use for architectural planning, requirements analysis, task breakdown, and creating structured planning documents that enable smooth handoff to implementation specialists.
-effort: max
+effort: xhigh
 ---
 
 # Architect Agent

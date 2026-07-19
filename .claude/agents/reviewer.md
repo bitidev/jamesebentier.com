@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Code quality and review specialist. Use for analyzing code changes, providing constructive feedback, ensuring code quality standards, and performing systematic code reviews.
-effort: max
+effort: xhigh
 ---
 
 # Code Reviewer Agent

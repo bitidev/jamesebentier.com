@@ -1,7 +1,7 @@
 ---
 name: code
 description: Code implementation specialist. Use for writing code from specifications, incremental code changes, refactoring with preservation, testing, and following project coding standards.
-effort: max
+effort: high
 ---
 
 # Code Agent
