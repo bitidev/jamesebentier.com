@@ -62,14 +62,15 @@ RSpec.describe "Keyboard navigation layer absent -- progressive enhancement smok
     click_link post.title
     expect(page).to have_current_path(post_path(slug: post.slug))
 
-    # The project card's title itself isn't a link (components/_card's whole-card overlay
-    # is aria-hidden/tabindex=-1, a pointer-only convenience -- see that partial's own
-    # comment); "View Project" is the real, labeled, accessible link every keyboard/
-    # screen-reader user reaches the same destination through, so it's the one this
-    # progressive-enhancement check follows. Only one project exists in this example, so
-    # there is exactly one such link -- no scoping needed to disambiguate.
+    # Post-#1182 (P1.3), the project card's title itself is the real, labeled, accessible
+    # link every keyboard/screen-reader user reaches the show page through -- the
+    # card-actions area now holds the read/demo/source triple-link CTAs instead of a
+    # dedicated "View Project" button (see docs/specs/1182-projects-page-redesign.md R3);
+    # components/_card's whole-card overlay remains aria-hidden/tabindex=-1, a pointer-only
+    # convenience (see that partial's own comment). Only one project exists in this
+    # example, so there is exactly one title link -- no scoping needed to disambiguate.
     visit projects_path
-    click_link "View Project"
+    click_link project.title
     expect(page).to have_current_path(project_path(slug: project.slug))
   end
 
