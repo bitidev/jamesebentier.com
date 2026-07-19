@@ -10,6 +10,16 @@ class Project < ApplicationRecord
     string :url,    limit: 1024, null: false, validates: { presence: true }
     string :image,  limit: 1024, null: false, validates: { presence: true }
     text   :description, null: false, validates: { presence: true }
+    boolean :featured, null: false, default: false
+  end
+
+  scope :featured, -> { where(featured: true) }
+
+  # Curated-first, chronological-fallback: prefer explicitly featured projects: if
+  # any exist, return up to `limit` of them (newest first); otherwise fall back to
+  # the `limit` most recently created projects overall. See docs/specs/1181-home-hero-redesign.md (R2).
+  def self.for_home(limit: 3)
+    featured.any? ? featured.order(created_at: :desc).limit(limit) : order(created_at: :desc).limit(limit)
   end
 
   def content
