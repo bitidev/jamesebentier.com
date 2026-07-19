@@ -194,33 +194,31 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
   # across all 6 themes" as a cross-cutting acceptance criterion (Testing Strategy: filed
   # there as a manual spot-check, same as P1.1's own contrast check originally was -- before
   # *this* file automated that one into a real gate). Following that same precedent: the
-  # status line (_keyboard_status_line.html.erb: `bg-base-200 text-base-content/70`) and the
+  # status line (_keyboard_status_line.html.erb: `bg-base-200 text-base-content/80`) and the
   # command/search bar (_keyboard_command_bar.html.erb: `bg-base-200 text-base-content` for
-  # the input row, `text-base-content/60` for the aria-live command-feedback row) both sit on
+  # the input row, `text-base-content/80` for the aria-live command-feedback row) both sit on
   # `base-200`, not `base-100` -- a distinct pair from every other gate in this file, none of
   # which test base-content (at any opacity) against base-200. The guide dialog
   # (`bg-base-100 text-base-content`) and the hint badges (`bg-primary text-primary-content`)
   # reuse pairs already covered by the gates above, so they need no new assertion here.
   #
-  # KNOWN, CONFIRMED GAP (found by this audit, not fixed here -- test agent does not modify
-  # product code/CSS; routed to CODE): three of these combinations measure BELOW the 4.5:1
-  # floor today --
+  # REGRESSION HISTORY: this gate originally caught three base-content/base-200 combinations
+  # measuring BELOW the 4.5:1 floor at the tokens' original opacities (`/70` for the status
+  # line, `/60` for the command-feedback row) --
   #   nord:     base-content/70 on base-200 = 4.4418:1 (status line text)
   #   nord:     base-content/60 on base-200 = 3.4215:1 (command-feedback row text)
   #   gruvbox:  base-content/60 on base-200 = 4.1457:1 (command-feedback row text)
-  # -- marked `pending` (not skipped) so this gate is still a real, currently-red-underneath
-  # regression check (RSpec fails a `pending` example that unexpectedly passes, catching a
-  # future regression/typo the moment CODE's fix lands and this pending marker isn't
-  # removed), while keeping `bundle exec rake spec`/`rspec` green today, matching this repo's
-  # own existing pending-test precedent (spec/helpers/welcome_helper_spec.rb).
-  def keyboard_nav_contrast_gap_reason(theme, opacity)
-    {
-      ["nord", 0.7] => "measures 4.4418:1, just under the 4.5:1 floor -- status line text needs a less-transparent opacity or a different token",
-      ["nord", 0.6] => "measures 3.4215:1 -- command-feedback row text needs a less-transparent opacity or a different token",
-      ["gruvbox", 0.6] => "measures 4.1457:1 -- command-feedback row text needs a less-transparent opacity or a different token",
-    }[[theme, opacity]]
-  end
-
+  # -- and were originally marked `pending` (with the ratios above) so this gate stayed
+  # green while red-underneath, per this repo's existing pending-test precedent
+  # (spec/helpers/welcome_helper_spec.rb). CODE then moved both tokens to `/80`, which
+  # clears 4.5:1 with margin in every bundled theme (worst case, nord, measures 5.85:1 at
+  # `/80`) -- so these are now real, always-on assertions (the `pending` markers were
+  # removed): a future opacity/token regression on this pair fails the suite immediately.
+  # Status line and command-feedback row now share the identical `/80` token, so one
+  # assertion covers both call sites (Style/CombinableLoops/RSpec/RepeatedExample would
+  # otherwise flag the previously-separate, now-identical checks as duplicates).
+  # rubocop:disable Style/CombinableLoops -- kept separate from the 1181 loop above:
+  # distinct issue/section, documented independently.
   %w[light dark dracula nord gruvbox catppuccin].each do |theme|
     it "meets WCAG AA 4.5:1 for base-content (full opacity) on base-200 in the #{theme} theme (#1187 R1/R6, command bar text)" do
       colors = colors_for(theme)
@@ -228,24 +226,12 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
       expect(contrast_ratio(colors['base-content'], colors['base-200'])).to be >= 4.5
     end
 
-    it "meets WCAG AA 4.5:1 for base-content/70 on base-200 in the #{theme} theme (#1187 R1, status line text)" do
-      gap_reason = keyboard_nav_contrast_gap_reason(theme, 0.7)
-      pending(gap_reason) if gap_reason
-
+    it "meets WCAG AA 4.5:1 for base-content/80 on base-200 in the #{theme} theme (#1187 R1/R6, status line + command-feedback row text)" do
       colors = colors_for(theme)
-      blended = blend_over(colors['base-content'], colors['base-200'], 0.7)
-
-      expect(contrast_ratio_of_blend(blended, colors['base-200'])).to be >= 4.5
-    end
-
-    it "meets WCAG AA 4.5:1 for base-content/60 on base-200 in the #{theme} theme (#1187 R6, command-feedback row text)" do
-      gap_reason = keyboard_nav_contrast_gap_reason(theme, 0.6)
-      pending(gap_reason) if gap_reason
-
-      colors = colors_for(theme)
-      blended = blend_over(colors['base-content'], colors['base-200'], 0.6)
+      blended = blend_over(colors['base-content'], colors['base-200'], 0.8)
 
       expect(contrast_ratio_of_blend(blended, colors['base-200'])).to be >= 4.5
     end
   end
+  # rubocop:enable Style/CombinableLoops
 end
