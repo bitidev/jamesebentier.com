@@ -10,16 +10,18 @@ RSpec.describe "Welcomes" do
       expect(response).to have_http_status(:ok)
     end
 
-    it "retires all six rainbow hero utilities in favor of the single amber accent (R10)" do
+    it "does not reintroduce the retired rainbow hero utilities in the redesigned hero (1181 R10)" do
       get root_path
 
       expect(response.body).not_to match(/text-(green-500|purple-500|orange-500|pink-500|yellow-600|fuchsia-500)/)
     end
 
-    it "carries the single amber accent token on the emphasized name (R10)" do
+    it "carries the final positioning line as the hero's <h1> (1181 R1/R10)" do
       get root_path
 
-      expect(response.parsed_body.at_css("strong.text-primary")).to be_present
+      expect(response.parsed_body.at_css("h1").text).to include(
+        "I help engineers get their systems right — a fraction of the time, all of the leverage."
+      )
     end
   end
 

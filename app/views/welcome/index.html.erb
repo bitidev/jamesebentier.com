@@ -1,12 +1,79 @@
-<div class='text-lg font-extralight text-center'>
-  <p class='my-8 mx-auto max-w-2xl'>
-    Hello, my name is <strong class='text-2xl m-3 text-primary'>James Ebentier.</strong>
-    <br />
-    I am a <strong class='text-2xl m-3'>Software Architect</strong> for <a href='https://invoca.com' target='_blank' rel='noreferrer' class='font-medium'>Invoca Inc.</a>
-    <br/>
-    based out of <strong class='text-2xl m-3'>Berlin, Germany.</strong>
-    <br/>
-    Outside of work I am a <strong class='text-2xl m-3'>hacker</strong>, community <strong class='text-2xl m-3'>advocate</strong>, and <strong class='text-2xl m-3'>mentor</strong> to any and all who seek it.
-  </p>
-  <%= image_tag 'landing-image.webp', alt: 'James Ebentier Banner', class: 'w-full rounded-xl mb-8' %>
+<%
+  set_meta_tags(
+    title: "James Ebentier — Fractional Architect & CTO",
+    description: "Fractional architect & CTO based in Berlin. I help engineering teams get their systems right — a fraction of the time, all of the leverage.",
+  )
+%>
+
+<%# Hero: the page's one <h1> (the final, verbatim positioning line -- see
+    docs/specs/1181-home-hero-redesign.md's Hero Copy). Deliberately NOT wrapped in
+    components/section (R1): the hero is the singular above-the-fold headline, distinct
+    in weight from the section-wrapped content below (whose own <h2> title slot is a
+    smaller text-2xl), and must render visible immediately rather than participate in
+    section's scroll-triggered fade/slide-in motion. Banner image sits beside the copy
+    on md+ viewports, stacked below it on narrower ones. %>
+<div class='flex flex-col md:flex-row md:items-center gap-8 mb-16'>
+  <div class='md:w-1/2'>
+    <p class='font-mono text-sm text-primary mb-2'>$ whoami</p>
+    <h1 class='font-mono text-3xl mb-4'>I help engineers get their systems right — a fraction of the time, all of the leverage.</h1>
+    <p class='text-lg text-base-content/70'>James Ebentier — fractional architect &amp; CTO based in Berlin, Germany. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.</p>
+  </div>
+  <%= image_tag 'landing-image.webp', alt: 'James Ebentier Banner', class: 'w-full md:w-1/2 rounded-xl' %>
 </div>
+
+<%# Featured Projects -- composed identically to projects/index.html.erb's shipped
+    per-project block (1180 R9), just inside a responsive grid instead of a space-y-6
+    stack. Omitted entirely (no section wrapper, no heading at all) when there's nothing
+    to show -- R2/R3's empty-table edge case. %>
+<% featured_projects = Project.for_home(limit: 3).to_a %>
+<% if featured_projects.any? %>
+  <%= render layout: "components/section", locals: { eyebrow: "Portfolio", title: "Featured Projects" } do %>
+    <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <% featured_projects.each do |project| %>
+        <%= render layout: "components/card", locals: { href: project_url(slug: project.slug), image_url: project.image } do %>
+          <h2 class='card-title font-mono text-xl'><%= project.title %></h2>
+          <div>
+            <%= render "components/pill", label: project.status, variant: :status %>
+          </div>
+          <p class='mb-0'><%= project.description %></p>
+          <div class='card-actions relative z-10 mt-2'>
+            <%= render "components/cta_button", label: "View Project", href: project_url(slug: project.slug), style: :primary %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Latest Writing -- same grid/card pattern as Featured Projects. Post.for_home is
+    always scoped under Post.published first (R2), so an unpublished/future-dated post
+    can never appear here. Omitted entirely when there's nothing to show. %>
+<% latest_posts = Post.for_home(limit: 3).to_a %>
+<% if latest_posts.any? %>
+  <%= render layout: "components/section", locals: { eyebrow: "Writing", title: "Latest Writing" } do %>
+    <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <% latest_posts.each do |post| %>
+        <%= render layout: "components/card", locals: { href: post_url(slug: post.slug), image_url: post.image } do %>
+          <h2 class='card-title font-mono text-xl'><%= post.title %></h2>
+          <p class='text-sm text-base-content/70'><%= post.published_at.strftime("%B %d, %Y") %></p>
+          <p class='mb-0'><%= post.description %></p>
+          <div class='card-actions relative z-10 mt-2'>
+            <%= render "components/cta_button", label: "Read Post", href: post_url(slug: post.slug), style: :primary %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# "Work with me" CTA -- last on the page (R5), understated per the design doc's "no
+    banners" direction: a modest eyebrow, one supporting sentence, one primary
+    cta_button. mailto: target is sourced from resume_data (resume/resume.yml) -- the
+    one real, published contact address already in the codebase -- not a second
+    hardcoded literal. %>
+<%= render layout: "components/section", locals: { eyebrow: "Get in touch" } do %>
+  <div class='text-center'>
+    <p class='text-lg text-base-content/70 mb-6'>Have a hard technical decision in front of you, or a team that could use an outside perspective? Let's talk.</p>
+    <%= render "components/cta_button", label: "Work with me", href: "mailto:#{resume_data[:basics][:email]}", style: :primary %>
+  </div>
+<% end %>

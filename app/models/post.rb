@@ -13,11 +13,20 @@ class Post < ApplicationRecord
     json   :tags, null: false, default: []
 
     datetime :published_at, null: false, validates: { presence: true }
+    boolean :featured, null: false, default: false
   end
 
   before_validation -> { self.slug = slug.downcase if slug.present? }
 
   scope :published, -> { where(published_at: ..Time.zone.now) }
+  scope :featured, -> { where(featured: true) }
+
+  # Curated-first, chronological-fallback, always within `published`: prefer
+  # explicitly featured posts if any exist, otherwise fall back to the `limit`
+  # most recently published posts overall. See docs/specs/1181-home-hero-redesign.md (R2).
+  def self.for_home(limit: 3)
+    published.featured.any? ? published.featured.order(published_at: :desc).limit(limit) : published.order(published_at: :desc).limit(limit)
+  end
 
   def content
     @content ||= begin
