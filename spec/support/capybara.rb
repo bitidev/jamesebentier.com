@@ -23,7 +23,7 @@ Capybara.register_driver(:cuprite) do |app|
     # CI exports the installed binary's path as CUPRITE_CHROME_PATH (see
     # .github/workflows/ci.yml). Locally this is unset, so `browser_path: nil`
     # falls back to Ferrum's normal auto-detection of the system Chrome/Chromium.
-    browser_path: ENV["CUPRITE_CHROME_PATH"],
+    browser_path: ENV.fetch("CUPRITE_CHROME_PATH", nil),
     process_timeout: 10,
     timeout: 10,
     headless: true,
