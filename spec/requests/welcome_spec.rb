@@ -4,6 +4,12 @@ require 'rails_helper'
 
 RSpec.describe "Welcomes" do
   describe "GET /" do
+    let(:expected_subhead) do
+      "James Ebentier — fractional architect & CTO based in Berlin, Germany. I embed with " \
+        "engineering teams to unblock hard technical decisions and mentor the people who'll own " \
+        "the system long after I'm gone."
+    end
+
     it "returns a successful response" do
       get root_path
 
@@ -22,6 +28,134 @@ RSpec.describe "Welcomes" do
       expect(response.parsed_body.at_css("h1").text).to include(
         "I help engineers get their systems right — a fraction of the time, all of the leverage."
       )
+    end
+
+    it "renders the terminal-flavored '$ whoami' eyebrow above the hero (1181 R1)" do
+      get root_path
+
+      expect(response.body).to include("$ whoami")
+    end
+
+    it "renders the supporting subhead beneath the positioning h1 (1181 R1)" do
+      get root_path
+
+      expect(response.parsed_body.at_css("h1").next_element.text).to eq(expected_subhead)
+    end
+
+    it "removes the old 'Software Architect for Invoca Inc.' employer claim from the hero (1181 R1)" do
+      get root_path
+
+      expect(response.body).not_to include("Invoca")
+    end
+  end
+
+  # Featured Projects / Latest Writing (1181 R2/R3/R4) -- exercises the components through the
+  # real controller/view stack (see adlc/methods/code-quality/call-site-wiring-verification.md),
+  # proving Project.for_home/Post.for_home are actually wired into the page and composed through
+  # the real components/card + components/pill partials. Curated-first/chronological-fallback
+  # ordering itself is covered at the model level (spec/models/{post,project}_spec.rb); these
+  # specs only need one project/post to prove the wiring, per the pyramid-placement principle.
+  describe "GET / — Featured Projects and Latest Writing" do
+    def section_titled(title)
+      response.parsed_body.css("section").find { |section| section.at_css("h2.text-2xl")&.text == title }
+    end
+
+    context "when there is a featured project and a published post" do
+      let!(:project) do
+        create(:project, slug: "featured-project", title: "Featured Project", status: "Live", featured: true)
+      end
+      let!(:post) { create(:post, slug: "featured-post", title: "Featured Post") }
+
+      it "wraps the project in a card whose stretched-link overlay points at the project's own page (R3)" do
+        get root_path
+
+        featured_section = section_titled("Featured Projects")
+
+        expect(URI.parse(featured_section.at_css("a.absolute")["href"]).path).to eq(project_path(slug: project.slug))
+      end
+
+      it "renders the project's status pill inside the Featured Projects card (R3)" do
+        get root_path
+
+        featured_section = section_titled("Featured Projects")
+
+        expect(featured_section.at_css(".badge").classes).to include("badge-success")
+      end
+
+      it "wraps the post in a card whose stretched-link overlay points at the post's own page (R4)" do
+        get root_path
+
+        writing_section = section_titled("Latest Writing")
+
+        expect(URI.parse(writing_section.at_css("a.absolute")["href"]).path).to eq(post_path(slug: post.slug))
+      end
+
+      it "does not render a status pill inside the Latest Writing card -- pill is project-only (R4)" do
+        get root_path
+
+        writing_section = section_titled("Latest Writing")
+
+        expect(writing_section.css(".badge")).to be_empty
+      end
+
+      it "uses the responsive one-column-to-three-column grid for Featured Projects (R6)" do
+        get root_path
+
+        grid = section_titled("Featured Projects").at_css("div.grid")
+
+        expect(grid.classes).to include("grid-cols-1", "md:grid-cols-3")
+      end
+
+      it "uses the responsive one-column-to-three-column grid for Latest Writing (R6)" do
+        get root_path
+
+        grid = section_titled("Latest Writing").at_css("div.grid")
+
+        expect(grid.classes).to include("grid-cols-1", "md:grid-cols-3")
+      end
+    end
+
+    context "when there are no projects" do
+      before { create(:post) }
+
+      it "omits the Featured Projects section entirely (R2/R3)" do
+        get root_path
+
+        expect(section_titled("Featured Projects")).to be_nil
+      end
+
+      it "still renders the Latest Writing section" do
+        get root_path
+
+        expect(section_titled("Latest Writing")).to be_present
+      end
+    end
+
+    context "when there are no posts" do
+      before { create(:project) }
+
+      it "omits the Latest Writing section entirely (R2/R4)" do
+        get root_path
+
+        expect(section_titled("Latest Writing")).to be_nil
+      end
+
+      it "still renders the Featured Projects section" do
+        get root_path
+
+        expect(section_titled("Featured Projects")).to be_present
+      end
+    end
+  end
+
+  describe "GET / — Work with me CTA (1181 R5)" do
+    it "links the CTA to a real mailto: address sourced from resume.yml, not a hardcoded literal" do
+      get root_path
+
+      expected_email = YAML.safe_load_file(Rails.root.join("resume/resume.yml"), symbolize_names: true).dig(:basics, :email)
+      cta = response.parsed_body.css(".btn-primary").find { |link| link.text == "Work with me" }
+
+      expect(cta["href"]).to eq("mailto:#{expected_email}")
     end
   end
 
