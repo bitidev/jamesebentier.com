@@ -92,4 +92,31 @@ RSpec.describe "Keyboard navigation foundation", :js do
 
     expect(page).to have_selector("dialog#keyboard-guide-dialog[open]")
   end
+
+  # Increment 0's own acceptance criterion (docs/specs/1187-modal-vim-keyboard-navigation.md):
+  # "Typing in the P1.1 theme <select> and any other native field on every existing route is
+  # completely unaffected -- verified by an automated Capybara spec covering every route in
+  # R11's list, not just manual spot-checks." Every other keyboard-nav `:js` spec in this
+  # suite exercises the editable-target guard on exactly one route (root_path, or a single
+  # post_path fixture) -- meaningful coverage of *that* route, but not yet this criterion's
+  # literal "every route" claim. This closes that gap: the same real-browser guard check
+  # (typing "?" into the native theme <select> must never open the guide dialog), repeated
+  # across every route named in R11's own smoke-test list. `file_path` overrides on the
+  # post/project fixtures mirror the existing convention in
+  # keyboard_nav_no_js_spec.rb/keyboard_nav_hint_jump_spec.rb -- the factory defaults don't
+  # point at real on-disk markdown/content, but Post#content does read a real file from disk
+  # to render the show page.
+  it "keeps the editable-target guard intact on every route named in R11's smoke-test list" do # rubocop:disable RSpec/ExampleLength
+    post = create(:post, file_path: "2024-06-13-Hosting-Your-Personal-Site-On-AWS-S3.md")
+    project = create(:project)
+
+    [root_path, posts_path, post_path(slug: post.slug), projects_path, project_path(slug: project.slug), resume_path].each do |path|
+      visit path
+      wait_for_keyboard_nav_connected
+
+      find("#theme-picker-select").send_keys("?")
+
+      expect(page).to have_no_selector("dialog#keyboard-guide-dialog[open]")
+    end
+  end
 end

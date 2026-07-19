@@ -187,4 +187,65 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
       expect(contrast_ratio_of_blend(blended, colors['base-100'])).to be >= 4.5
     end
   end
+
+  # ---- 1187's new keyboard-nav UI tokens: base-content (and opacity variants) on base-200 --
+  #
+  # #1187 R11 names "a full WCAG AA contrast ... pass on new UI (status line, bars, dialog)
+  # across all 6 themes" as a cross-cutting acceptance criterion (Testing Strategy: filed
+  # there as a manual spot-check, same as P1.1's own contrast check originally was -- before
+  # *this* file automated that one into a real gate). Following that same precedent: the
+  # status line (_keyboard_status_line.html.erb: `bg-base-200 text-base-content/70`) and the
+  # command/search bar (_keyboard_command_bar.html.erb: `bg-base-200 text-base-content` for
+  # the input row, `text-base-content/60` for the aria-live command-feedback row) both sit on
+  # `base-200`, not `base-100` -- a distinct pair from every other gate in this file, none of
+  # which test base-content (at any opacity) against base-200. The guide dialog
+  # (`bg-base-100 text-base-content`) and the hint badges (`bg-primary text-primary-content`)
+  # reuse pairs already covered by the gates above, so they need no new assertion here.
+  #
+  # KNOWN, CONFIRMED GAP (found by this audit, not fixed here -- test agent does not modify
+  # product code/CSS; routed to CODE): three of these combinations measure BELOW the 4.5:1
+  # floor today --
+  #   nord:     base-content/70 on base-200 = 4.4418:1 (status line text)
+  #   nord:     base-content/60 on base-200 = 3.4215:1 (command-feedback row text)
+  #   gruvbox:  base-content/60 on base-200 = 4.1457:1 (command-feedback row text)
+  # -- marked `pending` (not skipped) so this gate is still a real, currently-red-underneath
+  # regression check (RSpec fails a `pending` example that unexpectedly passes, catching a
+  # future regression/typo the moment CODE's fix lands and this pending marker isn't
+  # removed), while keeping `bundle exec rake spec`/`rspec` green today, matching this repo's
+  # own existing pending-test precedent (spec/helpers/welcome_helper_spec.rb).
+  def keyboard_nav_contrast_gap_reason(theme, opacity)
+    {
+      ["nord", 0.7] => "measures 4.4418:1, just under the 4.5:1 floor -- status line text needs a less-transparent opacity or a different token",
+      ["nord", 0.6] => "measures 3.4215:1 -- command-feedback row text needs a less-transparent opacity or a different token",
+      ["gruvbox", 0.6] => "measures 4.1457:1 -- command-feedback row text needs a less-transparent opacity or a different token",
+    }[[theme, opacity]]
+  end
+
+  %w[light dark dracula nord gruvbox catppuccin].each do |theme|
+    it "meets WCAG AA 4.5:1 for base-content (full opacity) on base-200 in the #{theme} theme (#1187 R1/R6, command bar text)" do
+      colors = colors_for(theme)
+
+      expect(contrast_ratio(colors['base-content'], colors['base-200'])).to be >= 4.5
+    end
+
+    it "meets WCAG AA 4.5:1 for base-content/70 on base-200 in the #{theme} theme (#1187 R1, status line text)" do
+      gap_reason = keyboard_nav_contrast_gap_reason(theme, 0.7)
+      pending(gap_reason) if gap_reason
+
+      colors = colors_for(theme)
+      blended = blend_over(colors['base-content'], colors['base-200'], 0.7)
+
+      expect(contrast_ratio_of_blend(blended, colors['base-200'])).to be >= 4.5
+    end
+
+    it "meets WCAG AA 4.5:1 for base-content/60 on base-200 in the #{theme} theme (#1187 R6, command-feedback row text)" do
+      gap_reason = keyboard_nav_contrast_gap_reason(theme, 0.6)
+      pending(gap_reason) if gap_reason
+
+      colors = colors_for(theme)
+      blended = blend_over(colors['base-content'], colors['base-200'], 0.6)
+
+      expect(contrast_ratio_of_blend(blended, colors['base-200'])).to be >= 4.5
+    end
+  end
 end
