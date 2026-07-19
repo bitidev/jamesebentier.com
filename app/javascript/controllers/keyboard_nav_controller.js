@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
+import { COMMAND_REGISTRY, findCommand, parseCommand, rankCommands } from "../keyboard_nav/commands"
 
 // Milliseconds the `g`-prefix sequence buffer (gg/gh/gw/gp/gl) stays armed after a bare
 // `g` keypress before silently clearing -- matches vim's own forgiving,
@@ -9,8 +10,8 @@ const G_PREFIX_TIMEOUT_MS = 600
 
 // `g` + one of these resolves to a resolveNavTarget() key (architecture plan Decision 6,
 // spec R3/R4). Deliberately does NOT include "resume" -- only the four g-jump letters
-// the spec names (h/w/p/l) are wired here; :resume (a later COMMAND-mode increment) is
-// the other resolveNavTarget("resume") entry point.
+// the spec names (h/w/p/l) are wired here; `:resume` (COMMAND mode, spec R6) is the
+// other resolveNavTarget("resume") entry point.
 const G_PREFIX_NAV_KEYS = { h: "home", w: "writing", p: "projects", l: "lab" }
 
 // Pixels moved per NORMAL-mode line-scroll keypress (j/k vertical, h/l horizontal).
@@ -29,10 +30,16 @@ const LINE_SCROLL_PX = 100
 // Foundation (mode Value + status line, the document-level dispatch guard, Esc-to-
 // NORMAL, `?` as a bare guide-dialog toggle) shipped first; a later increment added
 // NORMAL-mode navigation: h/j/k/l scroll, gg/G top/bottom, and the g-prefixed page
-// jumps via resolveNavTarget (spec R3/R4, "Increment 1"). This increment adds the `t`
-// theme cycle (spec R5, "Increment 2"), reusing the existing P1.1 theme-picker
+// jumps via resolveNavTarget (spec R3/R4, "Increment 1"). Another increment added the
+// `t` theme cycle (spec R5, "Increment 2"), reusing the existing P1.1 theme-picker
 // controller/<select> as the single source of truth -- no parallel theme-apply/persist
-// logic. See docs/specs/1187-modal-vim-keyboard-navigation.md.
+// logic. This increment adds COMMAND mode (spec R6, "Increment 3"): `:` opens a
+// terminal-style input wired to the extensible command registry in
+// ../keyboard_nav/commands.js -- nav commands reuse resolveNavTarget exactly as the
+// g-prefix jumps do, and `:theme <name>` reuses this same controller's theme-apply path
+// (cycleTheme/applyTheme both drive the one P1.1 <select>), so there is still only one
+// code path per concern, now with two entry points into each. See
+// docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
 // content, disconnecting and reconnecting this controller on every navigation -- that
@@ -40,7 +47,15 @@ const LINE_SCROLL_PX = 100
 // mark <body> data-turbo-permanent.
 export default class extends Controller {
   static values = { mode: { type: String, default: "normal" } }
-  static targets = ["statusLine", "statusLineText", "guideDialog", "themeSelect"]
+  static targets = [
+    "statusLine",
+    "statusLineText",
+    "guideDialog",
+    "themeSelect",
+    "commandBar",
+    "commandInput",
+    "commandFeedback",
+  ]
 
   connect() {
     // Desktop/hardware-keyboard feature only (R12) -- checked once here, matching
@@ -72,6 +87,13 @@ export default class extends Controller {
     this.clearGPrefixTimeout()
   }
 
+  // Deliberately does NOT also toggle the command bar's visibility here (only the
+  // status line text + the CSS hook) -- Stimulus's Value-changed callback runs off a
+  // MutationObserver, i.e. *after* the current synchronous call stack, so anything that
+  // must be visible/focusable before this same keydown handler's next line (see
+  // enterCommandMode()'s focus() call) has to be applied directly and synchronously at
+  // the entry/exit point, not deferred here. This mirrors how the guide dialog's
+  // showModal()/close() are also called directly, never through this callback.
   modeValueChanged() {
     if (!this.hasStatusLineTextTarget) return
 
@@ -123,13 +145,41 @@ export default class extends Controller {
 
   handleEscape(event) {
     const guideOpen = this.hasGuideDialogTarget && this.guideDialogTarget.open
-    const somethingOpen = this.modeValue !== "normal" || guideOpen
+    const modeOpen = this.modeValue !== "normal"
 
-    if (!somethingOpen) return
+    if (!modeOpen && !guideOpen) return
 
     event.preventDefault()
-    this.modeValue = "normal"
+
+    // Esc always returns to NORMAL and restores whatever had focus before entry (spec
+    // R6, architecture plan Decision 1/7) -- never assumed to be document.body. Clearing
+    // the input/feedback here (not just on the next entry) means a stale command never
+    // flashes if COMMAND is reopened before its next explicit reset.
+    if (modeOpen) this.cancelMode()
     if (guideOpen) this.guideDialogTarget.close()
+  }
+
+  // Shared cancel path for both Esc (handleEscape) and a not-found Enter that the
+  // visitor abandons by pressing Esc next -- COMMAND mode's only exit today; SEARCH
+  // (a later increment) reuses this same shape when it lands.
+  cancelMode() {
+    if (this.hasCommandInputTarget) this.commandInputTarget.value = ""
+    this.clearCommandFeedback()
+    this.exitToNormal()
+  }
+
+  exitToNormal() {
+    // Hidden synchronously, here, rather than via modeValueChanged() -- see that
+    // method's comment for why anything focus/visibility-ordering-sensitive can't wait
+    // on the async Value-changed callback.
+    if (this.hasCommandBarTarget) this.commandBarTarget.classList.add("hidden")
+
+    this.modeValue = "normal"
+
+    const priorFocus = this.priorFocus
+    this.priorFocus = null
+
+    if (priorFocus && typeof priorFocus.focus === "function") priorFocus.focus()
   }
 
   // NORMAL-mode binding table (spec R3). The `g`-prefix sequence (gg/gh/gw/gp/gl) is
@@ -176,6 +226,10 @@ export default class extends Controller {
       case "t":
         event.preventDefault()
         this.cycleTheme()
+        return
+      case ":":
+        event.preventDefault()
+        this.enterCommandMode()
         return
     }
   }
@@ -255,10 +309,101 @@ export default class extends Controller {
   // target on the same <select> element theme-picker already owns (standard Stimulus
   // multi-controller pattern), not a duplicate control.
   cycleTheme() {
+    const current = document.documentElement.dataset.theme
+    this.applyTheme(nextTheme(current))
+  }
+
+  // Shared with cycleTheme() so `t` and `:theme <name>` (COMMAND mode, spec R6) are
+  // genuinely one code path, not two copies of "set value + dispatch change" -- both
+  // ultimately drive the same P1.1 <select>/theme_picker#change pair (Decision 4).
+  applyTheme(theme) {
     if (!this.hasThemeSelectTarget) return
 
-    const current = document.documentElement.dataset.theme
-    this.themeSelectTarget.value = nextTheme(current)
+    this.themeSelectTarget.value = theme
     this.themeSelectTarget.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
+  // `:` (NORMAL) -> COMMAND (spec R6, Decision 1/2): save focus, clear any stale
+  // input/feedback from a prior open, reveal the bar, move focus into its <input>.
+  // Enter/typing are the input's own element-scoped Stimulus actions (data-action on the
+  // partial), not document-level dispatch, since the editable-target guard
+  // (handleKeydown) already bails out of mode dispatch the instant this input has focus.
+  enterCommandMode() {
+    if (!this.hasCommandInputTarget) return
+
+    this.priorFocus = document.activeElement
+    this.commandInputTarget.value = ""
+    this.clearCommandFeedback()
+    // Un-hidden synchronously, here, rather than via modeValueChanged() -- see that
+    // method's comment. A descendant of a still-`display: none` ancestor cannot receive
+    // focus, so the bar must already be visible by the time focus() below runs, and the
+    // async Value-changed callback cannot be relied on for that ordering.
+    if (this.hasCommandBarTarget) this.commandBarTarget.classList.remove("hidden")
+    this.modeValue = "command"
+    this.commandInputTarget.focus()
+  }
+
+  // Live-filter/rank feedback as the visitor types (spec R6: "live-filter/rank the
+  // registry via rankCommands as the visitor types"). Enter (commitCommand), not this
+  // handler, is what actually invokes a command -- this is feedback only, so an
+  // in-progress, ambiguous, or not-yet-matching query never throws or navigates.
+  handleCommandInput() {
+    const { name } = parseCommand(this.commandInputTarget.value)
+
+    if (!name) {
+      this.clearCommandFeedback()
+      return
+    }
+
+    const matches = rankCommands(name, COMMAND_REGISTRY)
+    this.setCommandFeedback(
+      matches.length > 0 ? matches.map((command) => `:${command.name}`).join("  ") : `${name}: no matching command`
+    )
+  }
+
+  // Enter (spec R6): parseCommand the current input, look up by exact name/alias/
+  // unambiguous prefix (findCommand), run it against a context bound to this
+  // controller's own single-source-of-truth methods. An empty name (bare Enter with
+  // nothing typed) is a silent no-op -- there's nothing to be "not found." A `run` that
+  // returns `false` (e.g. `:theme bogus-name`, an unrecognized theme) is treated
+  // identically to an unrecognized command name -- one visible "not found" state, not
+  // two. On success: clear the input and return to NORMAL, restoring prior focus.
+  commitCommand(event) {
+    event.preventDefault()
+
+    const { name, args } = parseCommand(this.commandInputTarget.value)
+    if (!name) return
+
+    const command = findCommand(name, COMMAND_REGISTRY)
+    const result = command ? command.run(args, this.commandContext()) : false
+
+    if (result === false) {
+      this.setCommandFeedback(`${name}: command not found`)
+      return
+    }
+
+    this.commandInputTarget.value = ""
+    this.clearCommandFeedback()
+    this.exitToNormal()
+  }
+
+  // Bound methods handed to a command's run(args, context) -- each delegates to this
+  // controller's own existing methods (navigateTo/applyTheme/guideDialogTarget), so
+  // COMMAND-mode commands are a second entry point into the same single code paths the
+  // g-prefix jumps and `t` already use, never a parallel implementation.
+  commandContext() {
+    return {
+      navigateTo: (target) => this.navigateTo(target),
+      setTheme: (theme) => this.applyTheme(theme),
+      openGuideDialog: () => this.hasGuideDialogTarget && this.guideDialogTarget.showModal(),
+    }
+  }
+
+  setCommandFeedback(text) {
+    if (this.hasCommandFeedbackTarget) this.commandFeedbackTarget.textContent = text
+  }
+
+  clearCommandFeedback() {
+    this.setCommandFeedback("")
   }
 }

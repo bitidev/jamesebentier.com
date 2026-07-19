@@ -1,0 +1,40 @@
+<%# Shared COMMAND/SEARCH terminal-style input bar (R6/R7, architecture plan file/module
+    layout table). This increment (Increment 3, COMMAND mode) wires the `:` command-entry
+    path; a later increment (SEARCH, `/`) reuses this same partial/markup rather than
+    standing up a second terminal-style bar -- only the leading glyph, placeholder copy,
+    and controller-side wiring differ per mode.
+
+    Plain-CSS `hidden` by default (nothing to flash without JS, matching the status
+    line's own convention); keyboard_nav_controller#modeValueChanged() toggles visibility
+    as COMMAND/SEARCH are entered/exited. The <input> is a real,
+    <label class="sr-only">-labeled field (R11) -- never a focus trap. Enter/typing are
+    wired as element-scoped Stimulus actions directly on the input (architecture plan
+    Decision 2, rule 2) rather than document-level special cases; Esc is handled by the
+    controller's existing document-level Escape branch (Increment 0), which already
+    treats "mode !== normal" as "something of ours is open." %>
+<div
+  id="keyboard-command-bar"
+  data-keyboard-nav-target="commandBar"
+  class="hidden fixed bottom-0 inset-x-0 z-40 font-mono text-sm bg-base-200 text-base-content border-t border-base-300"
+>
+  <div class="max-w-7xl mx-auto px-3 py-2 flex items-center gap-2">
+    <label for="keyboard-command-input" class="sr-only">Command</label>
+    <span aria-hidden="true" class="text-primary">:</span>
+    <input
+      type="text"
+      id="keyboard-command-input"
+      data-keyboard-nav-target="commandInput"
+      data-action="input->keyboard-nav#handleCommandInput keydown.enter->keyboard-nav#commitCommand"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      class="flex-1 bg-transparent outline-none"
+      placeholder="home | writing | projects | resume | theme &lt;name&gt; | help"
+    />
+  </div>
+  <div
+    data-keyboard-nav-target="commandFeedback"
+    aria-live="polite"
+    class="max-w-7xl mx-auto px-3 pb-2 text-xs text-base-content/60 empty:hidden"
+  ></div>
+</div>
