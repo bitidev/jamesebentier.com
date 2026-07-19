@@ -68,11 +68,21 @@ RSpec.describe "Welcomes" do
       expect(ascii_art).to be_present
     end
 
-    it "colors the monogram solely via daisyUI design-system tokens -- no hardcoded hex, no arbitrary-value utilities" do
+    it "colors the monogram via daisyUI design-system tokens" do
       get root_path
 
       expect(ascii_art.classes).to include("text-primary", "bg-base-200", "border-base-300")
+    end
+
+    it "does not color the monogram with hardcoded hex or arbitrary-value utilities" do
+      get root_path
+
       expect(ascii_art.classes.grep(/[\[#]/)).to be_empty
+    end
+
+    it "does not apply an inline style to the monogram" do
+      get root_path
+
       expect(ascii_art["style"]).to be_nil
     end
 
@@ -92,26 +102,52 @@ RSpec.describe "Welcomes" do
   end
 
   describe "GET / — meta tags (1181 P2 amendment)" do
-    it "renders the new software-architect page title, not the retired fractional/CTO framing" do
+    it "renders the new software-architect page title" do
       get root_path
 
       title = response.parsed_body.at_css("title").text
 
       expect(title).to include("James Ebentier — Software Architect")
+    end
+
+    it "does not render the retired 'Fractional' framing in the page title" do
+      get root_path
+
+      title = response.parsed_body.at_css("title").text
+
       expect(title).not_to include("Fractional")
+    end
+
+    it "does not render the retired 'CTO' framing in the page title" do
+      get root_path
+
+      title = response.parsed_body.at_css("title").text
+
       expect(title).not_to include("CTO")
     end
 
-    it "renders the new software-architect meta description, not the retired fractional/CTO framing" do
+    it "renders the new software-architect meta description" do
+      get root_path
+      description = response.parsed_body.at_css("meta[name='description']")["content"]
+      expected_description = "Software architect based in Berlin. I help engineering teams get their " \
+                             "systems right — a fraction of the time, all of the leverage."
+
+      expect(description).to eq(expected_description)
+    end
+
+    it "does not render the retired 'Fractional' framing in the meta description" do
       get root_path
 
       description = response.parsed_body.at_css("meta[name='description']")["content"]
 
-      expect(description).to eq(
-        "Software architect based in Berlin. I help engineering teams get their systems right — " \
-          "a fraction of the time, all of the leverage."
-      )
       expect(description).not_to include("Fractional")
+    end
+
+    it "does not render the retired 'CTO' framing in the meta description" do
+      get root_path
+
+      description = response.parsed_body.at_css("meta[name='description']")["content"]
+
       expect(description).not_to include("CTO")
     end
   end
