@@ -167,7 +167,15 @@ RSpec.describe "Welcomes" do
       let!(:project) do
         create(:project, slug: "featured-project", title: "Featured Project", status: "Live", featured: true)
       end
-      let!(:post) { create(:post, slug: "featured-post", title: "Featured Post") }
+      let!(:post) do
+        create(
+          :post,
+          slug: "featured-post",
+          title: "Featured Post",
+          description: "The SEO meta-tag description, never shown in the card body (R7)",
+          excerpt: "The real excerpt, shown in the Latest Writing card body (R7)"
+        )
+      end
 
       it "wraps the project in a card whose stretched-link overlay points at the project's own page (R3)" do
         get root_path
@@ -199,6 +207,15 @@ RSpec.describe "Welcomes" do
         writing_section = section_titled("Latest Writing")
 
         expect(writing_section.css(".badge")).to be_empty
+      end
+
+      it "shows the post's excerpt in the Latest Writing card body, not its description (P1.4/#1183 R7)" do # rubocop:disable RSpec/MultipleExpectations
+        get root_path
+
+        writing_section = section_titled("Latest Writing")
+
+        expect(writing_section.text).to include("The real excerpt, shown in the Latest Writing card body (R7)")
+        expect(writing_section.text).not_to include("The SEO meta-tag description, never shown in the card body (R7)")
       end
 
       it "uses the responsive one-column-to-three-column grid for Featured Projects (R6)" do
