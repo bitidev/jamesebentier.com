@@ -52,7 +52,30 @@ CUPRITE_DRIVER_OPTIONS = {
   # start. Harmless locally too, so applied unconditionally. `disable-dev-shm-usage`
   # avoids Chrome crashing/hanging on the small /dev/shm partition hosted runners
   # provide.
-  browser_options: { "no-sandbox" => nil, "disable-gpu" => nil, "disable-dev-shm-usage" => nil }
+  #
+  # `blink-settings` forces the browser to present as a desktop with a hovering,
+  # fine pointer (mouse). WHY THIS IS REQUIRED, not cosmetic: keyboard_nav_controller
+  # #connect() (app/javascript/controllers/keyboard_nav_controller.js) gates the
+  # entire feature on R12's "desktop/hardware-keyboard only" check --
+  # `window.matchMedia("(hover: hover) and (pointer: fine)").matches` -- and returns
+  # early (no document keydown listener attached, status line never un-hidden) when
+  # it's false. Linux headless Chrome under `--headless` reports NO input devices, so
+  # that query is false there and connect() no-ops -- which is exactly why all 8 (then
+  # 16) keyboard-nav system specs failed on CI while passing locally (macOS Chrome
+  # happens to report hover/fine=true). Chrome's Emulation.setEmulatedMedia CANNOT
+  # override hover/pointer (it only supports prefers-*/color-gamut/forced-colors), so
+  # the media features must be forced at launch via --blink-settings. The enum values
+  # (empirically confirmed against this Chrome): hover types HoverNone=1/HoverHover=2,
+  # pointer types PointerNone=1/PointerCoarse=2/PointerFine=4 -- so 2/2/4/4 = a
+  # desktop with hover + a fine pointer, matching the real environment every supported
+  # user of this feature has. Do not remove: without it the keyboard-nav feature is
+  # untestable (and invisible) under CI headless.
+  browser_options: {
+    "no-sandbox" => nil,
+    "disable-gpu" => nil,
+    "disable-dev-shm-usage" => nil,
+    "blink-settings" => "primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4"
+  }
 }.freeze
 
 # Registered for completeness / any non-`driven_by` use of the :cuprite driver.

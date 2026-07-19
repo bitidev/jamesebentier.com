@@ -16,18 +16,17 @@
 # with CI-only asset-serving/compile latency delaying connect(), not a genuine
 # headless-Chrome product bug.
 module KeyboardNavHelpers
-  # One-time-per-page ceiling for the Stimulus-boot wait below. This is NOT a
-  # per-assertion timeout -- it's how long we allow a *cold CI runner* to download,
-  # parse, and execute the JS bundle and run keyboard_nav_controller#connect() for
-  # the first time. CI run 29686774944 timed out at Capybara's 5s
-  # default_max_wait_time (spec/support/capybara.rb) with the status line present
-  # but its text still "" -- i.e. connect() simply hadn't run yet within 5s of a
-  # cold boot (the prior run showed connect landing right at ~5s, no margin).
-  # A generous ceiling is correct and harmless: have_selector returns the instant
-  # the text appears (warm local boot pays ~none of it), and it only ever affects
-  # the connect gate -- every real behavior assertion (scroll position, path,
-  # dialog open/closed) keeps Capybara's default wait.
-  KEYBOARD_NAV_CONNECT_TIMEOUT = 30
+  # Ceiling for the Stimulus-connect wait below -- a small margin over Capybara's
+  # 5s default_max_wait_time (spec/support/capybara.rb), just to absorb a slow first
+  # JS parse/execute on a loaded CI runner. It is NOT the mechanism that made these
+  # specs pass on CI: connect() failing to run on headless was NOT a boot-timing race
+  # (an earlier 30s widening still failed at 30s) but the R12 hover/fine-pointer gate
+  # bailing under Linux headless -- fixed at the driver level by forcing hover/fine
+  # via --blink-settings (see CUPRITE_DRIVER_OPTIONS in spec/support/capybara.rb).
+  # With that in place connect() runs on page load like it does locally, so this wait
+  # is back to ordinary "wait for JS to have run" territory; the modest ceiling is
+  # just insurance, and have_selector returns the instant the text appears.
+  KEYBOARD_NAV_CONNECT_TIMEOUT = 10
 
   # Blocks until keyboard_nav_controller#connect() has run. connect() un-hides
   # #keyboard-status-line (removes the "hidden" class) and modeValueChanged()
