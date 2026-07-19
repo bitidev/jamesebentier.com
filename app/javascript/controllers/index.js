@@ -10,6 +10,9 @@ application.register("collapse", CollapseController)
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
+import KeyboardNavController from "./keyboard_nav_controller"
+application.register("keyboard-nav", KeyboardNavController)
+
 import MotionController from "./motion_controller"
 application.register("motion", MotionController)
 

@@ -19,6 +19,12 @@ Capybara.register_driver(:cuprite) do |app|
     process_timeout: 10,
     timeout: 10,
     headless: true,
+    # Raise a real Ruby exception on an uncaught in-page JS error instead of silently
+    # swallowing it -- e.g. surfaces a duplicate keydown listener double-firing a
+    # showModal() call (the second call throws, since a <dialog> can't be shown modally
+    # twice), which is exactly the Increment 0 "no duplicate listeners across Turbo
+    # navigations" regression this feature must never ship.
+    js_errors: true,
     # CI runners execute as root inside a container; Chrome refuses to run
     # without a real (or explicitly disabled) sandbox in that case. Harmless
     # locally too, so applied unconditionally rather than gated on ENV["CI"].

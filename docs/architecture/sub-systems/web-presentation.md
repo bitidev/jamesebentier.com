@@ -19,6 +19,10 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - `app/views/components/` — shared ERB component partials (section, card, pill, cta_button)
 - `app/helpers/blog_helper.rb` — markdown rendering bridge
 - `app/helpers/resume_helper.rb` — `resume/resume.yml` loader
+- `app/javascript/controllers/keyboard_nav_controller.js` — modal NORMAL/COMMAND/SEARCH
+  keyboard-navigation layer (site-as-terminal, #1187); mode state machine + the single
+  document-level key-dispatch guard. `app/javascript/keyboard_nav/` holds this
+  controller's pure ES-module helpers as later increments add them.
 
 ---
 
@@ -27,7 +31,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - **HTTP routes**: `/`, `/resume`, `/blog`, `/blog/:slug`, `/projects`, `/projects/:slug`, `/up`
 - **Exports**: helpers `render_markdown`, `resume_data`, `style_for_level`, `social_profile_icon`
 - **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status→badge-role map)
-- **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware)
+- **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware); `data-controller="keyboard-nav"` (mounted once on `<body>` — modal NORMAL/COMMAND/SEARCH keyboard layer, #1187; ships incrementally, see that controller's file header for what's live today)
 - **Assets**: webpack JS bundle + Tailwind CSS build (`yarn build` / `yarn build:css`); self-hosted webfonts under `public/fonts/` (Commit Mono, Inter)
 
 ---
@@ -38,6 +42,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - Resume content is YAML at `resume/resume.yml` (rendered HTML may also be produced separately under `resume/` tooling) — not the DB.
 - Production-only analytics (Metricool, Google Analytics) are gated by `Rails.env.production?` in the layout.
 - Theme is client-driven: a render-blocking inline script in the layout `<head>` applies the visitor's stored choice (the `theme` `localStorage` key) to `<html data-theme>` before first paint, the `theme-picker` controller switches and persists it, and it defaults to `light` for first-time visitors. The centered `max-w-screen-lg` content column is unchanged.
+- The `keyboard-nav` layer never intercepts keys in native form fields or its own COMMAND/SEARCH inputs (single generic editable-target guard, checked via `.closest()` so it also covers a native `<select>`'s own open-dropdown descendants); `Esc` always returns to NORMAL; the layer attaches no `keydown` listener on touch/no-hover-precise-pointer devices.
 
 ## Security Posture
 
