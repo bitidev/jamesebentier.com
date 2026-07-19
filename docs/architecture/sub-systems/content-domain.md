@@ -23,6 +23,10 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - **Exports**: `Post`, `Project`, `ApplicationRecord`
 - **Exports**: `Post#content` / `Project#content` — markdown body strings for rendering
 - **Exports**: `Post.published` — scope filtering `published_at <= now`
+- **Exports**: `Post.featured` / `Project.featured` — scopes filtering `featured: true`
+- **Exports**: `Post.for_home` / `Project.for_home` — curated-first/chronological-fallback
+  query powering the home page's Latest Writing / Featured Projects sections (see Key
+  Invariants)
 - **Exports**: `ApplicationRecord.noindex?` — sitemap opt-out
 - **Types**: UUID primary keys (`gen_random_uuid()`)
 
@@ -35,6 +39,12 @@ Own blog and project content metadata in Postgres (via `declare_schema`) and res
 - Project `status` is constrained to `Pre-Launch`, `Beta`, or `Live`.
 - Post markdown lives at `Rails.public_path.join('blog', file_path)`; front-matter is stripped after the second `---` delimiter.
 - Project markdown is optional at `public/projects/{slug}.md`; missing files yield `_Project Details Coming Soon_`.
+- `for_home(limit: 3)` is curated-first, chronological-fallback: if any `featured: true`
+  rows exist, return up to `limit` of them (newest first); otherwise return up to `limit`
+  of the most recent records overall. This lets a record appear on the home page without
+  ever having been explicitly flagged featured, on a database with no curated rows yet.
+  `Post.for_home` is always scoped under `published` first, so an unpublished/future-dated
+  post can never surface via this path.
 
 ## Security Posture
 

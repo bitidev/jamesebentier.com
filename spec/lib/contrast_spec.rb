@@ -152,4 +152,39 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
       end
     end
   end
+
+  # ---- 1181's opacity-modified subhead/date token: base-content/70 on base-100 -----------
+  #
+  # 1181 R1 introduces `text-base-content/70` (hero subhead; also the home card date line, R4)
+  # -- a new *opacity-modified* usage of the already-covered base-content/base-100 pair above,
+  # not a new color. Tailwind's `/70` utility renders as an alpha-blended color composited over
+  # whatever sits behind it -- always base-100 on this page -- so the effective on-screen color
+  # is 70% foreground + 30% background (standard "over" alpha compositing on the already
+  # gamma-encoded sRGB values `parse_color` returns, matching how browsers composite a
+  # partially-transparent solid color, not a linear-light blend).
+  #
+  # Deliberately out of scope: the pre-existing nord `text-primary`-on-base-100 gap flagged in
+  # 8cd4343's commit message (measures ~3.5:1) is a separate, pre-existing P1.1 token issue
+  # (the section-eyebrow/hero-eyebrow slot), not the token this issue's subhead/date line
+  # actually uses -- not fixed or asserted here, per that commit's own note.
+  def blend_over(foreground, background, alpha)
+    parse_color(foreground).zip(parse_color(background)).map { |fg, bg| (fg * alpha) + (bg * (1 - alpha)) }
+  end
+
+  def contrast_ratio_of_blend(blended, background)
+    l_fg = relative_luminance(blended)
+    l_bg = relative_luminance(parse_color(background))
+    lighter = [l_fg, l_bg].max
+    darker = [l_fg, l_bg].min
+    (lighter + 0.05) / (darker + 0.05)
+  end
+
+  %w[light dark dracula nord gruvbox catppuccin].each do |theme|
+    it "meets WCAG AA 4.5:1 for base-content/70 (1181's subhead/date token) on base-100 in the #{theme} theme (1181 R1)" do
+      colors = colors_for(theme)
+      blended = blend_over(colors['base-content'], colors['base-100'], 0.7)
+
+      expect(contrast_ratio_of_blend(blended, colors['base-100'])).to be >= 4.5
+    end
+  end
 end
