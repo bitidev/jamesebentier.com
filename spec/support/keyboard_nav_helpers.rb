@@ -16,16 +16,41 @@
 # with CI-only asset-serving/compile latency delaying connect(), not a genuine
 # headless-Chrome product bug.
 module KeyboardNavHelpers
-  # Blocks (via Capybara's normal retrying wait) until keyboard_nav_controller
-  # #connect() has run: it un-hides #keyboard-status-line (removes the "hidden"
-  # class) in the same synchronous call that attaches the document keydown
-  # listener. Deliberately NOT `visible: :all` -- the status line's text is
-  # present in the server-rendered markup from first paint regardless of JS, so
-  # only the default visibility filter (which respects the "hidden" class) is an
-  # actual proxy for "JS has connected." Call this after every `visit`/navigation
-  # and before dispatching any key.
+  # One-time-per-page ceiling for the Stimulus-boot wait below. This is NOT a
+  # per-assertion timeout -- it's how long we allow a *cold CI runner* to download,
+  # parse, and execute the JS bundle and run keyboard_nav_controller#connect() for
+  # the first time. CI run 29686774944 timed out at Capybara's 5s
+  # default_max_wait_time (spec/support/capybara.rb) with the status line present
+  # but its text still "" -- i.e. connect() simply hadn't run yet within 5s of a
+  # cold boot (the prior run showed connect landing right at ~5s, no margin).
+  # A generous ceiling is correct and harmless: have_selector returns the instant
+  # the text appears (warm local boot pays ~none of it), and it only ever affects
+  # the connect gate -- every real behavior assertion (scroll position, path,
+  # dialog open/closed) keeps Capybara's default wait.
+  KEYBOARD_NAV_CONNECT_TIMEOUT = 30
+
+  # Blocks until keyboard_nav_controller#connect() has run. connect() un-hides
+  # #keyboard-status-line (removes the "hidden" class) and modeValueChanged()
+  # writes its "-- NORMAL --" text -- both happen synchronously with attaching the
+  # document keydown listener, so the visible, populated status line is a true
+  # proxy for "the listener now exists to receive keys."
+  #
+  # Two-stage on purpose (belt-and-suspenders diagnostic): first confirm the
+  # element is in the DOM at all (fast -- it's server-rendered, so a failure here
+  # means the markup/layout changed, not a JS problem), THEN wait up to
+  # KEYBOARD_NAV_CONNECT_TIMEOUT for the text to be populated by JS. If CI ever
+  # fails the SECOND wait, the element is present but connect() never ran -- a
+  # genuine "JS isn't executing" problem (bundle not loaded / controller not
+  # registered), not the timing issue this widened wait addresses. Deliberately
+  # NOT `visible: :all` -- the text is in the server-rendered markup regardless of
+  # JS, so only the default visibility filter (which respects the "hidden" class)
+  # actually proves connect() ran. Call after every visit/navigation, before any
+  # key.
   def wait_for_keyboard_nav_connected
-    expect(page).to have_selector("#keyboard-status-line", text: "-- NORMAL --")
+    expect(page).to have_selector("#keyboard-status-line", visible: :all)
+    expect(page).to have_selector(
+      "#keyboard-status-line", text: "-- NORMAL --", wait: KEYBOARD_NAV_CONNECT_TIMEOUT
+    )
   end
 
   # Dispatches real keydown/keyup CDP events directly (Ferrum's
