@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { COMMAND_REGISTRY, findCommand, parseCommand, rankCommands } from "./commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands } from "./commands"
 
 describe("parseCommand", () => {
   it("parses a bare name with no args", () => {
@@ -103,6 +103,24 @@ describe("rankCommands", () => {
 
   it("is case-insensitive", () => {
     expect(rankCommands("HOME", fakeRegistry)).toEqual([fakeRegistry[2]])
+  })
+})
+
+describe("formatCommandInvocation (Increment 6, spec R10 -- ? guide overlay)", () => {
+  it("formats a command with no aliases as a bare :name", () => {
+    expect(formatCommandInvocation({ name: "home", aliases: [] })).toBe(":home")
+  })
+
+  it("omits aliases entirely when the aliases array is absent", () => {
+    expect(formatCommandInvocation({ name: "home" })).toBe(":home")
+  })
+
+  it("appends a single alias, itself colon-prefixed, in parens", () => {
+    expect(formatCommandInvocation({ name: "projects", aliases: ["p"] })).toBe(":projects (:p)")
+  })
+
+  it("comma-joins multiple aliases", () => {
+    expect(formatCommandInvocation({ name: "home", aliases: ["h", "hm"] })).toBe(":home (:h, :hm)")
   })
 })
 

@@ -1,23 +1,83 @@
-<%# `?` keyboard-guide overlay (R10). This increment ships only the open/close
-    plumbing -- a bare toggle proving the mode-dispatch foundation; the full bindings
-    reference table (every binding shipped across R3-R8, plus the command registry's
-    v1 list) is a later increment's scope.
+<%# `?` keyboard-guide overlay (R10) -- Increment 0 shipped only the open/close plumbing
+    (a bare toggle proving the mode-dispatch foundation); this increment (the closeout,
+    "Increment 6") replaces that stub with the full bindings reference: every binding
+    shipped across R3-R8 (NORMAL navigation/theme/mode-switches/hint-jump), Esc, and the
+    COMMAND registry's v1 command list.
 
-    Native <dialog>: the one deliberate focus-trap exception in this feature (R11) --
-    it gives focus-containment, Esc-to-close, and ::backdrop semantics from the browser
-    for free, which is exactly right for a full "here are the bindings" help panel.
-    COMMAND/SEARCH (later increments) stay plain, non-trapping bars, deliberately not
-    <dialog>s. %>
+    The NORMAL-mode/mode-switch table below is hand-authored -- those bindings are a fixed
+    switch-statement in keyboard_nav_controller.js, not data in a JS structure to source
+    from. The COMMAND-registry list is the opposite: data-keyboard-nav-target=
+    "guideCommandList" is an EMPTY <dl> container that
+    keyboard_nav_controller.js#renderGuideCommandList() populates directly from
+    app/javascript/keyboard_nav/commands.js's COMMAND_REGISTRY at connect() -- a single
+    source of truth, not a hand-duplicated copy that could silently drift the day P1.9
+    adds a metrics-query command (it will appear here automatically, no ERB change
+    required).
+
+    Native <dialog>: the one deliberate focus-trap exception in this feature (R11) -- it
+    gives focus-containment, Esc-to-close, and ::backdrop semantics from the browser for
+    free, which is exactly right for a full "here are the bindings" help panel.
+    COMMAND/SEARCH stay plain, non-trapping bars, deliberately not <dialog>s.
+    aria-labelledby points at the heading below (WAI-ARIA APG dialog pattern) so screen
+    readers announce "Keyboard bindings, dialog" on open, not just "dialog." No custom
+    open/close transition is applied anywhere in this partial, so there is nothing for
+    R11's prefers-reduced-motion bullet to gate here -- .showModal()/.close() are already
+    instant, same as every other keyboard-nav UI element (status line, command/search bar,
+    hint badges). %>
 <dialog
   id="keyboard-guide-dialog"
   data-keyboard-nav-target="guideDialog"
+  aria-labelledby="keyboard-guide-dialog-title"
   class="font-mono backdrop:bg-black/50 rounded-box p-6 max-w-lg w-[90vw] text-base-content bg-base-100"
 >
-  <h2 class="text-lg font-semibold mb-4">Keyboard bindings</h2>
-  <p class="text-sm text-base-content/70 mb-6">
-    This site supports modal, vim-style keyboard navigation. The full bindings
-    reference lands here as later increments of this feature ship.
+  <h2 id="keyboard-guide-dialog-title" class="text-lg font-semibold mb-4">Keyboard bindings</h2>
+
+  <p class="text-sm text-base-content/70 mb-3">
+    Default <strong>NORMAL</strong> mode, from a hardware keyboard:
   </p>
+  <dl class="text-sm mb-5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-baseline">
+    <dt><kbd class="kbd kbd-sm">h</kbd> <kbd class="kbd kbd-sm">j</kbd> <kbd class="kbd kbd-sm">k</kbd> <kbd class="kbd kbd-sm">l</kbd></dt>
+    <dd>Scroll left / down / up / right</dd>
+
+    <dt><kbd class="kbd kbd-sm">g</kbd> <kbd class="kbd kbd-sm">g</kbd></dt>
+    <dd>Scroll to top</dd>
+
+    <dt><kbd class="kbd kbd-sm">G</kbd></dt>
+    <dd>Scroll to bottom</dd>
+
+    <dt><kbd class="kbd kbd-sm">g</kbd> + <kbd class="kbd kbd-sm">h</kbd>/<kbd class="kbd kbd-sm">w</kbd>/<kbd class="kbd kbd-sm">p</kbd>/<kbd class="kbd kbd-sm">l</kbd></dt>
+    <dd>Jump to home / writing / projects / lab (lab has no page yet)</dd>
+
+    <dt><kbd class="kbd kbd-sm">t</kbd></dt>
+    <dd>Cycle theme</dd>
+
+    <dt><kbd class="kbd kbd-sm">f</kbd></dt>
+    <dd>Hint-jump -- label every on-screen link; type its label to open it</dd>
+
+    <dt><kbd class="kbd kbd-sm">:</kbd></dt>
+    <dd>Enter COMMAND mode</dd>
+
+    <dt><kbd class="kbd kbd-sm">/</kbd></dt>
+    <dd>Enter SEARCH mode -- <kbd class="kbd kbd-xs">n</kbd>/<kbd class="kbd kbd-xs">N</kbd> steps through results, Enter opens the highlighted one</dd>
+
+    <dt><kbd class="kbd kbd-sm">?</kbd></dt>
+    <dd>Toggle this guide</dd>
+
+    <dt><kbd class="kbd kbd-sm">Esc</kbd></dt>
+    <dd>Return to NORMAL from any mode, or close this guide</dd>
+  </dl>
+
+  <p class="text-sm text-base-content/70 mb-3">
+    <strong>COMMAND</strong> mode (<kbd class="kbd kbd-sm">:</kbd>) -- v1 commands. The
+    registry is extensible: future commands (e.g. metrics queries) appear below
+    automatically once registered, no template change required.
+  </p>
+  <dl
+    data-keyboard-nav-target="guideCommandList"
+    aria-label="Command registry"
+    class="text-sm mb-6 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 items-baseline"
+  ></dl>
+
   <form method="dialog">
     <button type="submit" class="btn btn-sm">Close</button>
   </form>

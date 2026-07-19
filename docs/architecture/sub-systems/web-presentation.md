@@ -76,9 +76,25 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - `ProjectsController#show` uses `find_by` (returns nil) while blog uses `find_by!` — inconsistent 404 behavior.
 - `WelcomeController` still declares unused `projects` action (routing uses `ProjectsController`).
 - Stimulus includes unused scaffold `hello_controller`.
-- Capybara/Cuprite (`spec/system/`) always runs JS, so it cannot exercise the
-  "full site works with JS entirely off" progressive-enhancement check (#1187 R11) —
-  that check stays manual pre-merge verification, not automated coverage.
+- Capybara/Cuprite's `:js` (real headless Chrome) specs always run JS, so they cannot
+  themselves prove "the site works with JS entirely off" — but `spec/system/
+  keyboard_nav_no_js_spec.rb` (#1187 R11, Increment 6) covers this with Capybara's
+  *other*, default `rack_test` driver, which never executes JS at all, across every
+  route named in R11's smoke-test list. A final real-browser, JS-disabled manual
+  spot-check remains good practice pre-merge, but this is no longer an automated-coverage
+  gap.
+- Automated Cuprite touch/no-precise-pointer emulation (#1187 R12) was not added:
+  `spec/support/capybara.rb`'s `CUPRITE_DRIVER_OPTIONS` forces
+  `--blink-settings=...primaryHoverType=2...primaryPointerType=4` at browser-process
+  launch so headless Chrome reports a desktop hover/fine-pointer (required for every
+  *other* keyboard-nav spec to run at all — see that file's own comment); flipping those
+  values back to "none" for a touch-only assertion needs either a second, isolated
+  driver/browser process (real but non-trivial added CI cost for a spec covering a single
+  gate check) or `Ferrum::Browser#evaluate_on_new_document`, whose injected script has no
+  unregister API and would leak into every later spec sharing the same browser process.
+  The spec itself names this "a bonus if straightforward, not a gate" (Testing Strategy);
+  R12's `matchMedia("(hover: hover) and (pointer: fine)")` gate in
+  `keyboard_nav_controller.js#connect()` was instead verified manually.
 
 ---
 

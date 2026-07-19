@@ -95,6 +95,19 @@ export function parseCommand(input) {
   return { name: trimmed.slice(0, spaceIndex), args: trimmed.slice(spaceIndex + 1).trim() }
 }
 
+// formatCommandInvocation(command) -> ":name" or ":name (:alias1, :alias2)" (Increment 6,
+// spec R10). The `?` guide overlay renders the COMMAND registry's v1 list directly from
+// COMMAND_REGISTRY (keyboard_nav_controller.js#renderGuideCommandList) rather than a
+// hand-duplicated copy of this same list in ERB -- this is the one small piece of pure
+// formatting logic that glue needs, kept here (not in the controller) so it stays a
+// DOM-free, unit-testable function like every other helper in this module.
+export function formatCommandInvocation(command) {
+  const aliases = command.aliases || []
+  if (aliases.length === 0) return `:${command.name}`
+
+  return `:${command.name} (${aliases.map((alias) => `:${alias}`).join(", ")})`
+}
+
 // findCommand(name, registry) -> the single matching entry, or null. Lookup order
 // (spec R6): exact name/alias match first; otherwise a name-prefix match, but only if
 // exactly one entry's name starts with it (an "unambiguous prefix" -- two+ matches is

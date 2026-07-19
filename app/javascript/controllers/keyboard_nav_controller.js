@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
-import { COMMAND_REGISTRY, findCommand, parseCommand, rankCommands } from "../keyboard_nav/commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands } from "../keyboard_nav/commands"
 import { fetchSearchIndex, rankSearchResults } from "../keyboard_nav/search_index"
 import { assignHintLabels } from "../keyboard_nav/hints"
 
@@ -73,7 +73,15 @@ const COMMAND_BAR_COPY = {
 // badges, and activates the typed match via .click() on the real anchor -- the same
 // "never build a URL string, never open a second activation path" discipline
 // navigateTo/commitSearch already established. Esc and the first scroll event both
-// cancel; hint-jump moves no focus and sets no tabindex, ever (R11).
+// cancel; hint-jump moves no focus and sets no tabindex, ever (R11). This increment (the
+// closeout, "Increment 6") replaces the Increment 0 bare `?` toggle with the full
+// bindings-reference content (spec R10): a hand-authored NORMAL-mode/mode-switch
+// reference table in the ERB partial itself (there's no JS data structure those bindings
+// live in to source from), plus the COMMAND registry's v1 command list rendered directly
+// from ../keyboard_nav/commands.js's COMMAND_REGISTRY (renderGuideCommandList, called
+// once from connect()) rather than a second, hand-duplicated copy that could drift the
+// day P1.9 adds a metrics-query command -- the same single-source-of-truth discipline
+// this controller already applies to theme/nav.
 // See docs/specs/1187-modal-vim-keyboard-navigation.md.
 //
 // Turbo lifecycle note: standard (non-permanent) Turbo Drive visits replace <body>'s
@@ -86,6 +94,7 @@ export default class extends Controller {
     "statusLine",
     "statusLineText",
     "guideDialog",
+    "guideCommandList",
     "themeSelect",
     "commandBar",
     "commandGlyph",
@@ -115,6 +124,8 @@ export default class extends Controller {
     if (this.hasStatusLineTarget) {
       this.statusLineTarget.classList.remove("hidden")
     }
+
+    this.renderGuideCommandList()
   }
 
   disconnect() {
@@ -152,6 +163,29 @@ export default class extends Controller {
   // spec R8, so it can't just rely on modeValueChanged() firing).
   modeLabel() {
     return { normal: "NORMAL", command: "COMMAND", search: "SEARCH" }[this.modeValue] || "NORMAL"
+  }
+
+  // `?` guide overlay's COMMAND-registry list (spec R10, Increment 6): populated once
+  // here, directly from COMMAND_REGISTRY, rather than a hand-authored copy in the ERB
+  // partial -- the single source of truth the registry's own file-header comment already
+  // promises ("shown in the `?` guide overlay"). Static content for the lifetime of this
+  // controller instance (the registry itself never changes at runtime), so connect() is
+  // the one place this needs to run, not a per-open re-render. A future P1.9 command
+  // added to COMMAND_REGISTRY appears here with zero ERB/template changes required.
+  renderGuideCommandList() {
+    if (!this.hasGuideCommandListTarget) return
+
+    this.guideCommandListTarget.innerHTML = ""
+
+    COMMAND_REGISTRY.forEach((command) => {
+      const dt = document.createElement("dt")
+      const dd = document.createElement("dd")
+
+      dt.textContent = formatCommandInvocation(command)
+      dd.textContent = command.description
+
+      this.guideCommandListTarget.append(dt, dd)
+    })
   }
 
   // Single document-level, bubble-phase keydown listener (Decision 2). Guard order is
