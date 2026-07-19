@@ -66,11 +66,17 @@ RSpec.describe Project do
       expect(described_class.by_status('Live')).to contain_exactly(live)
     end
 
-    it 'returns every project when the status is blank (nil or empty string)' do
+    it 'returns every project when the status is nil' do
       live = create(:project, slug: 'live-project', status: 'Live')
       beta = create(:project, slug: 'beta-project', status: 'Beta')
 
       expect(described_class.by_status(nil)).to contain_exactly(live, beta)
+    end
+
+    it 'returns every project when the status is a blank string' do
+      live = create(:project, slug: 'live-project', status: 'Live')
+      beta = create(:project, slug: 'beta-project', status: 'Beta')
+
       expect(described_class.by_status('')).to contain_exactly(live, beta)
     end
 

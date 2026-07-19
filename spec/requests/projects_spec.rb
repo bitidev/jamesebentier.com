@@ -71,7 +71,7 @@ RSpec.describe 'Projects' do
     end
 
     # R3 -- responsive card grid.
-    context 'grid layout' do
+    context 'when rendering the populated card grid' do
       before { create(:project, slug: 'solo-project') }
 
       it 'renders the grid using the responsive one-to-three column layout' do
@@ -85,62 +85,58 @@ RSpec.describe 'Projects' do
 
     # R3 -- triple-link CTAs (read -> demo -> source), conditional on presence. Demo (project.url)
     # is the one required, always-present leg; Read/Source are optional and nullable (R1).
-    context 'triple-link CTAs' do
-      context 'when a project has all three links set' do
-        let!(:project) do
-          create(:project, slug: 'triple-link-project', url: 'https://demo.example.com',
-                            read_url: 'https://example.com/writeup', source_url: 'https://github.com/example/repo')
-        end
-
-        it 'renders exactly three CTAs, in read -> demo -> source order' do
-          get projects_path
-
-          ctas = response.parsed_body.css('.card-actions a.btn')
-
-          expect(ctas.map(&:text)).to eq(%w[Read Demo Source])
-        end
-
-        it "links each CTA to its own project link, not a shared/duplicated one" do
-          get projects_path
-
-          ctas = response.parsed_body.css('.card-actions a.btn')
-
-          expect(ctas.map { |cta| cta['href'] }).to eq(
-            [project.read_url, project.url, project.source_url]
-          )
-        end
-
-        it 'styles Demo as the primary CTA and Read/Source as secondary (ghost)' do
-          get projects_path
-
-          ctas = response.parsed_body.css('.card-actions a.btn')
-
-          expect(ctas.map { |cta| cta.classes.include?('btn-primary') }).to eq([false, true, false])
-          expect(ctas.map { |cta| cta.classes.include?('btn-ghost') }).to eq([true, false, true])
-        end
+    context 'when a project has all three triple-links set' do
+      let!(:project) do
+        create(:project, slug: 'triple-link-project', url: 'https://demo.example.com',
+                         read_url: 'https://example.com/writeup', source_url: 'https://github.com/example/repo')
       end
 
-      context 'when a project has only the required url (demo) set' do
-        let!(:project) { create(:project, slug: 'demo-only-project', url: 'https://demo.example.com') }
+      it 'renders exactly three CTAs, in read -> demo -> source order' do
+        get projects_path
 
-        it 'renders exactly one CTA -- Demo -- styled as primary' do
-          get projects_path
+        ctas = response.parsed_body.css('.card-actions a.btn')
 
-          ctas = response.parsed_body.css('.card-actions a.btn')
+        expect(ctas.map(&:text)).to eq(%w[Read Demo Source])
+      end
 
-          expect(ctas.size).to eq(1)
-          expect(ctas.first.text).to eq('Demo')
-          expect(ctas.first.classes).to include('btn-primary')
-          expect(ctas.first['href']).to eq(project.url)
-        end
+      it 'links each CTA to its own project link, not a shared/duplicated one' do
+        get projects_path
 
-        it 'never renders Read or Source CTAs when their URLs are nil' do
-          get projects_path
+        ctas = response.parsed_body.css('.card-actions a.btn')
 
-          cta_labels = response.parsed_body.css('.card-actions a.btn').map(&:text)
+        expect(ctas.pluck('href')).to eq([project.read_url, project.url, project.source_url])
+      end
 
-          expect(cta_labels).not_to include('Read', 'Source')
-        end
+      it 'styles Demo as the primary CTA and Read/Source as secondary (ghost)' do # rubocop:disable RSpec/MultipleExpectations
+        get projects_path
+
+        ctas = response.parsed_body.css('.card-actions a.btn')
+
+        expect(ctas.map { |cta| cta.classes.include?('btn-primary') }).to eq([false, true, false])
+        expect(ctas.map { |cta| cta.classes.include?('btn-ghost') }).to eq([true, false, true])
+      end
+    end
+
+    context 'when a project has only the required url (demo) leg set' do
+      let!(:project) { create(:project, slug: 'demo-only-project', url: 'https://demo.example.com') }
+
+      it 'renders exactly one CTA -- Demo -- styled as primary' do # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
+        get projects_path
+
+        ctas = response.parsed_body.css('.card-actions a.btn')
+
+        expect(ctas.size).to eq(1)
+        expect(ctas.first.text).to eq('Demo')
+        expect(ctas.first.classes).to include('btn-primary')
+        expect(ctas.first['href']).to eq(project.url)
+      end
+
+      it 'never renders Read or Source CTAs when their URLs are nil' do
+        get projects_path
+
+        cta_labels = response.parsed_body.css('.card-actions a.btn').map(&:text)
+
+        expect(cta_labels).not_to include('Read', 'Source')
       end
     end
 
@@ -189,14 +185,14 @@ RSpec.describe 'Projects' do
         expect(titles).to contain_exactly(pre_launch.title, beta.title, live.title)
       end
 
-      it 'renders no projects (not an error) for an unrecognized status value' do
+      it 'renders no projects (not an error) for an unrecognized status value' do # rubocop:disable RSpec/MultipleExpectations
         get projects_path(status: 'Nonexistent')
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body.css('.card')).to be_empty
       end
 
-      it 'marks the selected status link active and every other status/"All" link inactive' do
+      it 'marks the selected status link active and every other status/"All" link inactive' do # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
         get projects_path(status: 'Live')
 
         filter_nav = response.parsed_body.at_css("nav[aria-label='Filter projects by status']")
@@ -207,7 +203,7 @@ RSpec.describe 'Projects' do
         expect(all_link.classes).to include('link', 'link-hover')
       end
 
-      it '"All" is active and every status link is inactive when no filter is applied' do
+      it '"All" is active and every status link is inactive when no filter is applied' do # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
         get projects_path
 
         filter_nav = response.parsed_body.at_css("nav[aria-label='Filter projects by status']")
@@ -221,7 +217,7 @@ RSpec.describe 'Projects' do
 
     # R5.2 -- filtered-empty: rows exist, but none match the selected status.
     context 'when projects exist but none match the selected status filter' do
-      let!(:beta) { create(:project, slug: 'beta-only-project', status: 'Beta') }
+      before { create(:project, slug: 'beta-only-project', status: 'Beta') }
 
       it 'renders the filtered-empty message' do
         get projects_path(status: 'Live')
@@ -229,7 +225,7 @@ RSpec.describe 'Projects' do
         expect(response.body).to include('No Live projects yet')
       end
 
-      it 'keeps the filter row -- including a working "All" link -- visible' do
+      it 'keeps the filter row -- including a working "All" link -- visible' do # rubocop:disable RSpec/MultipleExpectations
         get projects_path(status: 'Live')
 
         filter_nav = response.parsed_body.at_css("nav[aria-label='Filter projects by status']")
@@ -246,77 +242,73 @@ RSpec.describe 'Projects' do
   # components (R6): same conditional triple-links as the index card, retired
   # text-[#999]/badge-accent literal-color markup removed.
   describe 'GET /projects/:slug' do
-    let!(:project) do
-      create(:project, slug: 'show-page-project', title: 'Show Page Project', status: 'Live',
-                        url: 'https://demo.example.com')
-    end
-
-    it 'returns a successful response' do
-      get project_path(slug: project.slug)
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    it "renders the project's status pill, mapped to the correct badge role via the pill component" do
-      get project_path(slug: project.slug)
-
-      expect(response.parsed_body.at_css('.badge').classes).to include('badge-success')
-    end
-
-    it "renders the project's markdown content" do
-      get project_path(slug: project.slug)
-
-      expect(response.parsed_body.at_css('.prose').text).to include('Project Details Coming Soon')
-    end
-
-    it 'no longer renders the retired text-[#999] literal-color utility (R6)' do
-      get project_path(slug: project.slug)
-
-      expect(response.body).not_to include('text-[#999]')
-    end
-
-    it 'no longer renders the retired badge-accent class (R6)' do
-      get project_path(slug: project.slug)
-
-      expect(response.parsed_body.css('.badge-accent')).to be_empty
-    end
-
-    context 'triple-links -- same conditional composition as the index card (R6)' do
-      context 'when the project has all three links set' do
-        let!(:project) do
-          create(:project, slug: 'triple-link-show-project', url: 'https://demo.example.com',
-                            read_url: 'https://example.com/writeup', source_url: 'https://github.com/example/repo')
-        end
-
-        it 'renders exactly three CTAs, in read -> demo -> source order' do
-          get project_path(slug: project.slug)
-
-          ctas = response.parsed_body.css('.card-actions a.btn')
-
-          expect(ctas.map(&:text)).to eq(%w[Read Demo Source])
-        end
+    context 'when the project has only the required url (demo) leg set' do
+      let!(:project) do
+        create(:project, slug: 'show-page-project', title: 'Show Page Project', status: 'Live',
+                         url: 'https://demo.example.com')
       end
 
-      context 'when the project has only the required url (demo) set' do
-        let!(:project) { create(:project, slug: 'demo-only-show-project', url: 'https://demo.example.com') }
+      it 'returns a successful response' do
+        get project_path(slug: project.slug)
 
-        it 'renders exactly one CTA -- Demo -- styled as primary' do
-          get project_path(slug: project.slug)
+        expect(response).to have_http_status(:ok)
+      end
 
-          ctas = response.parsed_body.css('.card-actions a.btn')
+      it "renders the project's status pill, mapped to the correct badge role via the pill component" do
+        get project_path(slug: project.slug)
 
-          expect(ctas.size).to eq(1)
-          expect(ctas.first.text).to eq('Demo')
-          expect(ctas.first.classes).to include('btn-primary')
-        end
+        expect(response.parsed_body.at_css('.badge').classes).to include('badge-success')
+      end
 
-        it 'never renders Read or Source CTAs when their URLs are nil' do
-          get project_path(slug: project.slug)
+      it "renders the project's markdown content" do
+        get project_path(slug: project.slug)
 
-          cta_labels = response.parsed_body.css('.card-actions a.btn').map(&:text)
+        expect(response.parsed_body.at_css('.prose').text).to include('Project Details Coming Soon')
+      end
 
-          expect(cta_labels).not_to include('Read', 'Source')
-        end
+      it 'no longer renders the retired text-[#999] literal-color utility (R6)' do
+        get project_path(slug: project.slug)
+
+        expect(response.body).not_to include('text-[#999]')
+      end
+
+      it 'no longer renders the retired badge-accent class (R6)' do
+        get project_path(slug: project.slug)
+
+        expect(response.parsed_body.css('.badge-accent')).to be_empty
+      end
+
+      it 'renders exactly one CTA -- Demo -- styled as primary (R6)' do # rubocop:disable RSpec/MultipleExpectations
+        get project_path(slug: project.slug)
+
+        ctas = response.parsed_body.css('.card-actions a.btn')
+
+        expect(ctas.size).to eq(1)
+        expect(ctas.first.text).to eq('Demo')
+        expect(ctas.first.classes).to include('btn-primary')
+      end
+
+      it 'never renders Read or Source CTAs when their URLs are nil (R6)' do
+        get project_path(slug: project.slug)
+
+        cta_labels = response.parsed_body.css('.card-actions a.btn').map(&:text)
+
+        expect(cta_labels).not_to include('Read', 'Source')
+      end
+    end
+
+    context 'when the project has all three triple-links set' do
+      let!(:project) do
+        create(:project, slug: 'triple-link-show-project', url: 'https://demo.example.com',
+                         read_url: 'https://example.com/writeup', source_url: 'https://github.com/example/repo')
+      end
+
+      it 'renders exactly three CTAs, in read -> demo -> source order (R6)' do
+        get project_path(slug: project.slug)
+
+        ctas = response.parsed_body.css('.card-actions a.btn')
+
+        expect(ctas.map(&:text)).to eq(%w[Read Demo Source])
       end
     end
   end
