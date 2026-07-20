@@ -17,7 +17,8 @@ class NewslettersController < ApplicationController
     prepare_subscriber(subscriber)
 
     if subscriber.save
-      NewsletterMailer.confirmation(subscriber).deliver_later
+      # Inline deliver — v1 is log-only (Mail::LoggerDelivery); no job runner required.
+      NewsletterMailer.confirmation(subscriber).deliver_now
       redirect_to_return_path(notice: "Check your email for a confirmation link!")
     else
       redirect_to_return_path(alert: "Couldn't save your subscription: #{subscriber.errors.full_messages.to_sentence}")

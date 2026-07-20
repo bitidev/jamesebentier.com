@@ -25,9 +25,9 @@ RSpec.describe "Newsletters" do
         expect(Subscriber.last.consent_source).to eq("home")
       end
 
-      it "enqueues a confirmation email to the submitted address" do
+      it "delivers a confirmation email to the submitted address" do
         expect { post newsletters_path, params: valid_params }
-          .to have_enqueued_mail(NewsletterMailer, :confirmation)
+          .to change(ActionMailer::Base.deliveries, :size).by(1)
       end
 
       it "redirects with a success notice" do
@@ -74,10 +74,10 @@ RSpec.describe "Newsletters" do
         expect(flash[:notice]).to eq("You're already subscribed — thanks!")
       end
 
-      it "does not enqueue another confirmation email" do
+      it "does not deliver another confirmation email" do
         expect do
           post newsletters_path, params: { subscriber: { email: "existing@example.com", consent: "1", source: "home" } }
-        end.not_to have_enqueued_mail(NewsletterMailer, :confirmation)
+        end.not_to change(ActionMailer::Base.deliveries, :size)
       end
     end
 
@@ -102,10 +102,10 @@ RSpec.describe "Newsletters" do
         expect(subscriber.reload.confirmed_at).to be_nil
       end
 
-      it "enqueues a fresh confirmation email" do
+      it "delivers a fresh confirmation email" do
         expect do
           post newsletters_path, params: { subscriber: { email: "returning@example.com", consent: "1", source: "footer" } }
-        end.to have_enqueued_mail(NewsletterMailer, :confirmation)
+        end.to change(ActionMailer::Base.deliveries, :size).by(1)
       end
     end
 
@@ -118,10 +118,10 @@ RSpec.describe "Newsletters" do
         end.not_to change(Subscriber, :count)
       end
 
-      it "enqueues a fresh confirmation email" do
+      it "delivers a fresh confirmation email" do
         expect do
           post newsletters_path, params: { subscriber: { email: "pending@example.com", consent: "1", source: "home" } }
-        end.to have_enqueued_mail(NewsletterMailer, :confirmation)
+        end.to change(ActionMailer::Base.deliveries, :size).by(1)
       end
     end
   end
