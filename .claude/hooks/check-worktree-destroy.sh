@@ -105,7 +105,7 @@ fi
 
 # ---------------------------------------------------------------------------
 # Rule B — blanket/looped/globbed `git worktree remove`. Only a single explicit
-# path is allowed (the orchestrator's sanctioned post-merge cleanup).
+# path is allowed (`/work`'s sanctioned post-merge cleanup of its OWN worktree).
 # ---------------------------------------------------------------------------
 if matches 'worktree[[:space:]]+remove'; then
   # More than one `worktree remove` in the command — a loop body or chained

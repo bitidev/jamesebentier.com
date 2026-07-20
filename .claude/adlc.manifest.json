@@ -1,0 +1,13 @@
+{
+  "source": {
+    "local": "/Users/jebentier/development/adlc",
+    "git": "git@github.com:bitidev/adlc.git"
+  },
+  "version": "0.1.0",
+  "installed_at": "2026-07-20T07:41:02Z",
+  "skills": {
+    "core": ["work", "triage", "release", "harden", "address-feedback"],
+    "meta": ["adlc-init", "setup-machine", "sync", "contribute"],
+    "opt_in": ["audit", "integrate", "troubleshoot"]
+  }
+}

@@ -3,10 +3,48 @@ description: ADLC project-wide rules — applies to every agent and subagent wor
 alwaysApply: true
 ---
 
-These are the project-wide ADLC rules that apply to every agent and subagent working in this repo.
-They govern issue-work delegation, worktree isolation, and other cross-cutting session behavior.
-The canonical rule bodies live in the two files referenced below, not copied here, so there is a single source of truth and no drift.
-Read both before doing any work in this repository.
+<!--
+  Generated/maintained by the adlc-init and sync skills from this template, one copy per
+  deployed skill at .cursor/commands/<skill>.md (skill H1 + a plain-path pointer at the
+  skill body — the SKILL.md stays the single source, nothing is duplicated there). This
+  rules file itself is copy-if-absent, preserve-edits: an operator's own edits survive a sync.
+-->
 
-@adlc/methods/session-rules.md
-@adlc/methods/universal-agent-rules.md
+This project runs on the ADLC skill flow. Work through the skills in `.claude/skills/` —
+there is no orchestrator or dispatch relay; you (the session) coordinate directly and dispatch
+the four agents in `.claude/agents/` (`builder`, `test`, `planner`, `reviewer`) yourself.
+
+Two hard rules, no exceptions:
+
+- **Never commit to main.** All work happens on an issue/task branch, in its own git worktree
+  (never in the main checkout).
+- **Never merge a pull request unless the operator explicitly instructs it in that moment.**
+  Default is always present-and-wait — the operator merges. A standing "you can merge these"
+  from earlier in the conversation does not count; each merge needs its own explicit go-ahead.
+
+## Entry points
+
+- **`/work <issue-number>`** — take an issue from Ready to Done: claim, design gate (features),
+  implement via `builder`(+`test`), PR with an advisory review and theatre-check, post-merge
+  cleanup. Use this whenever the operator says "work on / implement / fix #N".
+- **`/triage`** — screen new issues onto the board; move Triage items to Ready/Backlog/closed.
+- **`/release [patch|minor|major]`** — cut and publish a release.
+- **`/harden <subsystem>`** — quality-hardening sweep of one subsystem.
+- **`/address-feedback [PR]`** — process a pull request's own review feedback item by item.
+- Meta: **`/adlc-init`**, **`/setup-machine`**, **`/sync`**, **`/contribute`**. Opt-in (only if
+  installed): **`/integrate`**, **`/audit`**, **`/troubleshoot`**.
+
+Each skill's full instructions live at `.claude/skills/<name>/SKILL.md` — read the relevant one
+before acting on it.
+
+## Cross-cutting rules
+
+- **Worktree isolation:** every issue/task gets its own `git worktree`; never edit files in the
+  main checkout. Verify with `git branch --show-current` before touching anything.
+- **Board mechanics:** `docs/flow/board.md` — status vocabulary and the update sequence every
+  skill uses directly.
+- **Model note:** `docs/flow/models.md` records why each agent uses the model/effort in its own
+  frontmatter. On Cursor, a dispatched agent inherits the session's model rather than its own
+  frontmatter `model:`/`effort:` — a benign degradation, not a failure.
+- **Project-specific overrides:** `adlc-customizations/{builder,test,planner,reviewer}-customizations.md`
+  extend or override an agent's defaults for this project; never overwritten by an ADLC update.

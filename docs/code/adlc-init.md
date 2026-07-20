@@ -1,17 +1,17 @@
 # docs/code/adlc-init.md
 
 ---
-**Last Updated**: 2026-07-18
+**Last Updated**: 2026-07-20
 **Init Version**: 1.0
-**Codebase Commit**: 83f748b2ff5f064077fade7a83250a1fbafa1a07
+**Codebase Commit**: c2f4c3645fba66bfa9819cc5f303570d697024e5
 **Status**: Current
 ---
 
 ## Project Overview
 
 **Architecture Pattern**: Rails MVC (Hotwire) personal marketing site
-**Primary Language(s)**: Ruby 3.3 / Rails 7.1; JavaScript (Stimulus) for progressive enhancement
-**Key Frameworks**: Rails 7.1, Hotwire (Turbo + Stimulus), Tailwind CSS 3 + DaisyUI 4, Redcarpet
+**Primary Language(s)**: Ruby 3.3 / Rails 8.1; JavaScript (Stimulus) for progressive enhancement
+**Key Frameworks**: Rails 8.1, Hotwire (Turbo + Stimulus), Tailwind CSS 4 + DaisyUI 5, Redcarpet
 
 ### Purpose
 
@@ -30,12 +30,12 @@ Personal website for James Ebentier (`jamesebentier.com`): landing page, resume,
 
 | Component | Technology | Version | Rationale |
 |-----------|-----------|---------|-----------|
-| Runtime | Ruby | ~> 3.3 (`.ruby-version` 3.3.1) | Rails 7.1 / modern language features |
-| Framework | Rails | ~> 7.1.3 | Full-stack MVC with Hotwire |
+| Runtime | Ruby | ~> 3.3 (`.ruby-version` 3.3.1) | Rails 8.1 / modern language features |
+| Framework | Rails | ~> 8.1.3 (locked 8.1.3) | Full-stack MVC with Hotwire |
 | Database | PostgreSQL | 16 in CI (`pg` gem) | UUID support; production via `DATABASE_URL` / `SCHEMATOGO_URL` |
 | Cache / Cable | Redis | >= 4.0.1 | Action Cable adapter in production |
 | Web server | Puma | >= 5.0 | Rails default |
-| CSS | Tailwind 3.4 + DaisyUI 4.12 + cssbundling | yarn scripts | Utility-first theming |
+| CSS | Tailwind 4.3 + DaisyUI 5.6 + cssbundling | yarn scripts | Utility-first theming |
 | JS | Stimulus 3 + Turbo 8 + webpack 5 | jsbundling-rails | Modest interactivity, no SPA |
 | Markdown | Redcarpet + custom `Blog::Renderer` | — | Blog/project body rendering |
 | Schema | declare_schema | — | Model-declared schema + migrations |
