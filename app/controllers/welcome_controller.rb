@@ -6,4 +6,5 @@ class WelcomeController < ApplicationController
   def about; end
   def projects; end
   def resume; end
+  def privacy; end
 end
