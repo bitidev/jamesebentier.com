@@ -1,13 +1,13 @@
 ---
 slug: 2026-03-26-service-documentation-in-the-era-of-ai
 title: Service Documentation in the Era of AI
-description: We are witnessing a fundamental shift in the "User" of our documentation — move the service brain into the repo for AI agents.
+description: We are witnessing a fundamental shift in the "User" of our documentation, let's embrace it!
 published_at: 2026-03-26
-keywords: documentation, AI agents, ADR, MADR, confluence, technical writing
+keywords: coding agents, technical documentation, software development, ADR, MADR, AI
 image: /logo.png
 tags:
-- documentation
-- ai-agents
+- coding-agents
+- technical-documentation
 - software-development
 kind: deep_dive
 medium_url: https://engineering.invoca.com/service-documentation-in-the-era-of-ai-f81e2ebc418d
@@ -15,80 +15,87 @@ medium_url: https://engineering.invoca.com/service-documentation-in-the-era-of-a
 
 *Originally published on the [Invoca Engineering Blog](https://engineering.invoca.com/service-documentation-in-the-era-of-ai-f81e2ebc418d).*
 
-We are witnessing a fundamental shift in software engineering, and it centers on a deceptively simple question: **who is the user of your documentation?**
+We are witnessing a fundamental shift in the "User" of our documentation. For decades, we wrote for the junior dev or the frantic on-call engineer. Today, our primary consumers are IDE-based LLMs (Cursor, Copilot), Terminal Agents (Claude Code), and CI-level Automations.
 
-For most of software history, the answer was obvious — other humans. Developers read READMEs, architects consulted Confluence pages, and oncall engineers skimmed runbooks. Documentation was written for people, reviewed by people, and decayed in proportion to how often people actually opened it.
+The "Confluence-First" era is officially over. If your service's soul is trapped in a browser tab instead of your repository, your AI tools are effectively working with a lobotomy. To win in this era, we must move the "brain" of the service back into the repo.
 
-That assumption is breaking down. AI coding assistants and autonomous agents are becoming first-class consumers of service documentation. They parse your ADRs, your architecture diagrams, your runbooks — and they act on what they find. A missing context document isn't just a gap for a new hire; it's a blank space where an AI agent will hallucinate plausible-sounding but wrong behavior.
+## Documentation as a "System Prompt"
 
-The implication is significant: **the quality of your documentation is now part of the quality of your engineering system.**
+The future of engineering is Agentic. We aren't just using autocomplete; we are using agents that can refactor entire modules, hunt for security vulnerabilities, and automate PR reviews.
 
----
+However, an agent's intelligence is capped by its context window. When your documentation lives in Confluence, it is "invisible" to the agentic loop. By moving documentation into the repository, you transform it into a permanent system prompt. You are giving the AI the "Why" and the "How" alongside the code, allowing it to reason with the same context as the lead architect.
 
-## Documentation as System Prompt
+Note: we put "invisible" in quotes due to the fact that, yes, you technically can expose Confluence documentation via MCP and with exact prompting ensure the agent will search Confluence for additional context. But this comes with the following huge assumptions: all agents will have this MCP installed and configured, their prompts will be properly configured, and there will be a strong enough connection between the service repo and its Confluence documentation for the agent to find them relevant.
 
-The most useful mental model shift is to think of your service's documentation as its system prompt for AI agents. A system prompt defines what the agent knows, what constraints it operates under, and what decisions it's already made. When an agent opens a pull request, refactors a module, or investigates an incident, it is drawing on exactly that context.
+## The Triad of Truth
 
-This means documentation has a new quality criterion beyond "is it accurate?" — it must be **machine-parseable, structurally consistent, and co-located with the code it describes**. An 80-page Confluence page written in narrative prose may serve a senior architect reading it on a Tuesday afternoon. It will fail an AI agent that needs to know in 500 tokens whether this service owns its own database or shares one with a monolith.
+To realize this vision, we must be disciplined about where information lives based on its purpose and mutability.
 
-The shift is less about adding AI-specific documents and more about being precise and structural in the documentation you were already writing.
+### 1. The Immutable History: ADRs and the MADR Standard
 
----
+**Location:** `docs/adrs/`  
+**Format:** Markdown Architecture Decision Records (MADR)  
+**The Rule:** If a decision changes the "DNA" of the service, it requires an ADR.
 
-## The Triad of Truth: ADRs, MADR, and the Architecture Overview
+The most common mistake in service documentation is trying to keep one giant "Architecture" file up to date. As systems evolve, the "why" gets lost in the "what."
 
-Three artifact types form the backbone of machine-useful service documentation:
+Using the MADR (Markdown Architecture Decision Record) format ensures that when a tool like Claude Code analyzes your repo, it sees a chronological log of why things are the way they are. It won't suggest a refactor that violates a decision you made six months ago because that decision is part of its indexed context.
 
-**Architecture Decision Records (ADRs)** capture *why* the system is built the way it is — specifically the decisions that were consciously made and the alternatives that were rejected. For AI agents, ADRs answer the question "is this a known design choice or a bug?" An agent that encounters a surprising pattern without a corresponding ADR has no signal either way. An agent that finds an ADR explaining "we chose denormalization here because reads are 1000x more common than writes, and the join cost was measurable in production" knows not to refactor it away.
+Most teams struggle with when to write an ADR. We must adopt a prescriptive "Trigger List." You write an ADR when:
 
-**MADR (Markdown Any Decision Record)** is a lightweight ADR format that stores decisions as Markdown files in the repository itself — typically under `docs/decisions/` or `docs/adr/`. Unlike wiki-based ADRs, MADR files travel with the code, appear in pull request diffs, and are as natural to grep as source files. For AI agents operating inside a git worktree, MADR files are the most accessible form of recorded design intent.
+- You introduce a new library or framework.
+- You change the data schema or persistence strategy.
+- You make a trade-off (e.g., "Choosing Latency over Consistency").
+- You define a communication pattern (Sync vs. Async).
 
-**The Architecture Overview** is a living index of what subsystems exist, what each owns, and how they depend on each other. The critical property is that it must be **maintained in the same commit as the code changes it describes** — not as a follow-up, not "when we get to it." An architecture overview that lags the codebase by two weeks is worse than no overview, because it actively misleads anyone (human or agent) who reads it.
+### 2. The Living Service Manual: Mutable Docs
 
----
+**Location:** `docs/` (Usage, Development, API)  
+**Format:** Markdown  
+**The Rule:** If it describes how to use or develop the current code, it stays with the code.
 
-## The Living Service Manual
+A service's documentation covers both its history and its present state. Specifically, while Architecture Decision Records (ADRs), a key subset of the documentation, explain why the service is structured the way it is, the remainder of the `docs/` folder dictates how to maintain and operate the service going forward. This is the mutable layer, it should always reflect the current state of the main branch.
 
-Beyond decisions, AI agents benefit from a structured service manual — the operational context that would otherwise live only in the heads of experienced engineers:
+- **Usage Docs:** How to consume this service? (Endpoints, Events, Client SDKs).
+- **Dev Docs:** How to run it locally? How do the internal modules interact?
 
-- **What does this service do, in one paragraph?** Not the mission statement. The actual behavior: what it consumes, what it produces, and what breaks if it goes down.
-- **What are the known failure modes?** Not an exhaustive list — the top three or four patterns that recur in incidents, with what to look for.
-- **What are the runbooks for the most common operations?** Deployment, rollback, feature flag management, database maintenance windows.
-- **What are the performance and scale characteristics?** P99 latency targets, expected QPS, known hot paths.
+Currently, we bury most, if not all, this important context in Confluence. This is a failure of discovery.
 
-The Living Service Manual doesn't need to be a single document. It needs to be discoverable from the root of the repository — linked from the README, co-located in `docs/`, and structured so that an agent starting from `git ls-files docs/` can find the right file for the right question.
+- **For IDE Agents:** When you open a file, tools like Copilot index adjacent Markdown files. If your "Service Auth Flow" is in `docs/auth.md`, the AI can explain the code to you. If it's in Confluence, the AI will guess.
+- **For CI Agents:** Security and linting agents can cross-reference your documentation against your implementation. If your docs say "We use AES-256" but your code uses "MD5," an agent can flag that discrepancy during a PR.
 
----
+### 3. The Shared Context: Confluence
 
-## Shared Context and the Confluence Problem
+**Location:** Central Wiki (Confluence)  
+**Format:** Rich Text / Collaborative  
+**The Rule:** If the code doesn't care about it, it goes here.
 
-Confluence, Notion, and similar wiki tools are optimized for human discovery — they have search, navigation, spaces, and permissions. They are poor contexts for AI agents: they are not in the repository, they are not versioned with the code, and their content structure is optimized for readability rather than machine parsing.
+There is a temptation to "put everything in the repo." This is a mistake. Repositories should contain documentation that is coupled to the code. Confluence (or your central wiki) is for documentation that spans across services, organizations, and business units:
 
-This does not mean abandon Confluence. It means recognize the distinction between **reference documentation** (stable, human-authored, suitable for wiki) and **operational context** (frequently updated, code-adjacent, must be in-repo). Architecture decision records, service manuals, and runbooks belong in the repository. Product specifications, roadmaps, and team policies can stay in the wiki.
+- **Cross-team dependencies:** How does the "Checkout" service fit into the "2025 Payments Initiative"?
+- **Business Logic/Product Vision:** Why does this feature exist for the customer?
+- **Roadmaps:** When are we sunsetting this version?
+- **Compliance:** Legal sign-offs and SOC2 audit trails.
+- **Organizational Alignment:** Onboarding guides for the whole department, security compliance policies, and meeting minutes.
 
-The test: if the document would help an AI agent understand a pull request or diagnose an incident, it belongs in the repository. If it would help a product manager understand a feature prioritization, it belongs in the wiki.
+AI agents operating at the IDE level (Copilot) care about the repo. AI agents operating at the Manager/Director level (Enterprise AI) care about the Confluence data. Keeping them separate ensures that your repository remains a lean, technical source of truth, while Confluence remains the accessible bridge for non-technical stakeholders.
 
----
+## "In-Repo" is the Only Way Forward
 
-## Move the Service Brain into the Repository
+Moving away from Confluence for technical documentation isn't just about convenience; it's about Discovery and Versioning.
 
-The practical recommendation is simple to state and requires sustained discipline to execute:
+1. **Atomic Changes:** When you change a feature, you update the code and the documentation in the same commit. The documentation is never "out of date" because it evolves with the logic.
+2. **Zero-Latency Context:** When an agent clones your repo to fix a bug, it has 100% of the knowledge required to solve the problem without ever leaving the terminal.
+3. **Governance through Linting:** We can now write scripts (or use AI) to "lint" our docs. We can ensure every new service has a `docs/adrs/0001-record-architecture-decisions.md` before it ever hits production.
 
-1. **Every significant design decision gets a MADR file.** Not a Jira comment, not a Slack thread, not a Confluence page — a Markdown file in `docs/decisions/` that travels with the code.
+## Conclusion
 
-2. **The architecture overview is a first-class artifact.** It is updated in the same commit as every file add, rename, and delete. It is reviewed at PR time. It is never allowed to lag.
+The era of "browsing the wiki" to understand a service is a relic of the past. The future belongs to teams who treat their documentation as a high-fidelity input for their AI coworkers.
 
-3. **The README is a map, not a description.** It tells agents (and people) where to find the detailed context: the architecture overview, the service manual, the runbook index, the decision log.
+Our mandate is clear: Stop documenting for the archive. Start documenting for the agent. Move your technical soul into the repo, adopt the MADR standard, and give your AI tools the context they deserve.
 
-4. **Runbooks are tested.** The best runbook is one that was used in a real incident and updated afterward. An untested runbook is documentation debt.
+## Sources and Further Reading
 
-5. **Documentation drift is a bug.** When an agent (or a new team member) acts on stale documentation and produces a wrong output, the root cause is a documentation bug, not a human or agent error. Treat it as such.
-
----
-
-## Sources
-
-- [IndieWeb POSSE](https://indieweb.org/POSSE)
-- [MADR — Markdown Architectural Decision Records](https://adr.github.io/madr/)
-- [Michael Nygard — Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
-- [RFC 2119 — Key words for use in RFCs](https://www.rfc-editor.org/rfc/rfc2119)
+- [Context Engineering for AI Agents in OSS](https://engineering.invoca.com/service-documentation-in-the-era-of-ai-f81e2ebc418d) — Research highlights that "Context Engineering" (the deliberate structuring of repo info) is the primary way to reduce hallucinations in tools like Claude Code and GitHub Agentic Workflows.
+- [AGENTS.md is the New ADR](https://engineering.invoca.com/service-documentation-in-the-era-of-ai-f81e2ebc418d) — Discusses the move of context from ADRs to `AGENTS.md` to assist in the knowledge (or context) transfer to AI Agents, and reinforcing best practices and past knowledge to move them forward.
+- [Vibe ADR: Building with Intention in the Age of AI](https://engineering.invoca.com/service-documentation-in-the-era-of-ai-f81e2ebc418d) — Shares the experience of using AI Agents to produce code and leave documentation and humans to produce intent. Documentation, and ADRs specifically, are that intent.
