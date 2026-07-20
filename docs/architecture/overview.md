@@ -1,14 +1,11 @@
 # Architecture Overview
 
 > **Authoritative boundary record for this project.** Every source file under this project's **source root(s)** belongs to exactly one subsystem listed here. Every cross-subsystem import must follow the dependency graph below. Orphan files and undeclared imports block merge.
->
-> Reference: [`subsystem-architecture.md`](../../adlc/methods/universal/subsystem-architecture.md) for the conceptual model, and [Universal Rule 8](../../adlc/methods/universal-agent-rules.md) for the binding rules.
 
 This document is maintained by:
-- **Scribe** owns the structure (subsystem list order, catalog format, dependency-graph syntax).
-- **Code** updates the catalog on every file add/move/delete in the same commit.
-- **Architect** updates the subsystem list and dependency graph when a plan introduces or rearranges boundaries.
-- **Reviewer** verifies orphan-free state and graph fidelity at PR time.
+- **planner** updates the subsystem list and dependency graph when a design introduces or rearranges boundaries.
+- **builder** updates the catalog on every file add/move/delete in the same commit.
+- **reviewer** verifies orphan-free state and graph fidelity at PR time.
 
 ---
 
@@ -17,9 +14,9 @@ This document is maintained by:
 - `app/` — Rails application code (controllers, models, views, helpers, JS, assets, mailers, jobs, channels)
 - `lib/` — application libraries (markdown renderer; Rails `lib/tasks` / `lib/assets` keepfiles)
 
-> Tests live under `spec/` — the test directory is **not** a source root. Config, `db/`, `bin/`, `resume/`, and `terraform/` are also outside this catalog.
+> Tests live under `spec/` — the test directory is **not** a source root. Config, `db/`, `bin/`, `resume/`, and `terraform/` are also outside this catalog. Colocated JS unit tests (`app/javascript/**/*.test.js`) are test files too and are excluded from the catalog.
 
-The orphan check is `git ls-files app lib`.
+The orphan check is `git ls-files app lib | grep -v '\.test\.js$'`.
 
 ---
 
@@ -29,6 +26,7 @@ The orphan check is `git ls-files app lib`.
 2. **content-domain** — ActiveRecord models for blog posts and projects (schema, validations, scopes, content file resolution). See [`sub-systems/content-domain.md`](./sub-systems/content-domain.md).
 3. **markdown-rendering** — Redcarpet HTML renderer that applies Tailwind class styling to blog/project markdown. See [`sub-systems/markdown-rendering.md`](./sub-systems/markdown-rendering.md).
 4. **web-presentation** — Controllers, views, helpers, Stimulus, Tailwind assets, and page chrome for the public site. See [`sub-systems/web-presentation.md`](./sub-systems/web-presentation.md).
+5. **keyboard-navigation** — Modal (vim/neovim-style) keyboard navigation: `g`-prefix nav, `f` hint-jump, `:` command mode, `/` search mode, theme cycling, plus the JSON search-index endpoint. See [`sub-systems/keyboard-navigation.md`](./sub-systems/keyboard-navigation.md).
 
 ---
 
@@ -40,10 +38,14 @@ graph TD
   CD[content-domain]
   MR[markdown-rendering]
   RR[rails-runtime]
+  KN[keyboard-navigation]
 
   WP --> CD
   WP --> MR
   WP --> RR
+  WP --> KN
+  KN --> CD
+  KN --> RR
 ```
 
 **How to read this graph**: an edge `A --> B` means "subsystem A may import from subsystem B's public contract." The reverse direction is NOT permitted unless a reverse edge is also drawn.
@@ -57,7 +59,7 @@ graph TD
 
 ## Source File Catalog (One-to-One Subsystem Mapping)
 
-Every file under `app/` and `lib/` appears here exactly once. Reviewers grep this list against `git ls-files app lib` to detect orphans. Catalog seed: **49** tracked files (`git ls-files app lib | wc -l`).
+Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers grep this list against `git ls-files app lib | grep -v '\.test\.js$'` to detect orphans. Catalog seed: **66** tracked source files (72 total `git ls-files app lib`, minus 6 colocated `*.test.js`).
 
 ### rails-runtime
 
@@ -126,6 +128,20 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 - `app/views/writing/index.rss.builder` — Writing RSS
 - `app/views/writing/show.html.erb` — Writing post detail
 
+### keyboard-navigation
+
+- `app/controllers/search_index_controller.rb` — `GET /search-index.json`; title/description/tags-only serialization of published Posts + all Projects for SEARCH mode (never rendered-HTML body)
+- `app/javascript/controllers/keyboard_nav_controller.js` — Stimulus controller wiring all modes; owns the only DOM/`getBoundingClientRect`/`.click` access and the `g`-prefix sequence buffer
+- `app/javascript/keyboard_nav/commands.js` — COMMAND-mode (`:`) registry + parse/rank helpers; documented extension point for later metrics commands
+- `app/javascript/keyboard_nav/resolve_nav_target.js` — pure `g`-prefix nav-target lookup via `data-nav-target`; injectable `root` for DOM-free unit tests
+- `app/javascript/keyboard_nav/search_index.js` — SEARCH-mode (`/`) lazy fetch + module-scope tab-session cache and pure substring/title>tag>excerpt ranking
+- `app/javascript/keyboard_nav/hints.js` — `f` hint-jump pure label-assignment logic (23-char alphabet, no DOM access)
+- `app/javascript/keyboard_nav/theme_cycle.js` — single-source theme cycle order + pure `nextTheme` (mirrors the theme-picker `<select>` order)
+- `app/views/layouts/components/_keyboard_command_bar.html.erb` — COMMAND (`:`) prompt chrome
+- `app/views/layouts/components/_keyboard_guide_dialog.html.erb` — `?` help/guide dialog listing bindings and commands
+- `app/views/layouts/components/_keyboard_hint_overlay.html.erb` — `f` hint-label overlay container
+- `app/views/layouts/components/_keyboard_status_line.html.erb` — mode/status line indicator
+
 ---
 
 ## Ownership Counts
@@ -136,6 +152,7 @@ Every file under `app/` and `lib/` appears here exactly once. Reviewers grep thi
 | content-domain | 4 |
 | markdown-rendering | 1 |
 | web-presentation | 47 |
-| **Total** | **55** |
+| keyboard-navigation | 11 |
+| **Total** | **66** |
 
-Must equal `git ls-files app lib | wc -l`.
+Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.

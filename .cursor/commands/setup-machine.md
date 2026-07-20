@@ -1,3 +1,3 @@
-# Setup Machine Command
+# /setup-machine
 
-@adlc/methods/commands/setup-machine.md
+Full instructions: `.claude/skills/setup-machine/SKILL.md` — read that file and follow it. It is the single source; nothing is duplicated here.

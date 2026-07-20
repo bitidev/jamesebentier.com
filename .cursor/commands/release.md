@@ -1,3 +1,3 @@
-# Release Command
+# /release [patch|minor|major]
 
-@adlc/methods/commands/release.md
+Full instructions: `.claude/skills/release/SKILL.md` — read that file and follow it. It is the single source; nothing is duplicated here.

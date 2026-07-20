@@ -6,14 +6,14 @@ Team and project conventions for jamesebentier.com.
 
 ## Language Standards
 
-Agents that write or review code (**code**, **test**, **reviewer**) must apply these ADLC language best-practice files (in addition to project docs under `docs/code/`):
+Agents that write or review code (**builder**, **test**, **reviewer**) must apply these ADLC language best-practice guides, copied into `docs/code/` alongside the project docs:
 
-1. `adlc/methods/language-best-practices/universal.md` — always
-2. `adlc/methods/language-best-practices/ruby.md` — Ruby code
-3. `adlc/methods/language-best-practices/rails.md` — Rails-specific code
-4. `adlc/methods/language-best-practices/typescript-javascript.md` — Stimulus / webpack JS under `app/javascript/`
+1. [`universal.md`](universal.md) — always
+2. [`ruby.md`](ruby.md) — Ruby code
+3. [`rails.md`](rails.md) — Rails-specific code
+4. [`typescript-javascript.md`](typescript-javascript.md) — Stimulus JS under `app/javascript/`
 
-Selection source: [`universal.md` — How Agents Select the Right File](../../adlc/methods/language-best-practices/universal.md#how-agents-select-the-right-file) (Rails app → `ruby.md` + `rails.md`).
+Selection source: [`universal.md` — How Agents Select the Right File](universal.md#how-agents-select-the-right-file) (Rails app → `ruby.md` + `rails.md`).
 
 ---
 
