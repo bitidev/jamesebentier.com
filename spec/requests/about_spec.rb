@@ -14,10 +14,15 @@ RSpec.describe "About page (1184)" do
       expect(response).to have_http_status(:ok)
     end
 
-    it "sets page meta tags for sharing" do
+    it "sets the about page title meta tag" do
       get about_path
 
       expect(response.body).to include("About — James Ebentier")
+    end
+
+    it "sets the about page description meta tag" do
+      get about_path
+
       expect(response.body).to include("Fractional software architect based in Berlin")
     end
 
@@ -29,21 +34,41 @@ RSpec.describe "About page (1184)" do
       )
     end
 
-    it "links the Work with me CTA to a mailto: address sourced from resume.yml" do
+    it "renders at least one Work with me CTA on about" do
       get about_path
 
       ctas = response.parsed_body.css("a.btn-primary").select { |link| link.text == "Work with me" }
+
       expect(ctas).not_to be_empty
-      expect(ctas.map { |cta| cta["href"] }).to all(eq("mailto:#{expected_email}"))
     end
 
-    it "includes narrative sections with proof links to writing and projects" do
+    it "links each about-page Work with me CTA to resume.yml mailto" do
+      get about_path
+
+      ctas = response.parsed_body.css("a.btn-primary").select { |link| link.text == "Work with me" }
+
+      expect(ctas.pluck("href")).to all(eq("mailto:#{expected_email}"))
+    end
+
+    it "includes the What I do and How I work section headings" do
       get about_path
 
       body = response.parsed_body
-      expect(body.text).to include("What I do", "How I work", "what I've shipped", "what I've written")
-      expect(body.css("a[href*='projects']").map(&:text)).to include("what I've shipped")
-      expect(body.css("a[href*='writing']").map(&:text)).to include("what I've written")
+      expect(body.text).to include("What I do", "How I work")
+    end
+
+    it "includes a proof link to projects" do
+      get about_path
+
+      project_link_texts = response.parsed_body.css("a[href*='projects']").map(&:text)
+      expect(project_link_texts).to include("what I've shipped")
+    end
+
+    it "includes a proof link to writing" do
+      get about_path
+
+      writing_link_texts = response.parsed_body.css("a[href*='writing']").map(&:text)
+      expect(writing_link_texts).to include("what I've written")
     end
   end
 
@@ -66,11 +91,17 @@ RSpec.describe "About page (1184)" do
   end
 
   describe "navigation" do
-    it "includes an About link in the header with data-nav-target for future keyboard nav" do
+    it "includes an About link in the header for future keyboard nav wiring" do
       get about_path
 
       about_link = response.parsed_body.at_css("header a[data-nav-target='about']")
       expect(about_link.text).to eq("About")
+    end
+
+    it "links the header About nav item to /about" do
+      get about_path
+
+      about_link = response.parsed_body.at_css("header a[data-nav-target='about']")
       expect(about_link["href"]).to eq(about_path)
     end
 
