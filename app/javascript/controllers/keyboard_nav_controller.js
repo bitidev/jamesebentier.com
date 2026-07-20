@@ -545,12 +545,13 @@ export default class extends Controller {
   }
 
   // Enter (spec R6): parseCommand the current input, look up by exact name/alias/
-  // unambiguous prefix (findCommand), run it against a context bound to this
-  // controller's own single-source-of-truth methods. An empty name (bare Enter with
-  // nothing typed) is a silent no-op -- there's nothing to be "not found." A `run` that
-  // returns `false` (e.g. `:theme bogus-name`, an unrecognized theme) is treated
-  // identically to an unrecognized command name -- one visible "not found" state, not
-  // two. On success: clear the input and return to NORMAL, restoring prior focus.
+  // unambiguous prefix (findCommand), then willCommandApply for side-effect-free
+  // preflight (today: `:theme` arg validity). An empty name (bare Enter with nothing
+  // typed) is a silent no-op -- there's nothing to be "not found." Missing command or
+  // failed preflight keep the bar open with one shared "not found" feedback state.
+  // On success: clear the input, exitToNormal (blur + restore priorFocus), then run()
+  // -- exit before run so showModal() (e.g. `:help`) does not capture the command
+  // input as the dialog's focus-restore target.
   commitCommand() {
     const { name, args } = parseCommand(this.commandInputTarget.value)
     if (!name) return
