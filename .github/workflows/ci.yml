@@ -103,30 +103,6 @@ jobs:
           install-chromedriver: false
       - name: Run JS unit tests (Vitest)
         run: yarn test:js
-      # Diagnostic (non-fatal): Ferrum swallows Chrome's stderr, so when the
-      # browser fails to boot we only ever see Ferrum::ProcessTimeoutError with
-      # no cause. Launch the exact setup-chrome binary with the same flags the
-      # driver uses and surface --version + startup output + a CDP probe, so a
-      # startup crash (missing lib, sandbox/namespace denial, etc.) is visible
-      # in the log instead of hidden behind the timeout.
-      - name: Debug Chrome launch (diagnostic, non-fatal)
-        env:
-          CUPRITE_CHROME_PATH: ${{ steps.setup_chrome.outputs.chrome-path }}
-        run: |
-          set +e
-          echo "chrome-path=$CUPRITE_CHROME_PATH"
-          "$CUPRITE_CHROME_PATH" --version
-          "$CUPRITE_CHROME_PATH" --headless --no-sandbox --disable-gpu \
-            --disable-dev-shm-usage --remote-debugging-port=9222 about:blank \
-            > /tmp/chrome.log 2>&1 &
-          CHROME_PID=$!
-          sleep 8
-          echo "=== chrome.log ==="
-          cat /tmp/chrome.log
-          echo "=== CDP probe (expect DevTools websocket JSON) ==="
-          curl -sS --max-time 5 http://127.0.0.1:9222/json/version || echo "NO CDP ENDPOINT"
-          kill "$CHROME_PID" 2>/dev/null
-          exit 0
       - name: Run Tests
         env:
           DATABASE_HOST: localhost
