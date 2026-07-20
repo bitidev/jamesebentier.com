@@ -287,4 +287,50 @@ RSpec.describe "Welcomes" do
       expect(option_values).to eq(%w[light dark dracula nord gruvbox catppuccin])
     end
   end
+
+  describe "GET / — newsletter signup form (#1186)" do
+    it "renders an email input on the home page" do
+      get root_path
+
+      expect(response.parsed_body.at_css("input[type='email'][name='subscriber[email]']")).to be_present
+    end
+
+    it "renders the newsletter form pointing at /newsletter" do
+      get root_path
+
+      forms = response.parsed_body.css("form[action='/newsletter']")
+
+      expect(forms).not_to be_empty
+    end
+
+    it "renders the consent checkbox on the home page" do
+      get root_path
+
+      expect(response.parsed_body.at_css("input[type='checkbox'][name='subscriber[consent]']")).to be_present
+    end
+
+    it "links the consent label to the privacy policy page" do
+      get root_path
+
+      expect(response.parsed_body.at_css("a[href='#{privacy_path}']")).to be_present
+    end
+  end
+
+  describe "GET / — footer newsletter signup form (#1186)" do
+    it "renders at least two newsletter forms (one in body, one in footer)" do
+      get root_path
+
+      forms = response.parsed_body.css("form[action='/newsletter']")
+
+      expect(forms.size).to be >= 2
+    end
+
+    it "renders the footer newsletter form inside the footer element" do
+      get root_path
+
+      footer_forms = response.parsed_body.at_css("footer").css("form[action='/newsletter']")
+
+      expect(footer_forms).not_to be_empty
+    end
+  end
 end
