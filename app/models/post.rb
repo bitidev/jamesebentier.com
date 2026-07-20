@@ -30,6 +30,9 @@ class Post < ApplicationRecord
     # the migration that calls it once (D4).
     string :kind,    limit: 20,  null: false, default: 'deep_dive', validates: { presence: true, inclusion: { in: KINDS } }
     string :excerpt, limit: 280, null: false, default: '', validates: { presence: true }
+
+    string :medium_url, limit: 1024, null: true,
+                        validates: { format: { with: %r{\Ahttps?://.+\z}i, allow_blank: true, message: "must be an http(s) URL" } }
   end
 
   before_validation -> { self.slug = slug.downcase if slug.present? }

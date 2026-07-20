@@ -29,6 +29,9 @@
           &middot; <%= @post.reading_time %> min read
         </span>
         <span class="text-sm text-base-content/70">By James Ebentier</span>
+        <% if @post.medium_url.present? %>
+          <a href="<%= @post.medium_url %>" class="text-sm link link-hover" target="_blank" rel="noopener noreferrer">Also on Medium</a>
+        <% end %>
       </div>
 
       <p class="text-lg text-base-content/80"><%= @post.excerpt %></p>
