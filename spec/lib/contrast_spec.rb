@@ -153,6 +153,22 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
     end
   end
 
+  # ---- 1193's regression gate: primary as foreground text on base-100 -----------------
+  #
+  # #1193 found that nord's `--color-primary` used as foreground text on `base-100` (the
+  # `text-primary` utility, e.g. section-eyebrow/hero-eyebrow slot) measures ~3.5:1, below
+  # WCAG AA 4.5:1. The gate above only asserts primary-content-on-primary (the button-face
+  # pair) -- it never checked `primary` as a *text color* painted on the page background.
+  # This closes that gap across all six bundled themes.
+  #
+  # Regression: #1193
+  %w[light dark dracula nord gruvbox catppuccin].each do |theme|
+    it "meets WCAG AA 4.5:1 for primary (foreground text) on base-100 in the #{theme} theme (#1193)" do
+      colors = colors_for(theme)
+      expect(contrast_ratio(colors['primary'], colors['base-100'])).to be >= 4.5
+    end
+  end
+
   # ---- 1181's opacity-modified subhead/date token: base-content/70 on base-100 -----------
   #
   # 1181 R1 introduces `text-base-content/70` (hero subhead; also the home card date line, R4)
@@ -163,10 +179,9 @@ RSpec.describe 'WCAG AA contrast regression gate' do # rubocop:disable RSpec/Des
   # gamma-encoded sRGB values `parse_color` returns, matching how browsers composite a
   # partially-transparent solid color, not a linear-light blend).
   #
-  # Deliberately out of scope: the pre-existing nord `text-primary`-on-base-100 gap flagged in
-  # 8cd4343's commit message (measures ~3.5:1) is a separate, pre-existing P1.1 token issue
-  # (the section-eyebrow/hero-eyebrow slot), not the token this issue's subhead/date line
-  # actually uses -- not fixed or asserted here, per that commit's own note.
+  # Note: the pre-existing nord `text-primary`-on-base-100 gap (section-eyebrow/hero-eyebrow
+  # slot, ~3.5:1) that 8cd4343's commit message flagged as out-of-scope for #1181 is now
+  # gated in the section immediately above (Regression: #1193).
   def blend_over(foreground, background, alpha)
     parse_color(foreground).zip(parse_color(background)).map { |fg, bg| (fg * alpha) + (bg * (1 - alpha)) }
   end
