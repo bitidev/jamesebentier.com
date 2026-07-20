@@ -4,12 +4,12 @@ xml.instruct! :xml, version: "1.0"
 xml.rss version: "2.0" do
   xml.channel do
     xml.title "Writing | James Ebentier | RSS"
-    xml.description "The blog of James Ebentier documenting his current leadning and what he is building through Biti LLC."
-    xml.link projects_url
+    xml.description "The blog of James Ebentier documenting his current learning and what he is building through Biti LLC."
+    xml.link posts_url
     xml.image do
       xml.url "https://jamesebentier.com/logo.png"
       xml.title "James Ebentier Writing"
-      xml.link projects_url
+      xml.link posts_url
     end
 
     Post.published.find_each do |blog|

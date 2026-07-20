@@ -225,6 +225,46 @@ RSpec.describe 'Writing' do
     end
   end
 
+  describe 'GET /writing.rss' do
+    it 'returns a successful response' do
+      get posts_path(format: :rss)
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'returns application/rss+xml' do
+      get posts_path(format: :rss)
+
+      expect(response.media_type).to eq('application/rss+xml')
+    end
+
+    it 'points the channel link at the writing index' do
+      get posts_path(format: :rss)
+
+      channel_link = Nokogiri::XML(response.body).at('channel > link').text
+      expect(channel_link).to eq(posts_url)
+    end
+
+    it 'points the channel image link at the writing index' do
+      get posts_path(format: :rss)
+
+      image_link = Nokogiri::XML(response.body).at('channel image link').text
+      expect(image_link).to eq(posts_url)
+    end
+
+    it 'does not include the pre-existing leadning typo in the channel description' do
+      get posts_path(format: :rss)
+
+      expect(response.body).not_to include('leadning')
+    end
+
+    it 'uses learning in the channel description' do
+      get posts_path(format: :rss)
+
+      expect(response.body).to include('learning')
+    end
+  end
+
   describe 'GET /blog (retired route -- D2/R3, no redirect)' do
     it 'no longer resolves -- returns 404, not a redirect' do
       get '/blog'
