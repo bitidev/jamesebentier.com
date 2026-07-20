@@ -50,6 +50,15 @@ RSpec.describe Post do
     # Excerpt (P1.4/#1183 R1/D4)
     it { is_expected.to have_db_column(:excerpt).of_type(:string).with_options(limit: 280, null: false, default: '') }
     it { is_expected.to validate_presence_of(:excerpt) }
+
+    # Medium URL (#1185)
+    it { is_expected.to have_db_column(:medium_url).of_type(:string).with_options(limit: 1024, null: true) }
+    it { is_expected.to allow_value(nil).for(:medium_url) }
+    it { is_expected.to allow_value('').for(:medium_url) }
+    it { is_expected.to allow_value('https://medium.com/@jamesebentier/some-post-abc123').for(:medium_url) }
+    it { is_expected.to allow_value('http://medium.com/p/some-post').for(:medium_url) }
+    it { is_expected.not_to allow_value('not-a-url').for(:medium_url) }
+    it { is_expected.not_to allow_value('ftp://medium.com/p/foo').for(:medium_url) }
   end
 
   # Post.featured / Post.for_home (1181 R2) -- curated-first, chronological-fallback, always

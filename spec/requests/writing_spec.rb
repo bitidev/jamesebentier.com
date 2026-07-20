@@ -223,6 +223,38 @@ RSpec.describe 'Writing' do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    context 'when the post has a medium_url (#1185)' do
+      let!(:syndicated_post) do
+        create(:post, :with_medium_url, slug: 'syndicated-post')
+      end
+
+      it 'renders the "Also on Medium" link' do
+        get post_path(slug: syndicated_post.slug)
+
+        expect(response.parsed_body.at_css('a[href="https://medium.com/p/example-post"]')).to be_present
+      end
+
+      it 'renders the "Also on Medium" link with target="_blank"' do
+        get post_path(slug: syndicated_post.slug)
+
+        expect(response.parsed_body.at_css('a[href="https://medium.com/p/example-post"]')['target']).to eq('_blank')
+      end
+
+      it 'renders the "Also on Medium" link with rel="noopener noreferrer"' do
+        get post_path(slug: syndicated_post.slug)
+
+        expect(response.parsed_body.at_css('a[href="https://medium.com/p/example-post"]')['rel']).to eq('noopener noreferrer')
+      end
+    end
+
+    context 'when the post has no medium_url (#1185)' do
+      it 'does not render an "Also on Medium" link' do
+        get post_path(slug: post.slug)
+
+        expect(response.parsed_body.at_css('a[href*="medium.com"]')).to be_nil
+      end
+    end
   end
 
   describe 'GET /writing.rss' do

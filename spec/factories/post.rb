@@ -21,5 +21,9 @@ FactoryBot.define do
     # create(:post) call site needs a real value.
     kind { "deep_dive" }
     excerpt { "A short teaser for the blog's return." }
+
+    trait :with_medium_url do
+      medium_url { "https://medium.com/p/example-post" }
+    end
   end
 end
