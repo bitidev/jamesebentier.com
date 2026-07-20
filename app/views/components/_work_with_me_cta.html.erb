@@ -1,0 +1,23 @@
+<%#
+  Shared "Work with me" CTA block.
+
+  Call shape:
+    render "components/work_with_me_cta"
+    render "components/work_with_me_cta", supporting_copy: "Custom supporting sentence."
+
+  Locals:
+    supporting_copy: optional -- overrides the default supporting sentence
+
+  href is sourced from resume_data[:basics][:email] (resume/resume.yml) so a future
+  form or booking URL is a one-line swap here.
+%>
+<%
+  default_copy = "Have a hard technical decision in front of you, or a team that could use an outside perspective? Let's talk."
+  copy = local_assigns[:supporting_copy] || default_copy
+%>
+<%= render layout: "components/section", locals: { eyebrow: "Get in touch" } do %>
+  <div class='text-center'>
+    <p class='text-lg text-base-content/70 mb-6'><%= copy %></p>
+    <%= render "components/cta_button", label: "Work with me", href: "mailto:#{resume_data[:basics][:email]}", style: :primary %>
+  </div>
+<% end %>

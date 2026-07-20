@@ -108,6 +108,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/components/_cta_button.html.erb` — Shared CTA button partial (primary/ghost)
 - `app/views/components/_pill.html.erb` — Shared tag/status pill partial (status→badge-role map)
 - `app/views/components/_section.html.erb` — Shared section wrapper partial (eyebrow/title + scroll motion)
+- `app/views/components/_work_with_me_cta.html.erb` — Shared "Work with me" mailto CTA block (home/about/footer)
 - `app/views/layouts/application.html.erb` — Main HTML layout (meta-tags, analytics, FOUC-prevention theme script)
 - `app/views/layouts/components/_header.html.erb` — Site header
 - `app/views/layouts/components/_footer.html.erb` — Site footer
@@ -116,6 +117,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/projects/index.html.erb` — Projects listing
 - `app/views/projects/index.rss.builder` — Projects RSS
 - `app/views/projects/show.html.erb` — Project detail
+- `app/views/welcome/about.html.erb` — About page (fractional-architect narrative)
 - `app/views/welcome/index.html.erb` — Landing page
 - `app/views/welcome/resume.html.erb` — Resume page shell
 - `app/views/welcome/resume/_education.html.erb` — Resume education partial
