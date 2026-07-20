@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_19_175525) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_20_215545) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -25,6 +25,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_175525) do
     t.string "keywords", limit: 1024, null: false
     t.string "kind", limit: 20, default: "deep_dive", null: false
     t.integer "lock_version", default: 1, null: false
+    t.string "medium_url", limit: 1024
     t.datetime "published_at", precision: nil, null: false
     t.string "slug", limit: 255, null: false
     t.json "tags", default: [], null: false
