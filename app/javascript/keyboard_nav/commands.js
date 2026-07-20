@@ -113,6 +113,17 @@ export function formatCommandInvocation(command) {
 // exactly one entry's name starts with it (an "unambiguous prefix" -- two+ matches is
 // treated the same as no match, since Enter must invoke one specific command, never
 // guess between several).
+// willCommandApply(command, args) -> whether run() would succeed without side effects.
+// Used by commitCommand() to reject bad input before exitToNormal(), since only `:theme`
+// can return false today -- every other v1 command always applies once found.
+export function willCommandApply(command, args) {
+  if (command.name === "theme") {
+    return THEME_CYCLE_ORDER.includes(args.trim())
+  }
+
+  return true
+}
+
 export function findCommand(name, registry) {
   const query = (name || "").trim().toLowerCase()
   if (!query) return null

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
-import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands } from "../keyboard_nav/commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands, willCommandApply } from "../keyboard_nav/commands"
 import { fetchSearchIndex, rankSearchResults } from "../keyboard_nav/search_index"
 import { assignHintLabels } from "../keyboard_nav/hints"
 
@@ -545,27 +545,30 @@ export default class extends Controller {
   }
 
   // Enter (spec R6): parseCommand the current input, look up by exact name/alias/
-  // unambiguous prefix (findCommand), run it against a context bound to this
-  // controller's own single-source-of-truth methods. An empty name (bare Enter with
-  // nothing typed) is a silent no-op -- there's nothing to be "not found." A `run` that
-  // returns `false` (e.g. `:theme bogus-name`, an unrecognized theme) is treated
-  // identically to an unrecognized command name -- one visible "not found" state, not
-  // two. On success: clear the input and return to NORMAL, restoring prior focus.
+  // unambiguous prefix (findCommand), then willCommandApply for side-effect-free
+  // preflight (today: `:theme` arg validity). An empty name (bare Enter with nothing
+  // typed) is a silent no-op -- there's nothing to be "not found." Missing command or
+  // failed preflight keep the bar open with one shared "not found" feedback state.
+  // On success: clear the input, exitToNormal (blur + restore priorFocus), then run()
+  // -- exit before run so showModal() (e.g. `:help`) does not capture the command
+  // input as the dialog's focus-restore target.
   commitCommand() {
     const { name, args } = parseCommand(this.commandInputTarget.value)
     if (!name) return
 
     const command = findCommand(name, COMMAND_REGISTRY)
-    const result = command ? command.run(args, this.commandContext()) : false
-
-    if (result === false) {
+    if (!command || !willCommandApply(command, args)) {
       this.setCommandFeedback(`${name}: command not found`)
       return
     }
 
     this.commandInputTarget.value = ""
     this.clearCommandFeedback()
+    // Exit COMMAND mode (blur + restore priorFocus) before run() -- especially
+    // openGuideDialog/showModal() -- so the native <dialog>'s own focus-restore on
+    // Esc-close returns to the pre-COMMAND target, not the now-hidden command input.
     this.exitToNormal()
+    command.run(args, this.commandContext())
   }
 
   // Bound methods handed to a command's run(args, context) -- each delegates to this
