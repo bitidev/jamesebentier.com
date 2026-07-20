@@ -19,8 +19,8 @@ require "rails_helper"
 # no explicit focus target lands on document.activeElement (document.body by default
 # on a fresh page load), exactly what the feature's document-level listener expects.
 RSpec.describe "Keyboard navigation -- NORMAL-mode navigation", :js do
-  # A long, real markdown post (not the factory's default nonexistent file_path) so the
-  # rendered page is tall enough to actually exercise gg/G scrolling.
+  # Long markdown fixture for scroll/hint-jump coverage (distinct from the factory default).
+  # The rendered page must be tall enough to exercise gg/G scrolling.
   let!(:long_post) do
     create(
       :post,

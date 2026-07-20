@@ -5,14 +5,10 @@ require 'rails_helper'
 # GET /writing, /writing/:slug (R3, R5, R6) -- the Notes/Deep Dives content model's
 # public-facing pages, migrated onto the shared components/_section/_card/_pill/_cta_button
 # partials (R6), mirroring spec/requests/projects_spec.rb's own real-controller/view-stack
-# style (see adlc/methods/code-quality/call-site-wiring-verification.md). Every fixture below
-# sets a real, on-disk file_path -- Post#reading_time (rendered on both the index card and the
-# show page's metadata row) reads Post#content, an uncached disk read of a file the factory's
-# own default file_path does NOT point at (see spec/factories/post.rb's own comment) -- the
-# same convention spec/system/keyboard_nav_*_spec.rb already established.
+# style (see adlc/methods/code-quality/call-site-wiring-verification.md). Post#reading_time
+# (index card + show metadata) reads Post#content from disk; the factory default file_path
+# points at a real public/blog fixture (#1201).
 RSpec.describe 'Writing' do
-  let(:on_disk_file_path) { '2024-06-17-Why-Is-Automated-Testing-Important.md' }
-
   describe 'GET /writing' do
     context 'when there are no posts' do
       it 'returns a successful response' do
@@ -36,17 +32,17 @@ RSpec.describe 'Writing' do
 
     context 'when there are posts of mixed kind and publish date' do
       let!(:oldest_note) do
-        create(:post, slug: 'oldest-note', kind: 'note', published_at: 3.days.ago, file_path: on_disk_file_path)
+        create(:post, slug: 'oldest-note', kind: 'note', published_at: 3.days.ago)
       end
       let!(:middle_note) do
-        create(:post, slug: 'middle-note', kind: 'note', published_at: 2.days.ago, file_path: on_disk_file_path)
+        create(:post, slug: 'middle-note', kind: 'note', published_at: 2.days.ago)
       end
       let!(:newest_deep_dive) do
-        create(:post, slug: 'newest-deep-dive', kind: 'deep_dive', published_at: 1.day.ago, file_path: on_disk_file_path)
+        create(:post, slug: 'newest-deep-dive', kind: 'deep_dive', published_at: 1.day.ago)
       end
 
       before do
-        create(:post, slug: 'future-post', kind: 'deep_dive', published_at: 1.day.from_now, file_path: on_disk_file_path)
+        create(:post, slug: 'future-post', kind: 'deep_dive', published_at: 1.day.from_now)
       end
 
       it 'renders one card per published post, excluding the unpublished future post' do
@@ -92,8 +88,7 @@ RSpec.describe 'Writing' do
           kind: 'note',
           excerpt: 'A short teaser for the note.',
           tags: %w[ruby rails],
-          published_at: Time.zone.parse('2026-01-15'),
-          file_path: on_disk_file_path
+          published_at: Time.zone.parse('2026-01-15')
         )
       end
 
@@ -144,7 +139,7 @@ RSpec.describe 'Writing' do
     end
 
     context 'with a Deep Dive post card' do
-      before { create(:post, slug: 'a-deep-dive', kind: 'deep_dive', file_path: on_disk_file_path) }
+      before { create(:post, slug: 'a-deep-dive', kind: 'deep_dive') }
 
       it 'renders the Deep Dive kind badge with the badge-accent role (D7)' do
         get posts_path
@@ -176,8 +171,7 @@ RSpec.describe 'Writing' do
         kind: 'note',
         excerpt: 'A short teaser for the article.',
         tags: %w[ruby],
-        published_at: Time.zone.parse('2026-01-15'),
-        file_path: on_disk_file_path
+        published_at: Time.zone.parse('2026-01-15')
       )
     end
 

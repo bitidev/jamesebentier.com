@@ -133,6 +133,20 @@ RSpec.describe Post do
     end
   end
 
+  describe 'factory default file_path (1201 regression)' do
+    it 'points at an existing public/blog markdown file' do
+      post = create(:post)
+
+      expect(Rails.public_path.join('blog', post.file_path)).to exist
+    end
+
+    it 'loads content without Errno::ENOENT' do
+      post = create(:post)
+
+      expect { post.content }.not_to raise_error
+    end
+  end
+
   # Computed, not stored (D5) -- Post#content is stubbed here to isolate the word-count/
   # ceiling/minimum-1 math from the real, uncached disk read (the filesystem is an external
   # boundary per the test-audit mock-boundary rules), so these boundary cases stay
@@ -160,7 +174,7 @@ RSpec.describe Post do
     end
 
     it 'computes from the real on-disk markdown body via the real, unstubbed #content (wiring check)' do
-      post = create(:post, file_path: '2024-06-17-Why-Is-Automated-Testing-Important.md')
+      post = create(:post)
 
       # This fixture's body (front matter stripped) is 540 words -- ceil(540 / 200.0) = 3.
       # A hardcoded expectation (not a recomputed copy of the implementation's own formula)

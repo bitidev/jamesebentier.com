@@ -22,9 +22,8 @@ require "rails_helper"
 # typing/n/N/Enter use ordinary Capybara `fill_in`/`send_keys` -- there is no ambiguous
 # full-height-body-click concern for a small, on-screen, already-focused <input>.
 RSpec.describe "Keyboard navigation -- SEARCH mode (/)", :js do
-  # file_path points at a real markdown file under public/blog (not the factory's default,
-  # nonexistent path) -- the Enter-navigates test below actually visits this post's show
-  # page, which calls Post#content and reads that file from disk.
+  # Long markdown fixture for search-index coverage (distinct from the factory default).
+  # The Enter-navigates test below visits this post's show page, which reads the file from disk.
   let!(:aws_post) do
     create(
       :post,

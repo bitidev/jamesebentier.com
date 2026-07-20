@@ -13,7 +13,8 @@ FactoryBot.define do
     # own full-URL convention, which the same components/_card partial already renders safely.
     image { "https://example.com/logo192.png" }
     published_at { Time.current }
-    file_path { 'blog/the-blog-is-back.md' }
+    # Basename only -- Post#content reads Rails.public_path.join('blog', file_path).
+    file_path { '2024-06-17-Why-Is-Automated-Testing-Important.md' }
     # kind mirrors spec/factories/project.rb's own `status { "Beta" }` convention of stating
     # the schema default explicitly rather than relying on it silently. excerpt is
     # presence-validated with no schema default that satisfies it (P1.4/#1183 D4), so every
