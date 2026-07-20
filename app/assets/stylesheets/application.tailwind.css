@@ -6,8 +6,12 @@
  * - light/dark: DaisyUI's stock palettes, with base/primary/accent repointed below (see
  *   "Amber accent" and "Dark theme base tokens") to the site's near-black-canvas +
  *   single-amber-accent direction.
- * - dracula/nord: DaisyUI 5 built-in themes, used unmodified -- their own iconic colors
- *   are the point of including them (do not repoint primary/accent to amber).
+ * - dracula: DaisyUI 5 built-in theme, used unmodified -- its own iconic colors
+ *   are the point of including it (do not repoint primary/accent to amber).
+ * - nord: DaisyUI 5 built-in theme, iconic cool-blue hue preserved, but primary and
+ *   primary-content are overridden below (see "Nord primary WCAG AA fix") because the
+ *   stock primary (L≈59%) measures only ~3.5:1 against nord's very light base-100 when
+ *   used as foreground text (`text-primary`), below the 4.5:1 WCAG AA floor (#1193).
  * - gruvbox/catppuccin: not built into DaisyUI 5; defined as custom themes below.
  */
 @plugin "daisyui" {
@@ -233,6 +237,21 @@
   --color-primary-content: #fff7ea;
   --color-accent: #8a5a10;
   --color-accent-content: #fff7ea;
+}
+
+/*
+ * Nord primary WCAG AA fix (#1193): nord's stock `--color-primary` (oklch 59.435% 0.077
+ * 254.027) measures ~3.5:1 against the very light nord base-100 (oklch 95.127% 0.007
+ * 260.731), below the 4.5:1 WCAG AA gate for foreground text (`text-primary`, e.g.
+ * section-eyebrow/hero-eyebrow). Darkening primary to L=50% raises the text ratio to
+ * ~5.2:1; flipping primary-content to near-white (L=95%) keeps the button-face pair
+ * (primary-content on primary) at ~5.2:1. Hue 254.027 and chroma 0.077 are preserved
+ * so nord's iconic cool-blue character is unchanged.
+ * This rule is unlayered (outside @layer) so it wins over DaisyUI's stock layered rule.
+ */
+[data-theme="nord"] {
+  --color-primary: oklch(50% 0.077 254.027);
+  --color-primary-content: oklch(95% 0.010 254.027);
 }
 
 /*
