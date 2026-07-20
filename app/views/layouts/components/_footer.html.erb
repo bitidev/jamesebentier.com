@@ -24,6 +24,7 @@
               <%= link_to 'Projects', projects_url, class: 'link link-hover' %>
               <%= link_to 'About', about_path, class: 'link link-hover' %>
               <%= link_to 'Resume', resume_url, class: 'link link-hover' %>
+              <%= link_to 'Privacy', privacy_path, class: 'link link-hover' %>
             </ul>
           </div>
 
@@ -51,6 +52,13 @@
                 <i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Projects
               <% end %>
             </div>
+          </div>
+          <div class="lg:w-1/2 w-full px-4 md:text-left text-center">
+            <div class="footer-title font-semibold text-base-content tracking-widest text-sm mb-3">
+              Newsletter
+            </div>
+            <p class="text-sm text-base-content/60 mb-3">Occasional writing on architecture, systems, and engineering craft.</p>
+            <%= render "components/newsletter_signup", source: "footer" %>
           </div>
         </div>
       </div>

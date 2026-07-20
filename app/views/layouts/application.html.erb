@@ -81,6 +81,17 @@
   <body data-controller="keyboard-nav">
     <%= render partial: 'layouts/components/header' %>
     <div class="max-w-screen-lg m-auto font-sans">
+      <%# Flash messages for newsletter signup and other controller actions %>
+      <% if flash[:notice].present? %>
+        <div class="alert alert-success mx-4 mt-4" role="alert">
+          <span><%= flash[:notice] %></span>
+        </div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="alert alert-error mx-4 mt-4" role="alert">
+          <span><%= flash[:alert] %></span>
+        </div>
+      <% end %>
       <%= yield %>
     </div>
     <%= render partial: 'layouts/components/footer' %>
