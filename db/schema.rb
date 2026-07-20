@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_20_215545) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_20_221507) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -48,5 +48,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_20_215545) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "url", limit: 1024, null: false
     t.index ["slug"], name: "index_projects_on_slug", unique: true
+  end
+
+  create_table "subscribers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "confirmation_token", limit: 255
+    t.datetime "confirmed_at", precision: nil
+    t.datetime "consent_at", precision: nil
+    t.string "consent_source", limit: 50
+    t.datetime "created_at", precision: nil, null: false
+    t.string "email", limit: 255, null: false
+    t.string "ip_hash", limit: 64
+    t.integer "lock_version", default: 1, null: false
+    t.datetime "unsubscribed_at", precision: nil
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["confirmation_token"], name: "index_subscribers_on_confirmation_token", unique: true
+    t.index ["email"], name: "index_subscribers_on_email", unique: true
   end
 end
