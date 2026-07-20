@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { resolveNavTarget } from "../keyboard_nav/resolve_nav_target"
 import { nextTheme } from "../keyboard_nav/theme_cycle"
-import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands } from "../keyboard_nav/commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands, willCommandApply } from "../keyboard_nav/commands"
 import { fetchSearchIndex, rankSearchResults } from "../keyboard_nav/search_index"
 import { assignHintLabels } from "../keyboard_nav/hints"
 
@@ -556,16 +556,18 @@ export default class extends Controller {
     if (!name) return
 
     const command = findCommand(name, COMMAND_REGISTRY)
-    const result = command ? command.run(args, this.commandContext()) : false
-
-    if (result === false) {
+    if (!command || !willCommandApply(command, args)) {
       this.setCommandFeedback(`${name}: command not found`)
       return
     }
 
     this.commandInputTarget.value = ""
     this.clearCommandFeedback()
+    // Exit COMMAND mode (blur + restore priorFocus) before run() -- especially
+    // openGuideDialog/showModal() -- so the native <dialog>'s own focus-restore on
+    // Esc-close returns to the pre-COMMAND target, not the now-hidden command input.
     this.exitToNormal()
+    command.run(args, this.commandContext())
   }
 
   // Bound methods handed to a command's run(args, context) -- each delegates to this

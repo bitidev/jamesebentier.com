@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands } from "./commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands, willCommandApply } from "./commands"
 
 describe("parseCommand", () => {
   it("parses a bare name with no args", () => {
@@ -163,5 +163,15 @@ describe("COMMAND_REGISTRY (v1 command set, spec R6)", () => {
 
     expect(context.setTheme).not.toHaveBeenCalled()
     expect(result).toBe(false)
+  })
+})
+
+describe("willCommandApply", () => {
+  it("accepts every v1 command except theme with bad args", () => {
+    const theme = findCommand("theme", COMMAND_REGISTRY)
+
+    expect(willCommandApply(findCommand("help", COMMAND_REGISTRY), "")).toBe(true)
+    expect(willCommandApply(theme, "dracula")).toBe(true)
+    expect(willCommandApply(theme, "not-a-real-theme")).toBe(false)
   })
 })

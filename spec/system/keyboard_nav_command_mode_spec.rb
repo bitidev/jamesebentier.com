@@ -171,6 +171,26 @@ RSpec.describe "Keyboard navigation -- COMMAND mode (:)", :js do
     expect(page).to have_selector("dialog#keyboard-guide-dialog[open]")
   end
 
+  # :help opens the guide via showModal() after COMMAND mode exits; Esc-closing the
+  # dialog must restore the focus target from before `:` was pressed, not the hidden
+  # command input (issue #1196).
+  it "returns focus to the pre-COMMAND target after Escape-closing the :help guide dialog" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+    visit root_path
+    wait_for_keyboard_nav_connected
+    page.evaluate_script('document.querySelector("[data-nav-target=\"projects\"]").focus()')
+
+    press(":")
+    fill_in "Command", with: "help"
+    find("#keyboard-command-input").send_keys(:enter)
+
+    expect(page).to have_selector("dialog#keyboard-guide-dialog[open]")
+
+    press(:escape)
+
+    expect(page).to have_no_selector("dialog#keyboard-guide-dialog[open]")
+    expect(page).to have_selector("[data-nav-target='projects']:focus")
+  end
+
   it "live-filters matching command names into the feedback row as the visitor types" do
     visit root_path
     wait_for_keyboard_nav_connected
