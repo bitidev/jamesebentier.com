@@ -12,6 +12,7 @@
       <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'home' } %></li>
       <li class='ml-4'><%= link_to 'Writing', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'writing' } %></li>
       <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'projects' } %></li>
+      <li class='ml-4'><%= link_to 'About', about_path, class: current_page?(about_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'about' } %></li>
       <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'resume' } %></li>
       <%# Terminal-styled theme switcher (R6). data-theme-picker-target="select" is read
           by app/javascript/controllers/theme_picker_controller.js; the render-blocking

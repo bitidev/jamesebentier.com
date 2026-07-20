@@ -90,14 +90,4 @@
   <% end %>
 <% end %>
 
-<%# "Work with me" CTA -- last on the page (R5), understated per the design doc's "no
-    banners" direction: a modest eyebrow, one supporting sentence, one primary
-    cta_button. mailto: target is sourced from resume_data (resume/resume.yml) -- the
-    one real, published contact address already in the codebase -- not a second
-    hardcoded literal. %>
-<%= render layout: "components/section", locals: { eyebrow: "Get in touch" } do %>
-  <div class='text-center'>
-    <p class='text-lg text-base-content/70 mb-6'>Have a hard technical decision in front of you, or a team that could use an outside perspective? Let's talk.</p>
-    <%= render "components/cta_button", label: "Work with me", href: "mailto:#{resume_data[:basics][:email]}", style: :primary %>
-  </div>
-<% end %>
+<%= render "components/work_with_me_cta" %>

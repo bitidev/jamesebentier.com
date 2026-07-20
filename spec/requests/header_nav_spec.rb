@@ -18,19 +18,19 @@ RSpec.describe "Header nav markup (1187 regression guard)" do
       expect(header.css("ul").size).to eq(1)
     end
 
-    it "wraps the Home/Writing/Projects/Resume nav <li> items inside that single <ul>" do
+    it "wraps the Home/Writing/Projects/About/Resume nav <li> items inside that single <ul>" do
       get root_path
       nav_ul = response.parsed_body.at_css("header ul")
 
-      expect(nav_ul.css("li").size).to be >= 4
+      expect(nav_ul.css("li").size).to be >= 5
     end
 
-    it "wraps the Home/Writing/Projects/Resume nav links inside that single <ul>" do
+    it "wraps the Home/Writing/Projects/About/Resume nav links inside that single <ul>" do
       get root_path
       nav_ul = response.parsed_body.at_css("header ul")
       nav_texts = nav_ul.css("li a").map(&:text)
 
-      expect(nav_texts).to include("Home", "Writing", "Projects", "Resume")
+      expect(nav_texts).to include("Home", "Writing", "Projects", "About", "Resume")
     end
 
     it "carries the load-bearing right-align/row-flex layout classes on that <ul> (bd4bad7)" do

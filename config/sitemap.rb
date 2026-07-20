@@ -40,6 +40,8 @@ SitemapGenerator::Sitemap.create do
     end
   end
 
+  add about_path, priority: 0.7, changefreq: "weekly"
+
   # Add any contoller index methods that are not already included or have noindex? set to true
   ApplicationController.descendants.each do |controller|
     next if controller.noindex? || controller.instance_methods.exclude?(:index) || !respond_to?(:"#{controller.name.underscore}_path")

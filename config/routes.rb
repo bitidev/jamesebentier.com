@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "writing/:slug"  => "writing#show",     as: :post
   get "projects"       => "projects#index",   as: :projects
   get "projects/:slug" => "projects#show",    as: :project
+  get "about"          => "welcome#about",    as: :about
   get "resume"         => "welcome#resume",   as: :resume
 
   # SEARCH mode's content index (#1187 R9) -- a JSON array of Post/Project items,

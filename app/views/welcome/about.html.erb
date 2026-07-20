@@ -1,0 +1,53 @@
+<%
+  set_meta_tags(
+    title: "About — James Ebentier",
+    description: "Fractional software architect based in Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.",
+  )
+%>
+
+<%# Hero: the page's one <h1> (positioning line from redesign-2026.md §2). Deliberately
+    outside components/section -- same pattern as the home hero and project show pages. %>
+<div class='mb-16'>
+  <p class='font-mono text-sm text-primary mb-2'>$ cat about.md</p>
+  <h1 class='font-mono text-3xl mb-4'>I help engineers get their systems right — a fraction of the time, all of the leverage.</h1>
+  <p class='text-lg text-base-content/70'>James Ebentier — software architect based in Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.</p>
+</div>
+
+<%= render layout: "components/section", locals: { title: "What I do" } do %>
+  <div class='prose max-w-none'>
+    <p>
+      I'm a fractional architect: I join a team for a defined stretch — weeks or months, not years —
+      to help you make the technical calls that are hard to make from the inside. Platform direction,
+      delivery bottlenecks, architectural debt, the migration you've been putting off. I bring an outside
+      perspective, hands-on depth, and a bias toward leaving things clearer than I found them.
+    </p>
+    <p>
+      This isn't a pitch deck or a services menu. The work speaks through
+      <%= link_to "what I've shipped", projects_url, class: "link link-primary" %>
+      and
+      <%= link_to "what I've written", posts_url, class: "link link-primary" %>.
+      If those resonate, we might be a good fit.
+    </p>
+  </div>
+<% end %>
+
+<%= render layout: "components/section", locals: { title: "How I work" } do %>
+  <div class='prose max-w-none'>
+    <p>
+      Mentorship is the through-line. The best fractional engagements aren't about one person
+      swooping in to save the day — they're about making the team around you stronger: senior
+      engineers who need a sounding board, tech leads stepping into architecture for the first
+      time, groups that want a shared vocabulary for how systems should evolve.
+    </p>
+    <p>
+      I care about developer experience, feedback loops, and the unglamorous infrastructure that
+      lets product teams move fast without breaking things. If you've read my
+      <%= link_to "resume", resume_path, class: "link link-primary" %>, you'll see that thread
+      running through years of platform and enablement work — it's the same instinct, applied on
+      a smaller, sharper scope.
+    </p>
+  </div>
+<% end %>
+
+<%= render "components/work_with_me_cta",
+           supporting_copy: "Curious whether an outside architect could help your team? Drop me a line — no pitch, just a conversation." %>
