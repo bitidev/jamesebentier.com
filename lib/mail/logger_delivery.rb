@@ -7,13 +7,14 @@
 # See docs/ops/newsletter-mail.md for how to swap in a real delivery method.
 #
 # Registration (config/environments/*.rb):
+#   require Rails.root.join("lib/mail/logger_delivery")
 #   config.action_mailer.delivery_method = :logger
-#   config.action_mailer.logger_settings  = { log_level: :info }  # optional
+#   config.action_mailer.logger_settings = { log_level: :info }  # optional
 module Mail
   class LoggerDelivery # rubocop:disable Style/Documentation
     attr_accessor :settings
 
-    def initialize(settings)
+    def initialize(settings = {})
       @settings = settings
     end
 
@@ -31,3 +32,7 @@ module Mail
     end
   end
 end
+
+# Register with Action Mailer so `config.action_mailer.logger_settings=` exists and
+# `delivery_method = :logger` resolves to this class (not a missing accessor).
+ActionMailer::Base.add_delivery_method :logger, Mail::LoggerDelivery if defined?(ActionMailer::Base)

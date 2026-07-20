@@ -83,6 +83,7 @@ Rails.application.configure do # rubocop:disable Metrics/BlockLength
   # Log-only mail delivery (no real SMTP/ESP until one is chosen). The LoggerDelivery
   # class writes the would-be email to the Rails log at :info level.
   # See docs/ops/newsletter-mail.md for the ESP swap-in path.
+  # add_delivery_method (inside the require) registers logger_settings= on ActionMailer::Base.
   require Rails.root.join("lib/mail/logger_delivery")
   config.action_mailer.delivery_method = :logger
   config.action_mailer.logger_settings = { log_level: :info }

@@ -3,9 +3,11 @@
 ## Current state (v1): log-only delivery
 
 Both `development` and `production` use the custom `Mail::LoggerDelivery` method defined in
-`lib/mail/logger_delivery.rb`. No email is sent externally; instead, the full message is
-written to the Rails log at `:info` level. The relevant configuration lives in
-`config/environments/development.rb` and `config/environments/production.rb`:
+`lib/mail/logger_delivery.rb`. That file registers itself via
+`ActionMailer::Base.add_delivery_method :logger, …` so `logger_settings=` is a real accessor.
+No email is sent externally; instead, the full message is written to the Rails log at `:info`
+level. The relevant configuration lives in `config/environments/development.rb` and
+`config/environments/production.rb`:
 
 ```ruby
 require Rails.root.join("lib/mail/logger_delivery")
