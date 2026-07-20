@@ -429,7 +429,7 @@ GEM
     securerandom (0.4.1)
     shoulda-matchers (7.0.1)
       activesupport (>= 7.1)
-    simplecov (1.0.1)
+    simplecov (1.0.2)
     sitemap_generator (7.1.0)
       builder (~> 3.0)
     sprockets (4.2.2)
