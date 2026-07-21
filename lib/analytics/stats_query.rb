@@ -55,7 +55,26 @@ module Analytics
         end
       end
 
+      # Daily view-count series for `window` (oldest -> newest), counting the same rows
+      # :total counts (no visitor_type filter). Zero-view days are back-filled with 0 so
+      # the array length always equals the window's day count (e.g. "7d" -> 7 entries).
+      def daily_view_counts(window: "7d")
+        since = window_start(window)
+        counts_by_date = PageView.where(recorded_at: since..)
+                                 .group(Arel.sql("DATE(recorded_at)")).count
+                                 .transform_keys { |date| date.is_a?(String) ? Date.parse(date) : date }
+
+        day_range(window).map { |day| counts_by_date.fetch(day, 0) }
+      end
+
       private
+
+      def day_range(window)
+        amount, unit = window.match(/\A(\d+)([dh])\z/i).captures
+        days_count = [unit.casecmp("h").zero? ? (amount.to_i / 24.0).ceil : amount.to_i, 1].max
+        end_date = Time.current.to_date
+        ((end_date - (days_count - 1))..end_date).to_a
+      end
 
       def views_payload(scope, window, since) # rubocop:disable Metrics/MethodLength
         counts = scope.group(:visitor_type).count

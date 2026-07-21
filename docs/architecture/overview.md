@@ -87,6 +87,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
 - `app/controllers/newsletters_controller.rb` — Newsletter signup (POST /newsletter), confirm, unsubscribe
 - `app/controllers/concerns/.keep` — Concerns directory keepfile
+- `app/helpers/analytics_helper.rb` — `sparkline` (daily view-count series → block-glyph string) for the Home stats block
 - `app/helpers/application_helper.rb` — Social icon helpers
 - `app/helpers/blog_helper.rb` — `render_markdown` via `Blog::Renderer`
 - `app/helpers/resume_helper.rb` — Resume YAML load

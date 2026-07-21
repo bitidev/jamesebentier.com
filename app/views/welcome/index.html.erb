@@ -46,14 +46,16 @@
     </div>
   <% end %>
 
-  <%# Static, clearly-labelled analytics teaser (design doc's Home section + operator
-      decision): NOT a live query -- the muted note itself signals this is a sample,
-      and points at the real, already-shipped `:stats` COMMAND-mode query
-      (app/javascript/keyboard_nav/commands.js) for actual live numbers. %>
+  <%# Real first-party analytics block (#1226 PR review fix): the total and sparkline are
+      a live server-side query (WelcomeController#index, via Analytics::StatsQuery) over
+      the same "views" metric (no visitor_type filter) that `:stats views --last 7d`
+      queries live, so the two always agree. Renders "0 views" and a flat sparkline
+      honestly on a brand-new, empty DB rather than hiding the block. %>
   <p class="text-[15px] mb-3.5"><span class="text-primary">james@ebentier:~</span>$ stats views --last 7d</p>
   <div class="mb-12 flex items-baseline gap-5 flex-wrap">
-    <span class="text-[26px] tracking-[4px] text-primary leading-none" aria-hidden="true">▁▂▂▃▅▃▇</span>
-    <span class="text-[15px]"><span class="font-bold">1,284</span> views</span>
+    <span class="text-[26px] tracking-[4px] text-primary leading-none" aria-hidden="true"><%= sparkline(@daily_view_counts) %></span>
+    <span class="sr-only"><%= @views_stats[:total] %> views over the last 7 days</span>
+    <span class="text-[15px]"><span class="font-bold"><%= number_with_delimiter(@views_stats[:total]) %></span> views</span>
     <span class="text-[13px] text-base-content/50">first-party only — no third-party trackers. query it yourself with <span class="text-primary">:</span>stats</span>
   </div>
 
