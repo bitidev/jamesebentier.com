@@ -17,7 +17,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - `app/controllers/search_index_controller.rb` — `GET /search-index.json`; SEARCH mode's
   (#1187 R9) plain-text-fields-only JSON index (`title`/`url`/`excerpt`/`tags`/`type`)
   over `Post.published`/`Project`
-- `app/views/layouts/application.html.erb` — layout, meta-tags, Font Awesome, production analytics, FOUC-prevention theme script
+- `app/views/layouts/application.html.erb` — layout, meta-tags, Font Awesome, FOUC-prevention theme script
 - `app/assets/stylesheets/application.tailwind.css` — theme/token source of truth (type scale, self-hosted fonts, DaisyUI theme set)
 - `app/views/components/` — shared ERB component partials (section, card, pill, cta_button)
 - `app/helpers/blog_helper.rb` — markdown rendering bridge
@@ -31,10 +31,10 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 ## Public Contract
 
-- **HTTP routes**: `/`, `/resume`, `/writing`, `/writing/:slug`, `/projects`, `/projects/:slug`, `/search-index.json`, `/up`
+- **HTTP routes**: `/`, `/resume`, `/writing`, `/writing/:slug`, `/projects`, `/projects/:slug`, `/search-index.json`, `/analytics/stats.json`, `/up`
 - **Exports**: helpers `render_markdown`, `resume_data`, `style_for_level`, `social_profile_icon`
 - **Component partials**: `components/section`, `components/card`, `components/pill`, `components/cta_button` (plain ERB, rendered via `render` / `render layout:`; see the partials' own header comments for the locals/block contract and the pill status/kind→badge-role maps — `components/_pill`'s `variant: :kind` option, alongside the existing `:status`/`:tag` variants, P1.4/#1183)
-- **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware); `data-controller="keyboard-nav"` (mounted once on `<body>` — modal NORMAL/COMMAND/SEARCH keyboard layer, #1187; ships incrementally, see that controller's file header for what's live today)
+- **Stimulus**: `data-controller="collapse"` toggle behavior; `data-controller="theme-picker"` (theme switch + `localStorage` persist); `data-controller="motion"` (scroll fade/slide-in, reduced-motion aware); `data-controller="keyboard-nav"` (mounted once on `<body>` — modal NORMAL/COMMAND/SEARCH keyboard layer, #1187; ships incrementally, see that controller's file header for what's live today); `data-controller="analytics-visit"` (Turbo Drive page-view beacon, #1188)
 - **Assets**: webpack JS bundle + Tailwind CSS build (`yarn build` / `yarn build:css`); self-hosted webfonts under `public/fonts/` (Commit Mono, Inter)
 
 ---
@@ -43,7 +43,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 
 - Controllers stay thin: load models by slug, leave markup to views/helpers.
 - Resume content is YAML at `resume/resume.yml` (rendered HTML may also be produced separately under `resume/` tooling) — not the DB.
-- Production-only analytics (Metricool, Google Analytics) are gated by `Rails.env.production?` in the layout.
+- First-party analytics (#1188): cookieless `PageView` rows in Postgres, recorded on full-page GETs and Turbo Drive beacons; bot UA labeled at ingest; public aggregates via `:stats` in COMMAND mode (`GET /analytics/stats.json`).
 - Theme is client-driven: a render-blocking inline script in the layout `<head>` applies the visitor's stored choice (the `theme` `localStorage` key) to `<html data-theme>` before first paint, the `theme-picker` controller switches and persists it, and it defaults to `light` for first-time visitors. The centered `max-w-screen-lg` content column is unchanged.
 - The `keyboard-nav` layer never intercepts keys in native form fields or its own COMMAND/SEARCH inputs (single generic editable-target guard, checked via `.closest()` so it also covers a native `<select>`'s own open-dropdown descendants); `Esc` always returns to NORMAL; the layer attaches no `keydown` listener on touch/no-hover-precise-pointer devices.
 
@@ -53,7 +53,7 @@ Render the public jamesebentier.com experience — landing, resume, blog, and pr
 - **Sensitive data handled**: none in views; resume is public professional data from YAML.
 - **Log hygiene**: filter parameter logging via Rails initializer; no PII collection forms today.
 - **Encryption posture**: TLS at CloudFront/Heroku edge.
-- **Known risks**: Third-party script tags (Font Awesome kit, Metricool, gtag) load in production; `render_markdown` marks HTML safe.
+- **Known risks**: Third-party script tag (Font Awesome kit) loads on every page; `render_markdown` marks HTML safe.
 
 ---
 

@@ -77,6 +77,30 @@ export const COMMAND_REGISTRY = [
       context.openGuideDialog()
     },
   },
+  {
+    name: "stats",
+    aliases: [],
+    description: "Page-view aggregates (views | top posts | referrers)",
+    staysInCommandMode: true,
+    run: (args, context) => {
+      const parsed = parseStatsArgs(args)
+      if (!parsed) return false
+
+      return fetch(`/analytics/stats.json?q=${encodeURIComponent(parsed.query)}`, {
+        headers: { Accept: "application/json" },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("stats unavailable")
+          return response.json()
+        })
+        .then((data) => {
+          context.setCommandFeedback((data.lines || []).join("  "))
+        })
+        .catch(() => {
+          context.setCommandFeedback("stats unavailable")
+        })
+    },
+  },
 ]
 
 // parseCommand(input) -> { name, args }. First whitespace-delimited token is the
@@ -121,7 +145,57 @@ export function willCommandApply(command, args) {
     return THEME_CYCLE_ORDER.includes(args.trim())
   }
 
+  if (command.name === "stats") {
+    return parseStatsArgs(args) !== null
+  }
+
   return true
+}
+
+export const STATS_LAST_PATTERN = /^--last\s+(\d+[dh])$/i
+
+// parseStatsArgs(args) -> { metric, window, query } or null. Accepts:
+//   views [--last Nd|Nh]
+//   top posts [--last Nd|Nh]
+//   referrers [--last Nd|Nh]
+// Default window is 7d when --last is omitted.
+export function parseStatsArgs(args) {
+  const trimmed = (args || "").trim()
+  if (!trimmed) return null
+
+  let metric
+  let remainder
+
+  if (trimmed.startsWith("top posts")) {
+    metric = "top_posts"
+    remainder = trimmed.slice("top posts".length).trim()
+  } else if (trimmed.startsWith("views")) {
+    metric = "views"
+    remainder = trimmed.slice("views".length).trim()
+  } else if (trimmed.startsWith("referrers")) {
+    metric = "referrers"
+    remainder = trimmed.slice("referrers".length).trim()
+  } else {
+    return null
+  }
+
+  const window = parseStatsWindow(remainder)
+  if (!window) return null
+
+  const queryByMetric = {
+    views: "views",
+    top_posts: "top posts",
+    referrers: "referrers",
+  }
+
+  return { metric, window, query: `${queryByMetric[metric]} --last ${window}` }
+}
+
+function parseStatsWindow(remainder) {
+  if (!remainder) return "7d"
+
+  const match = remainder.match(STATS_LAST_PATTERN)
+  return match ? match[1].toLowerCase() : null
 }
 
 export function findCommand(name, registry) {
