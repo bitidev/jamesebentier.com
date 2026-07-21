@@ -196,12 +196,17 @@ RSpec.describe 'Writing' do
       expect(response.parsed_body.at_css('h1').classes).to include('font-mono')
     end
 
-    it 'renders the kind glyph and an sr-only kind label in the meta line' do # rubocop:disable RSpec/MultipleExpectations
+    # Copilot review fix (#1226, commit 705df34): the meta line used to carry BOTH a
+    # decorative aria-hidden glyph AND a duplicate sr-only kind label, so screen readers
+    # announced the kind twice. The glyph is now purely decorative (aria-hidden, no
+    # sr-only twin) -- the visible "<kind> · date · N min" text right after it is what
+    # conveys the kind to assistive tech.
+    it 'renders the kind glyph as decorative and conveys the kind via the visible meta text (a11y fix, no duplicate sr-only label)' do # rubocop:disable RSpec/MultipleExpectations
       get post_path(slug: post.slug)
       meta = response.parsed_body.at_css('article p')
 
       expect(meta.at_css('span[aria-hidden="true"]').text).to eq(post.kind_glyph)
-      expect(meta.at_css('span.sr-only').text).to eq(post.kind_label)
+      expect(meta.at_css('span.sr-only')).to be_nil
       expect(meta.text).to include(post.kind_label.downcase)
     end
 
