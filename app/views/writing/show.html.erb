@@ -7,38 +7,43 @@
     twitter: { image: "https://jamesebentier.com/#{@post.image}" }
   )
 %>
-<main class="mx-auto p-4">
-  <article class="flex justify-center">
-    <div class="bg-base-100 rounded shadow-lg px-12 py-6 prose lg:prose-base lg:w-full lg:max-w-screen-lg">
-      <%- if @post.image %>
-      <figure class="flex justify-center">
-        <img src="<%= @post.image %>" alt="<%= @post.title %>" class="rounded bg-base-200 max-h-72">
-      </figure>
-      <% end %>
-      <h1 class="font-mono text-3xl font-bold mb-4"><%= @post.title %></h1>
+<%# Terminal-identity redesign (#1226): article reading column. No hero image -- the
+    design reference's Post detail screen doesn't render one (the site's imagery-free
+    terminal aesthetic), unlike the pre-redesign template which showed @post.image
+    when present. Medium-syndication callout (#1185) keeps its existing copy/behavior,
+    just restyled into the bordered callout the design doc calls for. %>
+<article class="max-w-[740px] mx-auto px-8 pt-12 pb-[88px] font-sans text-lg leading-[1.7]">
+  <%= link_to "cd ../writing ←", posts_path, class: "font-mono text-[13px] text-base-content/50 no-underline hover:text-primary inline-block mb-7" %>
 
-      <%# Metadata row (R5): kind badge, tag pills, published date, reading time -- all via
-          the shared P1.1 components, in this order. %>
-      <div class="flex flex-wrap items-center gap-3 mb-4 not-prose">
-        <%= render "components/pill", label: @post.kind_label, variant: :kind %>
-        <% @post.tags.each do |tag| %>
-          <%= render "components/pill", label: tag, variant: :tag %>
-        <% end %>
-        <span class="text-sm text-base-content/70">
-          <time datetime="<%= @post.published_at.iso8601 %>"><%= @post.published_at.strftime("%B %d, %Y") %></time>
-          &middot; <%= @post.reading_time %> min read
-        </span>
-        <span class="text-sm text-base-content/70">By James Ebentier</span>
-        <% if @post.medium_url.present? %>
-          <a href="<%= @post.medium_url %>" class="text-sm link link-hover" target="_blank" rel="noopener noreferrer">Also on Medium</a>
-        <% end %>
-      </div>
+  <p class="font-mono text-[13px] text-base-content/50 mb-3.5">
+    <span class="text-primary" aria-hidden="true"><%= @post.kind_glyph %></span>
+    <span class="sr-only"><%= @post.kind_label %></span>
+    <%= @post.kind_label.downcase %> &middot; <%= @post.published_at.strftime("%Y-%m-%d") %> &middot; <%= @post.reading_time %> min
+    <% @post.tags.each do |tag| %>
+      &middot; #<%= tag %>
+    <% end %>
+  </p>
 
-      <p class="text-lg text-base-content/80"><%= @post.excerpt %></p>
+  <h1 class="font-mono text-4xl leading-[1.25] font-bold mb-4"><%= @post.title %></h1>
+  <p class="text-xl text-base-content/70 mb-5"><%= @post.excerpt %></p>
 
-      <div>
-        <%= render_markdown(@post.content) %>
-      </div>
+  <% if @post.medium_url.present? %>
+    <p class="font-mono text-[13px] text-base-content/50 border-l-2 border-primary pl-3.5 mb-11">
+      <%= link_to "Also on Medium", @post.medium_url, class: "text-primary no-underline hover:underline", target: "_blank", rel: "noopener noreferrer" %>
+    </p>
+  <% end %>
+
+  <div class="prose max-w-none">
+    <%= render_markdown(@post.content) %>
+  </div>
+
+  <div class="border border-base-300 bg-base-200 rounded-[10px] p-6 md:p-7 flex items-center gap-6 flex-wrap font-mono mt-12">
+    <div class="flex-1 min-w-[240px]">
+      <p class="text-[13px] text-primary mb-1.5"># subscribe</p>
+      <p class="font-sans text-base text-base-content/70 m-0">Occasional writing on systems &amp; craft — no spam.</p>
     </div>
-  </article>
-</main>
+    <div class="flex-1 min-w-[240px]">
+      <%= render "components/newsletter_signup", source: "post" %>
+    </div>
+  </div>
+</article>

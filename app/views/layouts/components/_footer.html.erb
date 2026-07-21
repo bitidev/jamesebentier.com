@@ -1,67 +1,42 @@
-<footer class="bg-base-200 border-t border-base-content/10">
-    <div class="max-w-7xl mx-auto px-8 py-24">
-      <div class=" flex lg:items-start md:flex-row md:flex-nowrap flex-wrap flex-col">
-        <div class="w-64 flex-shrink-0 md:mx-0 mx-auto text-center md:text-left">
-          <a href="/#" aria-current="page" class="flex gap-2 justify-center md:justify-start items-center">
-            <img src='/favicon.ico' alt="James Ebentier" class='w-6 h-6' width='24' height='24' />
-            <strong class="font-extrabold tracking-tight text-base md:text-lg">
-              James Ebentier
-            </strong>
-          </a>
-
-          <p class="mt-3 text-sm text-base-content/60">
-            Copyright © James Ebentier <%= Date.today.year %> - All rights reserved
-          </p>
-        </div>
-        <div class="flex-grow flex flex-wrap justify-center -mb-10 md:mt-0 mt-10 text-center">
-          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
-            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
-              Links
-            </div>
-
-            <ul class='flex flex-col list-none justify-center items-center md:items-start gap-2 mb-10 text-sm'>
-              <%= link_to 'Writing', posts_url, class: 'link link-hover' %>
-              <%= link_to 'Projects', projects_url, class: 'link link-hover' %>
-              <%= link_to 'About', about_path, class: 'link link-hover' %>
-              <%= link_to 'Resume', resume_url, class: 'link link-hover' %>
-              <%= link_to 'Privacy', privacy_path, class: 'link link-hover' %>
-            </ul>
-          </div>
-
-          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
-            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
-              Social
-            </div>
-
-            <div class="flex flex-row space-x-4 items-start mb-10 text-sm">
-              <a href='https://twitter.com/jebentier' rel='noreferrer' target='_blank' title='jebentier twitter account' data-controller='mui-icons'><%= social_profile_icon :twitter %></a>
-              <a href='https://linkedin.com/in/jebentier' rel='noreferrer' target='_blank' title='jebentier linkedin account'><%= social_profile_icon :linkedin %></a>
-              <a href='https://github.com/jebentier' rel='noreferrer' target='_blank' title='jebentier github account'><%= social_profile_icon :github %></a>
-            </div>
-          </div>
-          <div class="lg:w-1/4 md:w-1/2 w-full px-4">
-            <div class="footer-title font-semibold text-base-content tracking-widest text-sm md:text-left mb-3">
-              Feeds
-            </div>
-
-            <div class="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
-              <%= link_to posts_url(format: "rss"), target: "_blank", title: "writing rss feed" do %>
-                <i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Writing
-              <% end %>
-              <%= link_to projects_url(format: "rss"), target: "_blank", title: "projects rss feed", class: 'link link-hover' do %>
-                <i class="fa-solid fa-square-rss text-orange-400 text-base"></i> Projects
-              <% end %>
-            </div>
-          </div>
-          <div class="lg:w-1/2 w-full px-4 md:text-left text-center">
-            <div class="footer-title font-semibold text-base-content tracking-widest text-sm mb-3">
-              Newsletter
-            </div>
-            <p class="text-sm text-base-content/60 mb-3">Occasional writing on architecture, systems, and engineering craft.</p>
-            <%= render "components/newsletter_signup", source: "footer" %>
-          </div>
-        </div>
+<%# Terminal-identity redesign (#1226): full 3-column footer, rendered Home-only now
+    (app/views/layouts/application.html.erb gates this partial behind
+    ApplicationHelper#show_full_footer?) -- interior pages end at the statusline.
+    The shared work_with_me_cta CTA moved OUT of the footer; each page carries its own
+    CTA block instead (see components/_work_with_me_cta.html.erb). No Impressum link:
+    the design reference shows "Impressum · Privacy", but this app has no Impressum
+    route/page to link to (only /privacy exists) -- omitted rather than fabricate a
+    path literal for a page that doesn't exist. %>
+<footer class="border-t border-base-300 font-mono">
+  <div class="max-w-[1088px] mx-auto px-8 py-12 grid gap-12 md:grid-cols-[1.2fr_0.7fr_1.3fr]">
+    <div>
+      <p class="text-[15px] font-bold mb-2.5">
+        <span class="text-primary" aria-hidden="true">❯</span> james@ebentier
+      </p>
+      <p class="text-[13px] text-base-content/50 mb-4">
+        &copy; <%= Date.today.year %> James Ebentier &middot; Berlin<br>
+        <%= link_to "Privacy", privacy_path, class: "hover:text-primary" %>
+      </p>
+      <div class="flex gap-4 text-[17px] text-base-content/70">
+        <a href="https://github.com/jebentier" rel="noreferrer" target="_blank" title="jebentier github account" class="hover:text-primary"><%= social_profile_icon :github %></a>
+        <a href="https://linkedin.com/in/jebentier" rel="noreferrer" target="_blank" title="jebentier linkedin account" class="hover:text-primary"><%= social_profile_icon :linkedin %></a>
+        <a href="https://twitter.com/jebentier" rel="noreferrer" target="_blank" title="jebentier twitter account" class="hover:text-primary"><%= social_profile_icon :twitter %></a>
+        <a href="<%= posts_url(format: "rss") %>" target="_blank" title="writing rss feed" class="hover:text-primary"><i class="fa-solid fa-square-rss text-base"></i></a>
       </div>
-      <%= render "components/work_with_me_cta" %>
     </div>
-  </footer>
+
+    <div class="text-sm">
+      <p class="text-[13px] text-base-content/50 mb-2.5"># sitemap</p>
+      <div class="flex flex-col gap-2">
+        <%= link_to "/writing", posts_url, class: "text-base-content/70 hover:text-primary no-underline" %>
+        <%= link_to "/projects", projects_url, class: "text-base-content/70 hover:text-primary no-underline" %>
+        <%= link_to "/about", about_path, class: "text-base-content/70 hover:text-primary no-underline" %>
+        <%= link_to "/resume", resume_path, class: "text-base-content/70 hover:text-primary no-underline" %>
+      </div>
+    </div>
+
+    <div>
+      <p class="text-[13px] text-base-content/50 mb-2.5"># newsletter &mdash; occasional writing on systems &amp; craft</p>
+      <%= render "components/newsletter_signup", source: "footer" %>
+    </div>
+  </div>
+</footer>

@@ -9,54 +9,60 @@
   )
 %>
 
-<%# Page heading stays an <h1> (one per page); each project card's title is itself the
-    focusable link to the show page (R3) -- the triple-link CTAs below it link elsewhere
-    (or the same demo URL), so the title carries the card's keyboard/screen-reader-reachable
-    "go to this project's page" duty that a dedicated "View Project" CTA used to. %>
-<h1 class='font-mono text-3xl mb-4'>Recent Projects</h1>
+<%# Terminal-identity redesign (#1226): each project as a terminal-window pane. Status
+    filter (R4) reuses the existing Project.by_status/Project::STATUSES contract
+    unchanged, just restyled into --all/--pre-launch/--beta/--live pills. %>
+<div class="max-w-[1088px] mx-auto px-8 pt-14 pb-[72px] font-mono">
+  <p class="text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ ls ~/projects</p>
+  <h1 class="text-4xl font-bold mb-6">Projects</h1>
 
-<% projects = Project.by_status(params[:status]) %>
-
-<%= render layout: "components/section" do %>
   <% if Project.count.zero? %>
     <%# Table-wide empty (R5.1): brand-new database, nothing to filter -- no filter row. %>
-    <p class='font-mono'>Projects are coming soon &mdash; check back shortly.</p>
+    <p>Projects are coming soon &mdash; check back shortly.</p>
   <% else %>
-    <nav class='flex gap-4 mb-6 font-mono text-sm' aria-label='Filter projects by status'>
-      <%= link_to 'All', projects_path, class: params[:status].blank? ? 'text-primary cursor-default' : 'link link-hover' %>
+    <nav class="flex items-center gap-2.5 mb-7 text-[13px] flex-wrap" aria-label="Filter projects by status">
+      <%= link_to "--all", projects_path,
+            class: "rounded-md px-3 py-1.5 whitespace-nowrap no-underline #{params[:status].blank? ? 'bg-primary text-primary-content font-bold' : 'border border-base-300 text-base-content/70 hover:border-primary hover:text-primary'}" %>
       <% Project::STATUSES.each do |status| %>
-        <%= link_to status, projects_path(status: status), class: params[:status] == status ? 'text-primary cursor-default' : 'link link-hover' %>
+        <%= link_to "--#{status.downcase}", projects_path(status: status),
+              class: "rounded-md px-3 py-1.5 whitespace-nowrap no-underline #{params[:status] == status ? 'bg-primary text-primary-content font-bold' : 'border border-base-300 text-base-content/70 hover:border-primary hover:text-primary'}" %>
       <% end %>
     </nav>
 
+    <% projects = Project.by_status(params[:status]).to_a %>
     <% if projects.none? %>
-      <%# Filtered-empty (R5.2): rows exist, but none match the selected status -- keep the
-          filter row (including "All") visible so the visitor can clear the filter. %>
-      <p class='font-mono'>No <%= params[:status] %> projects yet.</p>
+      <%# Filtered-empty (R5.2): rows exist, but none match the selected status -- keep
+          the filter row (including "--all") visible so the visitor can clear it. %>
+      <p>No <%= params[:status] %> projects yet.</p>
     <% else %>
-      <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <div class="grid md:grid-cols-2 gap-6">
         <% projects.each do |project| %>
-          <%= render layout: "components/card", locals: { href: project_url(slug: project.slug), image_url: project.image } do %>
-            <h2 class='card-title font-mono text-xl'><%= link_to project.title, project_url(slug: project.slug) %></h2>
-            <div>
-              <%= render "components/pill", label: project.status, variant: :status %>
+          <div class="border border-base-300 bg-base-200 rounded-[10px] overflow-hidden flex flex-col hover:border-primary">
+            <div class="flex items-center gap-1.5 px-3.5 py-2.5 border-b border-base-300 text-[13px] text-base-content/50">
+              <span class="w-2.5 h-2.5 rounded-full bg-error" aria-hidden="true"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-warning" aria-hidden="true"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-success" aria-hidden="true"></span>
+              <span class="ml-2 truncate min-w-0">~/projects/<%= project.slug %></span>
+              <span class="ml-auto shrink-0 <%= project.status_color_class %>">● <%= project.status.downcase %></span>
             </div>
-            <p class='mb-0'><%= project.description %></p>
-            <%# Triple-links, read -> demo -> source (R3). Demo (project.url) always renders;
-                Read/Source render only when present. relative z-10 keeps these independently
-                clickable above the card's stretched-link overlay. %>
-            <div class='card-actions relative z-10 mt-2'>
-              <% if project.read_url.present? %>
-                <%= render "components/cta_button", label: "Read", href: project.read_url, style: :ghost %>
-              <% end %>
-              <%= render "components/cta_button", label: "Demo", href: project.url, style: :primary %>
-              <% if project.source_url.present? %>
-                <%= render "components/cta_button", label: "Source", href: project.source_url, style: :ghost %>
-              <% end %>
+            <div class="p-7 flex flex-col gap-3 flex-1">
+              <h2 class="text-2xl font-bold m-0"><%= link_to project.title, project_url(slug: project.slug), class: "no-underline hover:text-primary" %></h2>
+              <p class="text-base text-base-content/70 m-0 flex-1"><%= project.description %></p>
+              <%# Triple-links, demo -> read -> source (R3/R6 precedent): demo (project.url)
+                  always renders; read/source render only when present. %>
+              <div class="flex gap-4 text-sm border-t border-base-300 pt-4">
+                <%= link_to "[demo ↗]", project.url, class: "text-primary font-bold no-underline hover:underline" %>
+                <% if project.read_url.present? %>
+                  <%= link_to "[read]", project.read_url, class: "text-base-content/50 no-underline hover:text-primary" %>
+                <% end %>
+                <% if project.source_url.present? %>
+                  <%= link_to "[source]", project.source_url, class: "text-base-content/50 no-underline hover:text-primary" %>
+                <% end %>
+              </div>
             </div>
-          <% end %>
+          </div>
         <% end %>
       </div>
     <% end %>
   <% end %>
-<% end %>
+</div>

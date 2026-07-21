@@ -1,13 +1,34 @@
-<%# Terminal-style mode indicator (R1). Default markup state is plain-CSS `hidden`
-    (nothing to flash without JS, since this element has no meaning without it);
-    keyboard_nav_controller#connect() reveals it -- unless the visitor is on a
-    touch/no-precise-pointer device (R12), in which case it's never revealed at all.
+<%# Terminal-style full-width statusline (R1, restyled for the terminal-identity
+    redesign #1226). Default markup state is plain-CSS `hidden` (nothing to flash
+    without JS, since this element has no meaning without it); keyboard_nav_controller
+    #connect() reveals it -- unless the visitor is on a touch/no-precise-pointer device
+    (R12), in which case it's never revealed at all.
+
+    Hard constraint (keyboard-layer test contract, spec/support/keyboard_nav_helpers.rb
+    + the keyboard_nav_* system specs): this element keeps id="keyboard-status-line",
+    data-keyboard-nav-target="statusLine", starts with the "hidden" class, and contains
+    data-keyboard-nav-target="statusLineText" whose text is exactly "-- NORMAL --". The
+    inner flex row lives on a nested div (not this element) so the "hidden" toggle never
+    has to fight a same-element "flex" utility for display-property precedence.
+
     aria-live="polite" so mode changes are announced without interrupting (deliberately
-    never "assertive"). %>
+    never "assertive"). Path + hints come from StatuslineHelper, keyed on the current
+    controller/action (design doc's Statusline section); an unmapped page renders "~/"
+    with no hint group rather than raising. %>
 <div
   id="keyboard-status-line"
   data-keyboard-nav-target="statusLine"
-  class="hidden fixed bottom-2 right-2 z-40 font-mono text-xs px-2 py-1 rounded bg-base-200 text-base-content/80 pointer-events-none select-none"
+  class="hidden w-full border-t border-base-300 bg-base-200 font-mono text-[13px]"
 >
-  <span data-keyboard-nav-target="statusLineText" aria-live="polite">-- NORMAL --</span>
+  <div class="flex items-stretch">
+    <span data-keyboard-nav-target="statusLineText" aria-live="polite" class="bg-primary text-primary-content font-bold px-4 py-1.5">-- NORMAL --</span>
+    <span class="px-4 py-1.5 text-base-content/70"><%= statusline_path %></span>
+    <% if statusline_hints.any? %>
+      <span class="hidden md:flex ml-auto items-center gap-5 px-4 py-1.5 text-base-content/50">
+        <% statusline_hints.each do |key, label| %>
+          <span><span class="text-primary font-bold"><%= key %></span> <%= label %></span>
+        <% end %>
+      </span>
+    <% end %>
+  </div>
 </div>

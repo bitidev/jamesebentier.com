@@ -165,6 +165,17 @@ export default class extends Controller {
     return { normal: "NORMAL", command: "COMMAND", search: "SEARCH" }[this.modeValue] || "NORMAL"
   }
 
+  // Header `?` chip's click handler (terminal-identity redesign, #1226's design doc:
+  // "Header" section) -- bound via data-action="click->keyboard-nav#openGuideDialog"
+  // on the header's own `?` button. Additive: the document-level `?` keydown binding in
+  // dispatchNormalMode (spec R10) still opens the same dialog the same way: this is a
+  // second, mouse/touch-reachable entry point into that one showModal() call, never a
+  // parallel open/close implementation.
+  openGuideDialog(event) {
+    event?.preventDefault()
+    if (this.hasGuideDialogTarget) this.guideDialogTarget.showModal()
+  }
+
   // `?` guide overlay's COMMAND-registry list (spec R10, Increment 6): populated once
   // here, directly from COMMAND_REGISTRY, rather than a hand-authored copy in the ERB
   // partial -- the single source of truth the registry's own file-header comment already

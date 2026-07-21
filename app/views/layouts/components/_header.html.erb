@@ -1,19 +1,30 @@
-<header class='w-full shadow mb-8 print:hidden'>
-  <div class='flex w-full max-w-7xl mx-auto px-8 py-4 print:hidden'>
-    <img src="/favicon.ico" alt="James Ebentier" class='h-9 justify-self-start' />
-    <ul class='flex flex-row list-none ml-auto content-center items-center justify-end my-auto'>
-      <%# data-nav-target attributes (R4/Decision 6): the single lookup resolveNavTarget()
-        queries for both the `g`-prefix page jumps and (a later increment) the COMMAND
-        registry's :home/:writing/:projects/:resume. "writing" (not "blog") matched the
-        design doc's target IA name ahead of time, so the /blog -> /writing route rename
-        (P1.4/#1183) required zero keyboard-layer changes. Rails' own root_url/posts_url/
-        projects_url/resume_path remain the single source of the actual href -- no URL
-        literal here. %>
-      <li class='ml-4'><%= link_to 'Home', root_url, class: current_page?(root_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'home' } %></li>
-      <li class='ml-4'><%= link_to 'Writing', posts_url, class: current_page?(posts_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'writing' } %></li>
-      <li class='ml-4'><%= link_to 'Projects', projects_url, class: current_page?(projects_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'projects' } %></li>
-      <li class='ml-4'><%= link_to 'About', about_path, class: current_page?(about_path) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'about' } %></li>
-      <li class='ml-4'><%= link_to 'Resume', resume_path, class: current_page?(resume_url) ? 'text-primary cursor-default' : 'link link-hover', data: { nav_target: 'resume' } %></li>
+<%# Terminal-identity redesign (#1226): 60px chrome bar, mono throughout. data-nav-target
+    attributes (R4/Decision 6, kept verbatim from the pre-redesign header): the single
+    lookup resolveNavTarget() queries for both the `g`-prefix page jumps and the COMMAND
+    registry's :home/:writing/:projects/:resume. Home's own data-nav-target moves onto
+    the "❯ james@ebentier" logo (the redesign drops a separate "Home" nav item) -- Rails'
+    own root_url/posts_url/projects_url/about_path/resume_path remain the single source
+    of every href, never a path literal. %>
+<header class="border-b border-base-300 font-mono">
+  <div class="max-w-[1088px] mx-auto px-8 h-[60px] flex items-center gap-8">
+    <%= link_to root_url, class: "flex items-baseline gap-2 font-bold text-[15px] no-underline text-base-content", data: { nav_target: "home" } do %>
+      <span class="text-primary" aria-hidden="true">❯</span> james@ebentier
+    <% end %>
+
+    <nav class="ml-auto flex items-center gap-6 text-sm">
+      <%= link_to "writing", posts_url,
+            class: current_page?(posts_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            data: { nav_target: "writing" } %>
+      <%= link_to "projects", projects_url,
+            class: current_page?(projects_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            data: { nav_target: "projects" } %>
+      <%= link_to "about", about_path,
+            class: current_page?(about_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            data: { nav_target: "about" } %>
+      <%= link_to "resume", resume_path,
+            class: current_page?(resume_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            data: { nav_target: "resume" } %>
+
       <%# Terminal-styled theme switcher (R6). data-theme-picker-target="select" is read
           by app/javascript/controllers/theme_picker_controller.js; the render-blocking
           inline script in application.html.erb's <head> is what applies the visitor's
@@ -22,24 +33,36 @@
           target on this same <select> -- keyboard_nav_controller.js's `t` binding drives
           this exact element via a real `change` event, so theme-picker#change stays the
           one and only code path that ever applies/persists a theme; no parallel logic. %>
-      <li class='ml-4 flex items-center gap-1 font-mono text-sm' data-controller='theme-picker'>
-        <label for='theme-picker-select' class='sr-only'>Theme</label>
-        <span aria-hidden='true' class='text-primary'>&gt;</span>
+      <span class="inline-flex items-center gap-1.5 border border-base-300 rounded-md px-2.5 py-1 text-[13px] text-base-content/70 hover:border-primary hover:text-primary" data-controller="theme-picker">
+        <label for="theme-picker-select" class="sr-only">Theme</label>
+        <span class="text-primary font-bold" aria-hidden="true">t</span>
         <select
-          id='theme-picker-select'
-          data-theme-picker-target='select'
-          data-keyboard-nav-target='themeSelect'
-          data-action='theme-picker#change'
-          class='select select-ghost select-sm font-mono'
+          id="theme-picker-select"
+          data-theme-picker-target="select"
+          data-keyboard-nav-target="themeSelect"
+          data-action="theme-picker#change"
+          class="select select-ghost select-xs font-mono"
         >
-          <option value='light'>light</option>
-          <option value='dark'>dark</option>
-          <option value='dracula'>dracula</option>
-          <option value='nord'>nord</option>
-          <option value='gruvbox'>gruvbox</option>
-          <option value='catppuccin'>catppuccin</option>
+          <option value="light">light</option>
+          <option value="dark">dark</option>
+          <option value="dracula">dracula</option>
+          <option value="nord">nord</option>
+          <option value="gruvbox">gruvbox</option>
+          <option value="catppuccin">catppuccin</option>
         </select>
-      </li>
-    </ul>
+      </span>
+
+      <%# `?` help chip (design doc's Header section): opens the keyboard guide dialog
+          via keyboard_nav_controller.js#openGuideDialog (additive method, bound here by
+          a real Stimulus action -- the document-level `?` keydown binding already wired
+          in dispatchNormalMode keeps working unchanged). Shown md+ only, matching the
+          design's desktop-chrome affordance. %>
+      <button
+        type="button"
+        class="hidden md:inline-flex items-center justify-center border border-base-300 rounded-md w-7 h-7 text-[13px] text-base-content/50 hover:border-primary hover:text-primary cursor-pointer"
+        data-action="click->keyboard-nav#openGuideDialog"
+        aria-label="Keyboard shortcuts help"
+      >?</button>
+    </nav>
   </div>
 </header>

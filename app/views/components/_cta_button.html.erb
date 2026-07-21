@@ -5,9 +5,12 @@
     render("components/cta_button", label: "View Project", href: project_url(...), style: :primary)
 
   Locals:
-    label: required -- button text
-    href:  required -- link target
-    style: :primary (default) or :ghost (secondary)
+    label:      required -- button text
+    href:       required -- link target
+    style:      :primary (default) or :ghost (secondary)
+    aria_label: optional -- overrides the accessible name when the visible label is
+                stylized (e.g. "[ work with me ]") and shouldn't be read verbatim by
+                assistive tech. Unchanged (native link-text accessible name) when absent.
 
   No block -- text-only label (a block-content variant is not needed by any current
   page and is left for a future amendment if one needs it).
@@ -20,5 +23,7 @@
 <%
   cta_style = local_assigns[:style] || :primary
   btn_class = cta_style == :ghost ? "btn-ghost" : "btn-primary"
+  link_options = { class: "btn #{btn_class} font-mono" }
+  link_options[:aria] = { label: local_assigns[:aria_label] } if local_assigns[:aria_label].present?
 %>
-<%= link_to label, href, class: "btn #{btn_class} font-mono" %>
+<%= link_to label, href, **link_options %>

@@ -8,6 +8,11 @@ class Post < ApplicationRecord
   KINDS = %w[note deep_dive].freeze
   KIND_LABELS = { "note" => "Note", "deep_dive" => "Deep Dive" }.freeze
 
+  # Terminal-redesign glyphs (#1226 design doc's Writing/Post-detail sections): ◆ for a
+  # worked-through deep dive, ◇ for a lighter note. Same fallback discipline as
+  # KIND_LABELS -- an unrecognized kind renders the note glyph rather than raising.
+  KIND_GLYPHS = { "note" => "◇", "deep_dive" => "◆" }.freeze
+
   # Word-count -> minute divisor for #reading_time (D5) -- a common blog-reading-time estimate.
   WORDS_PER_MINUTE = 200
 
@@ -70,6 +75,10 @@ class Post < ApplicationRecord
 
   def kind_label
     KIND_LABELS.fetch(kind, kind)
+  end
+
+  def kind_glyph
+    KIND_GLYPHS.fetch(kind, "◇")
   end
 
   def content

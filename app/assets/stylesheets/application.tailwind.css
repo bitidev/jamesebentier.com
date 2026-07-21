@@ -289,6 +289,27 @@
 }
 
 /*
+ * Home session-log cursor blink (terminal-identity redesign, #1226): a CSS-only
+ * blinking block cursor for the final `james@ebentier:~$ █` prompt line. The
+ * `animate-blink` utility itself is unconditional; @keyframes blink only exists inside
+ * the no-preference media query -- same gating convention as the scroll fade/slide-in
+ * system above (.motion-hidden). Without a matching @keyframes, `animation: blink ...`
+ * is simply a no-op, leaving the cursor solid/visible under prefers-reduced-motion
+ * rather than a second, duplicated "static cursor" code path.
+ */
+@utility animate-blink {
+  animation: blink 1.1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+/*
  * Scroll fade/slide-in (R7). motion_controller.js adds .motion-hidden on connect() to
  * elements it manages, then removes it once they scroll into view -- so an element is
  * only ever hidden when JS actually ran and chose to hide it. The controller skips this

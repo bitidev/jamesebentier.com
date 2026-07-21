@@ -6,6 +6,16 @@ class Project < ApplicationRecord
   # below and the /projects status-filter UI (see docs/specs/1182-projects-page-redesign.md R2).
   STATUSES = %w[Pre-Launch Beta Live].freeze
 
+  # Terminal-redesign status-dot color (#1226 design doc's Home/Projects sections) --
+  # DaisyUI text-* roles only (no hex), same fallback discipline as
+  # components/pill's status_badge_roles: an unrecognized status renders muted rather
+  # than raising.
+  STATUS_TEXT_CLASSES = {
+    "Pre-Launch" => "text-warning",
+    "Beta" => "text-info",
+    "Live" => "text-success"
+  }.freeze
+
   declare_schema id: :uuid, default: 'gen_random_uuid()' do
     string :slug,   limit: 255,  null: false, validates: { presence: true, uniqueness: true }, index: { unique: true }
     string :title,  limit: 1024, null: false, validates: { presence: true }
@@ -32,6 +42,10 @@ class Project < ApplicationRecord
   # the `limit` most recently created projects overall. See docs/specs/1181-home-hero-redesign.md (R2).
   def self.for_home(limit: 3)
     featured.any? ? featured.order(created_at: :desc).limit(limit) : order(created_at: :desc).limit(limit)
+  end
+
+  def status_color_class
+    STATUS_TEXT_CLASSES.fetch(status, "text-base-content/50")
   end
 
   def content
