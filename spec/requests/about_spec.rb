@@ -20,10 +20,23 @@ RSpec.describe "About page (1184)" do
       expect(response.body).to include("About — James Ebentier")
     end
 
-    it "sets the about page description meta tag" do
+    # Terminal-identity redesign (#1226), operator decision #1: drop "fractional"/"CTO"
+    # everywhere, including the About meta description (docs/design/2026-07-21-terminal-
+    # redesign-design.md's "Decisions" + About section).
+    it "sets the de-fractionalized about page description meta tag" do
       get about_path
 
-      expect(response.body).to include("Fractional software architect based in Berlin")
+      expect(response.body).to include(
+        "Software architect based in Berlin. I help engineering teams get their systems right"
+      )
+    end
+
+    it "does not render the retired 'Fractional' framing in the about page description" do
+      get about_path
+
+      description = response.parsed_body.at_css("meta[name='description']")["content"]
+
+      expect(description).not_to include("Fractional")
     end
 
     it "carries the positioning line as the page <h1>" do
@@ -37,7 +50,9 @@ RSpec.describe "About page (1184)" do
     it "renders at least one Work with me CTA on about" do
       get about_path
 
-      ctas = response.parsed_body.css("a.btn-primary").select { |link| link.text == "Work with me" }
+      # Terminal-identity redesign (#1226): the visible CTA label is now "[ work with me ]"
+      # -- the accessible name "Work with me" lives on aria-label instead (see welcome_spec).
+      ctas = response.parsed_body.css("a.btn-primary[aria-label='Work with me']")
 
       expect(ctas).not_to be_empty
     end
@@ -45,16 +60,19 @@ RSpec.describe "About page (1184)" do
     it "links each about-page Work with me CTA to resume.yml mailto" do
       get about_path
 
-      ctas = response.parsed_body.css("a.btn-primary").select { |link| link.text == "Work with me" }
+      ctas = response.parsed_body.css("a.btn-primary[aria-label='Work with me']")
 
       expect(ctas.pluck("href")).to all(eq("mailto:#{expected_email}"))
     end
 
-    it "includes the What I do and How I work section headings" do
+    it "includes the 'what I do' and 'how I work' section headings" do
       get about_path
 
+      # Terminal-identity redesign (#1226): section headers are now lowercase markdown-
+      # style ("## what I do" / "## how I work"), not the old title-case "What I do"/
+      # "How I work" prose headings.
       body = response.parsed_body
-      expect(body.text).to include("What I do", "How I work")
+      expect(body.text).to include("## what I do", "## how I work")
     end
 
     it "includes a proof link to projects" do
@@ -72,21 +90,17 @@ RSpec.describe "About page (1184)" do
     end
   end
 
-  describe "shared Work with me CTA placement" do
-    it "renders the CTA on the home page" do
-      get root_path
+  # Terminal-identity redesign (#1226): the shared footer (identity/sitemap/newsletter) now
+  # renders Home-only (ApplicationHelper#show_full_footer?, app/views/layouts/application.
+  # html.erb) -- interior pages, including About, end at the statusline with no <footer> at
+  # all. The old "shared CTA/About link in the footer" assertions only make sense on Home
+  # now; the About-side CTA is covered above ("renders at least one Work with me CTA on
+  # about"), and Home's own CTA/footer wiring is covered in welcome_spec.
+  describe "footer" do
+    it "renders no footer on the about page" do
+      get about_path
 
-      cta = response.parsed_body.css("a.btn-primary").find { |link| link.text == "Work with me" }
-      expect(cta["href"]).to eq("mailto:#{expected_email}")
-    end
-
-    it "renders the CTA in the site footer" do
-      get root_path
-
-      footer = response.parsed_body.at_css("footer")
-      footer_cta = footer.css("a.btn-primary").find { |link| link.text == "Work with me" }
-
-      expect(footer_cta["href"]).to eq("mailto:#{expected_email}")
+      expect(response.parsed_body.at_css("footer")).to be_nil
     end
   end
 
@@ -94,8 +108,9 @@ RSpec.describe "About page (1184)" do
     it "includes an About link in the header for future keyboard nav wiring" do
       get about_path
 
+      # Terminal-identity redesign (#1226): header nav link text is now lowercase.
       about_link = response.parsed_body.at_css("header a[data-nav-target='about']")
-      expect(about_link.text).to eq("About")
+      expect(about_link.text).to eq("about")
     end
 
     it "links the header About nav item to /about" do
@@ -103,13 +118,6 @@ RSpec.describe "About page (1184)" do
 
       about_link = response.parsed_body.at_css("header a[data-nav-target='about']")
       expect(about_link["href"]).to eq(about_path)
-    end
-
-    it "includes an About link in the footer Links column" do
-      get about_path
-
-      footer_links = response.parsed_body.at_css("footer").css("a").map(&:text)
-      expect(footer_links).to include("About")
     end
   end
 end

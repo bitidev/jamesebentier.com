@@ -27,4 +27,20 @@ RSpec.describe 'components/_cta_button' do
   it 'renders the given label as the link text' do
     expect(rendered_link(label: 'View Project', href: '/x').text).to eq('View Project')
   end
+
+  # Terminal-identity redesign (#1226): components/_work_with_me_cta uses this local to keep
+  # "Work with me" as the accessible name while the visible label is stylized as
+  # "[ work with me ]" -- brackets and all -- which assistive tech should not read verbatim.
+  it 'sets aria-label when aria_label is given, overriding the accessible name' do # rubocop:disable RSpec/MultipleExpectations
+    link = rendered_link(label: '[ work with me ]', href: 'mailto:x@example.com', aria_label: 'Work with me')
+
+    expect(link['aria-label']).to eq('Work with me')
+    expect(link.text).to eq('[ work with me ]')
+  end
+
+  it 'omits aria-label when aria_label is not given, leaving the native link-text accessible name' do
+    link = rendered_link(label: 'View Project', href: '/x')
+
+    expect(link['aria-label']).to be_nil
+  end
 end

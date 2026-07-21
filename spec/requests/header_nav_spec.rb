@@ -6,40 +6,45 @@ require "rails_helper"
 # commit deleted the header nav's opening <ul> tag but left the orphaned closing </ul>,
 # silently dropping the row-flex/right-align layout classes site-wide -- and slipped
 # through green CI because the pre-existing specs only asserted data-nav-target
-# presence/click behavior, never the wrapper markup itself. These specs render through
-# the real layout/controller stack (application.html.erb renders the header partial on
-# every route -- see line 82) so a dropped/orphaned <ul> can't pass again.
+# presence/click behavior, never the wrapper markup itself.
+#
+# Terminal-identity redesign (#1226) rewrote the header's own internal markup: there is no
+# longer a <ul>/<li> nav list at all (app/views/layouts/components/_header.html.erb wraps
+# its links directly in a <nav>), and the separate "Home" nav item is gone -- Home's own
+# data-nav-target now lives on the "❯ james@ebentier" logo link instead of a nav <li>. The
+# specific historical <ul>/<li> bug this file guards against can no longer recur (there's
+# no <ul> to orphan), so these specs are rewritten around the regression's real underlying
+# concern -- the nav's real Rails-URL wiring and its row-flex/right-align layout -- rather
+# than markup that no longer exists. These still render through the real layout/controller
+# stack (application.html.erb renders the header partial on every route).
 RSpec.describe "Header nav markup (1187 regression guard)" do
-  describe "GET / -- header nav <ul> wrapper" do
-    it "renders exactly one <ul> in the header" do
+  describe "GET / -- header nav data-nav-target wiring" do
+    it "resolves all five data-nav-target anchors to their real Rails URLs" do # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
       get root_path
       header = response.parsed_body.at_css("header")
 
-      expect(header.css("ul").size).to eq(1)
+      expect(header.at_css("a[data-nav-target='home']")["href"]).to eq(root_url)
+      expect(header.at_css("a[data-nav-target='writing']")["href"]).to eq(posts_url)
+      expect(header.at_css("a[data-nav-target='projects']")["href"]).to eq(projects_url)
+      expect(header.at_css("a[data-nav-target='about']")["href"]).to eq(about_path)
+      expect(header.at_css("a[data-nav-target='resume']")["href"]).to eq(resume_path)
     end
 
-    it "wraps the Home/Writing/Projects/About/Resume nav <li> items inside that single <ul>" do
+    it "renders exactly one <nav> in the header, wrapping the four non-home nav links" do # rubocop:disable RSpec/MultipleExpectations
       get root_path
-      nav_ul = response.parsed_body.at_css("header ul")
+      header = response.parsed_body.at_css("header")
 
-      expect(nav_ul.css("li").size).to be >= 5
+      expect(header.css("nav").size).to eq(1)
+      nav_targets = header.at_css("nav").css("a").pluck("data-nav-target")
+
+      expect(nav_targets).to include("writing", "projects", "about", "resume")
     end
 
-    it "wraps the Home/Writing/Projects/About/Resume nav links inside that single <ul>" do
+    it "carries the load-bearing right-align/row-flex layout classes on the nav wrapper (bd4bad7)" do
       get root_path
-      nav_ul = response.parsed_body.at_css("header ul")
-      nav_texts = nav_ul.css("li a").map(&:text)
+      nav = response.parsed_body.at_css("header nav")
 
-      expect(nav_texts).to include("Home", "Writing", "Projects", "About", "Resume")
-    end
-
-    it "carries the load-bearing right-align/row-flex layout classes on that <ul> (bd4bad7)" do
-      get root_path
-      nav_ul = response.parsed_body.at_css("header ul")
-
-      expect(nav_ul.classes).to include(
-        "flex", "flex-row", "ml-auto", "justify-end", "list-none", "content-center", "items-center", "my-auto"
-      )
+      expect(nav.classes).to include("ml-auto", "flex", "items-center")
     end
   end
 end

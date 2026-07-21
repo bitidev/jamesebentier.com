@@ -42,41 +42,38 @@ RSpec.describe "Keyboard navigation layer absent -- progressive enhancement smok
   end
 
   it "navigates via the real header links alone (root -> writing -> projects -> resume -> home), with no JS involved" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+    # Terminal-identity redesign (#1226): the header's visible nav text is now lowercase
+    # ("writing"/"projects"/"resume"), and the separate "Home" nav item is gone -- Home's
+    # data-nav-target now lives on the "❯ james@ebentier" logo link instead. This still
+    # proves the real, no-JS anchor-navigation claim; it just follows the redesigned
+    # header's own real links/labels rather than the pre-redesign ones.
     visit root_path
 
-    within("header") { click_link "Writing" }
+    within("header") { click_link "writing" }
     expect(page).to have_current_path(posts_path)
 
-    within("header") { click_link "Projects" }
+    within("header") { click_link "projects" }
     expect(page).to have_current_path(projects_path)
 
-    within("header") { click_link "Resume" }
+    within("header") { click_link "resume" }
     expect(page).to have_current_path(resume_path)
 
-    within("header") { click_link "Home" }
+    within("header") { find("a[data-nav-target='home']").click }
     expect(page).to have_current_path(root_path)
   end
 
   it "reaches a real post and a real project via their own rendered links, with no JS involved" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
-    # Neither card's title itself is a link (components/_card's whole-card overlay is
-    # aria-hidden/tabindex=-1, a pointer-only convenience -- see that partial's own
-    # comment, and P1.4/#1183's writing/index.html.erb migrated onto the same shared
-    # components/card as projects/index.html.erb); "Read Post"/"View Project" are the
-    # real, labeled, accessible links every keyboard/screen-reader user reaches the same
-    # destination through, so those are the ones this progressive-enhancement check
-    # follows. Only one post/project exists in this example, so there is exactly one such
+    # Terminal-identity redesign (#1226): both the Writing index and Projects index moved
+    # off components/_card's card-plus-CTA-button shape onto real directory-listing rows
+    # (app/views/writing/index.html.erb) and terminal-window panes
+    # (app/views/projects/index.html.erb) -- each entire row/pane title is itself the one,
+    # real, labeled, accessible link (no separate "Read Post"/"View Project" button
+    # anymore). Only one post/project exists in this example, so there is exactly one such
     # link each -- no scoping needed to disambiguate.
     visit posts_path
-    click_link "Read Post"
+    click_link post.title
     expect(page).to have_current_path(post_path(slug: post.slug))
 
-    # Post-#1182 (P1.3), the project card's title itself is the real, labeled, accessible
-    # link every keyboard/screen-reader user reaches the show page through -- the
-    # card-actions area now holds the read/demo/source triple-link CTAs instead of a
-    # dedicated "View Project" button (see docs/specs/1182-projects-page-redesign.md R3);
-    # components/_card's whole-card overlay remains aria-hidden/tabindex=-1, a pointer-only
-    # convenience (see that partial's own comment). Only one project exists in this
-    # example, so there is exactly one title link -- no scoping needed to disambiguate.
     visit projects_path
     click_link project.title
     expect(page).to have_current_path(project_path(slug: project.slug))

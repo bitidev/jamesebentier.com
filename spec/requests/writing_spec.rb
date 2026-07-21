@@ -3,13 +3,22 @@
 require 'rails_helper'
 
 # GET /writing, /writing/:slug (R3, R5, R6) -- the Notes/Deep Dives content model's
-# public-facing pages, migrated onto the shared components/_section/_card/_pill/_cta_button
-# partials (R6), mirroring spec/requests/projects_spec.rb's own real-controller/view-stack
-# style (see adlc/methods/code-quality/call-site-wiring-verification.md). Post#reading_time
-# (index card + show metadata) reads Post#content from disk; the factory default file_path
-# points at a real public/blog fixture (#1201).
+# public-facing pages. Terminal-identity redesign (#1226) replaced the card-grid index with
+# a directory-listing of rows (app/views/writing/index.html.erb) -- each row is a single
+# `<a>` linking to the post, with an ISO date, a kind glyph (◆ deep_dive / ◇ note, with an
+# sr-only kind_label), the title, the post's first tag as `#tag`, and the reading time in
+# "<n> min" -- no more `.card`/`.badge`/`.btn-primary` markup, no more full tag list, no more
+# "min read" wording. Post#reading_time (index row + show metadata) reads Post#content from
+# disk; the factory default file_path points at a real public/blog fixture (#1201).
 RSpec.describe 'Writing' do
   describe 'GET /writing' do
+    # The listing container is the one stable structural hook the redesign kept for
+    # "how many/which posts rendered" assertions -- each post row is a direct `<a>` child
+    # of it (app/views/writing/index.html.erb).
+    def post_rows
+      response.parsed_body.at_css('div.border-t.border-base-300').css('a')
+    end
+
     context 'when there are no posts' do
       it 'returns a successful response' do
         get posts_path
@@ -17,16 +26,16 @@ RSpec.describe 'Writing' do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'renders no post cards' do
+      it 'renders no post rows' do
         get posts_path
 
-        expect(response.parsed_body.css('.card')).to be_empty
+        expect(post_rows).to be_empty
       end
 
-      it 'still renders the editorial guidelines section (static, not data-dependent) (D9)' do
+      it 'still renders the kind-glyph legend footnote (static, not data-dependent)' do
         get posts_path
 
-        expect(response.body).to include('Note vs. Deep Dive')
+        expect(response.body).to include('deep dive', 'note')
       end
     end
 
@@ -45,48 +54,51 @@ RSpec.describe 'Writing' do
         create(:post, slug: 'future-post', kind: 'deep_dive', published_at: 1.day.from_now)
       end
 
-      it 'renders one card per published post, excluding the unpublished future post' do
+      # Each row's title lives in its own `span.flex-1` (app/views/writing/index.html.erb) --
+      # the one element per row that holds only the title, not the date/glyph/tag/min-read
+      # text that also share the row's link text.
+      def row_titles
+        post_rows.map { |row| row.at_css('span.flex-1').text }
+      end
+
+      it 'renders one row per published post, excluding the unpublished future post' do
         get posts_path
 
-        expect(response.parsed_body.css('.card').size).to eq(3)
+        expect(post_rows.size).to eq(3)
       end
 
       it 'orders posts newest-published-first' do
         get posts_path
-        titles = response.parsed_body.css('.card-title').map(&:text)
 
-        expect(titles).to eq([newest_deep_dive.title, middle_note.title, oldest_note.title])
+        expect(row_titles).to eq([newest_deep_dive.title, middle_note.title, oldest_note.title])
       end
 
       it 'filters to only Notes for ?kind=note' do
         get posts_path(kind: 'note')
-        titles = response.parsed_body.css('.card-title').map(&:text)
 
-        expect(titles).to contain_exactly(middle_note.title, oldest_note.title)
+        expect(row_titles).to contain_exactly(middle_note.title, oldest_note.title)
       end
 
       it 'filters to only Deep Dives for ?kind=deep_dive' do
         get posts_path(kind: 'deep_dive')
-        titles = response.parsed_body.css('.card-title').map(&:text)
 
-        expect(titles).to contain_exactly(newest_deep_dive.title)
+        expect(row_titles).to contain_exactly(newest_deep_dive.title)
       end
 
       it 'falls back to the unfiltered (all-kinds) list for an unrecognized ?kind= value -- not a 500, not empty' do
         get posts_path(kind: 'garbage')
 
-        expect(response.parsed_body.css('.card').size).to eq(3)
+        expect(post_rows.size).to eq(3)
       end
     end
 
-    context 'with a single post card' do
+    context 'with a single post row' do
       let!(:note) do
         create(
           :post,
           slug: 'a-real-note',
           title: 'A Real Note',
           kind: 'note',
-          excerpt: 'A short teaser for the note.',
           tags: %w[ruby rails],
           published_at: Time.zone.parse('2026-01-15')
         )
@@ -98,68 +110,65 @@ RSpec.describe 'Writing' do
         expect(response.body).to include('A Real Note')
       end
 
-      it 'renders the Note kind badge with the badge-info role (D7)' do
+      it 'renders the Note kind glyph with an sr-only kind label' do # rubocop:disable RSpec/MultipleExpectations
         get posts_path
-        badge = response.parsed_body.css('.badge').find { |element| element.text == 'Note' }
+        row = post_rows.find { |link| link.text.include?('A Real Note') }
 
-        expect(badge.classes).to include('badge-info')
+        expect(row.at_css('span[aria-hidden="true"]').text).to eq(note.kind_glyph)
+        expect(row.at_css('span.sr-only').text).to eq(note.kind_label)
       end
 
-      it 'renders one tag pill per tag' do
+      it "renders the post's first tag as a #tag chip (only one tag is shown per row)" do # rubocop:disable RSpec/MultipleExpectations
         get posts_path
-        tag_texts = response.parsed_body.css('.badge-outline').map(&:text)
 
-        expect(tag_texts).to contain_exactly('ruby', 'rails')
+        expect(response.body).to include('#ruby')
+        expect(response.body).not_to include('#rails')
       end
 
-      it "renders the post's excerpt" do
+      it "renders the post's published date in ISO form" do
         get posts_path
 
-        expect(response.body).to include('A short teaser for the note.')
-      end
-
-      it "renders the post's published date" do
-        get posts_path
-
-        expect(response.body).to include('January 15, 2026')
+        expect(response.body).to include('2026-01-15')
       end
 
       it "renders the post's reading time" do
         get posts_path
 
-        expect(response.body).to include("#{note.reading_time} min read")
+        expect(response.body).to include("#{note.reading_time} min")
       end
 
-      it "links the CTA button to the post's own show page" do
+      it "links the row to the post's own show page" do
         get posts_path
-        cta = response.parsed_body.at_css('.btn-primary')
+        row = post_rows.find { |link| link.text.include?('A Real Note') }
 
-        expect(URI.parse(cta['href']).path).to eq(post_path(slug: note.slug))
+        expect(row['href']).to eq(post_url(slug: note.slug))
       end
     end
 
-    context 'with a Deep Dive post card' do
-      before { create(:post, slug: 'a-deep-dive', kind: 'deep_dive') }
+    context 'with a Deep Dive post row' do
+      let!(:deep_dive) { create(:post, slug: 'a-deep-dive', kind: 'deep_dive') }
 
-      it 'renders the Deep Dive kind badge with the badge-accent role (D7)' do
+      it 'renders the Deep Dive kind glyph, distinct from a Note row' do # rubocop:disable RSpec/MultipleExpectations
         get posts_path
-        badge = response.parsed_body.css('.badge').find { |element| element.text == 'Deep Dive' }
+        row = post_rows.find { |link| link.text.include?(deep_dive.title) }
 
-        expect(badge.classes).to include('badge-accent')
+        expect(row.at_css('span[aria-hidden="true"]').text).to eq('◆')
+        expect(row.at_css('span.sr-only').text).to eq('Deep Dive')
       end
     end
 
-    it 'renders the Note vs. Deep Dive editorial guidelines table (R6, D9)' do
-      get posts_path
-      guidelines = response.parsed_body.css('section').find { |section| section.at_css('h2')&.text == 'Note vs. Deep Dive' }
-
-      expect(guidelines.at_css('table')).to be_present
-    end
-
-    it 'renders the editorial heuristic sentence verbatim (R6)' do
+    # Terminal-identity redesign (#1226) replaced the old "Note vs. Deep Dive" table/
+    # editorial-heuristic sentence (that copy is retired -- see the design doc's Test
+    # impact section) with a footnote explaining the two glyphs (app/views/writing/
+    # index.html.erb). Covered for the empty-list case above; this proves the exact
+    # wording survives with posts present too.
+    it 'renders the glyph legend explaining ◆ (deep dive) vs. ◇ (note)' do
       get posts_path
 
-      expect(response.body).to include('Notes can graduate into Deep Dives')
+      expect(response.body).to include(
+        'deep dive — a worked-through system or argument',
+        "note — a thought, reaction, or TIL. When in doubt, it's a note."
+      )
     end
   end
 
@@ -187,35 +196,37 @@ RSpec.describe 'Writing' do
       expect(response.parsed_body.at_css('h1').classes).to include('font-mono')
     end
 
-    it 'renders the kind badge' do
+    it 'renders the kind glyph and an sr-only kind label in the meta line' do # rubocop:disable RSpec/MultipleExpectations
       get post_path(slug: post.slug)
-      badge = response.parsed_body.css('.badge').find { |element| element.text == 'Note' }
+      meta = response.parsed_body.at_css('article p')
 
-      expect(badge.classes).to include('badge-info')
+      expect(meta.at_css('span[aria-hidden="true"]').text).to eq(post.kind_glyph)
+      expect(meta.at_css('span.sr-only').text).to eq(post.kind_label)
+      expect(meta.text).to include(post.kind_label.downcase)
     end
 
-    it 'renders the tag pills' do
+    it 'renders the tags inline in the meta line, each prefixed with #' do
       get post_path(slug: post.slug)
 
-      expect(response.parsed_body.css('.badge-outline').map(&:text)).to include('ruby')
+      expect(response.parsed_body.at_css('article p').text).to include('#ruby')
     end
 
-    it 'renders the excerpt' do
+    it 'renders the excerpt as the dek beneath the h1' do
       get post_path(slug: post.slug)
 
       expect(response.body).to include('A short teaser for the article.')
     end
 
-    it 'renders the published date' do
+    it 'renders the published date in ISO form' do
       get post_path(slug: post.slug)
 
-      expect(response.body).to include('January 15, 2026')
+      expect(response.parsed_body.at_css('article p').text).to include('2026-01-15')
     end
 
     it 'renders the reading time' do
       get post_path(slug: post.slug)
 
-      expect(response.body).to include("#{post.reading_time} min read")
+      expect(response.parsed_body.at_css('article p').text).to include("#{post.reading_time} min")
     end
 
     it 'returns 404 for an unknown slug' do

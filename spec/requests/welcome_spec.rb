@@ -57,50 +57,6 @@ RSpec.describe "Welcomes" do
     end
   end
 
-  describe "GET / — hero ASCII-art terminal monogram (1181 P2 amendment)" do
-    def ascii_art
-      response.parsed_body.at_css("pre[aria-hidden='true']")
-    end
-
-    it "renders the monogram as a decorative element with no assistive-tech exposure" do
-      get root_path
-
-      expect(ascii_art).to be_present
-    end
-
-    it "colors the monogram via daisyUI design-system tokens" do
-      get root_path
-
-      expect(ascii_art.classes).to include("text-primary", "bg-base-200", "border-base-300")
-    end
-
-    it "does not color the monogram with hardcoded hex or arbitrary-value utilities" do
-      get root_path
-
-      expect(ascii_art.classes.grep(/[\[#]/)).to be_empty
-    end
-
-    it "does not apply an inline style to the monogram" do
-      get root_path
-
-      expect(ascii_art["style"]).to be_nil
-    end
-
-    it "does not use the retired rainbow hero utilities on the monogram (1181 R10)" do
-      get root_path
-
-      expect(ascii_art.classes).not_to include(
-        "text-green-500", "text-purple-500", "text-orange-500", "text-pink-500", "text-yellow-600", "text-fuchsia-500"
-      )
-    end
-
-    it "hides the monogram below the md breakpoint and reveals it at md+ (1181 P2 amendment)" do
-      get root_path
-
-      expect(ascii_art.parent.classes).to include("hidden", "md:flex")
-    end
-  end
-
   describe "GET / — meta tags (1181 P2 amendment)" do
     it "renders the new software-architect page title" do
       get root_path
@@ -154,13 +110,22 @@ RSpec.describe "Welcomes" do
 
   # Featured Projects / Latest Writing (1181 R2/R3/R4) -- exercises the components through the
   # real controller/view stack (see adlc/methods/code-quality/call-site-wiring-verification.md),
-  # proving Project.for_home/Post.for_home are actually wired into the page and composed through
-  # the real components/card + components/pill partials. Curated-first/chronological-fallback
-  # ordering itself is covered at the model level (spec/models/{post,project}_spec.rb); these
-  # specs only need one project/post to prove the wiring, per the pyramid-placement principle.
+  # proving Project.for_home/Post.for_home are actually wired into the page. Terminal-identity
+  # redesign (#1226) replaced the old card-grid sections with terminal "session log" rows
+  # (app/views/welcome/index.html.erb) -- each block is now introduced by its own shell-prompt
+  # <p> ("$ ls ~/projects --featured" / "$ tail -n 3 ~/writing") followed by a flex-col list of
+  # real row links, not a <section>/h2-titled card grid. `projects_block`/`writing_block` locate
+  # that row list by its preceding prompt text (the one stable anchor the redesign kept), rather
+  # than the retired section/h2 lookup.
   describe "GET / — Featured Projects and Latest Writing" do
-    def section_titled(title)
-      response.parsed_body.css("section").find { |section| section.at_css("h2.text-2xl")&.text == title }
+    def projects_block
+      prompt = response.parsed_body.css("p").find { |p| p.text.include?("ls ~/projects --featured") }
+      prompt&.next_element
+    end
+
+    def writing_block
+      prompt = response.parsed_body.css("p").find { |p| p.text.include?("tail -n 3 ~/writing") }
+      prompt&.next_element
     end
 
     context "when there is a featured project and a published post" do
@@ -172,98 +137,79 @@ RSpec.describe "Welcomes" do
           :post,
           slug: "featured-post",
           title: "Featured Post",
-          description: "The SEO meta-tag description, never shown in the card body (R7)",
-          excerpt: "The real excerpt, shown in the Latest Writing card body (R7)"
+          description: "The SEO meta-tag description, never shown in the row body (R7)",
+          excerpt: "The real excerpt -- Home rows show title/date/min only, not the excerpt (R7)"
         )
       end
 
-      it "wraps the project in a card whose stretched-link overlay points at the project's own page (R3)" do
+      it "links the featured-project row to the project's own page (R3)" do
         get root_path
 
-        featured_section = section_titled("Featured Projects")
+        row_link = projects_block.at_css("a")
 
-        expect(URI.parse(featured_section.at_css("a.absolute")["href"]).path).to eq(project_path(slug: project.slug))
+        expect(row_link["href"]).to eq(project_url(slug: project.slug))
       end
 
-      it "renders the project's status pill inside the Featured Projects card (R3)" do
+      it "shows the project's status via its colored status dot in the row (R3)" do # rubocop:disable RSpec/MultipleExpectations
         get root_path
 
-        featured_section = section_titled("Featured Projects")
+        status_span = projects_block.at_css("a").css("span").find { |span| span.text.strip.start_with?("●") }
 
-        expect(featured_section.at_css(".badge").classes).to include("badge-success")
+        expect(status_span.classes).to include(project.status_color_class)
+        expect(status_span.text).to include(project.status.downcase)
       end
 
-      it "wraps the post in a card whose stretched-link overlay points at the post's own page (R4)" do
+      it "links the latest-writing row to the post's own page (R4)" do
         get root_path
 
-        writing_section = section_titled("Latest Writing")
+        row_link = writing_block.at_css("a")
 
-        expect(URI.parse(writing_section.at_css("a.absolute")["href"]).path).to eq(post_path(slug: post.slug))
+        expect(row_link["href"]).to eq(post_url(slug: post.slug))
       end
 
-      it "does not render a status pill inside the Latest Writing card -- pill is project-only (R4)" do
+      it "does not render a project-style status dot inside Latest Writing rows -- that's project-only (R4)" do
         get root_path
 
-        writing_section = section_titled("Latest Writing")
-
-        expect(writing_section.css(".badge")).to be_empty
+        expect(writing_block.text).not_to include("●")
       end
 
-      it "shows the post's excerpt in the Latest Writing card body, not its description (P1.4/#1183 R7)" do # rubocop:disable RSpec/MultipleExpectations
+      it "shows the post's title and reading time in the row, not its excerpt or description (P1.4/#1183 R7 amendment)" do # rubocop:disable RSpec/MultipleExpectations
         get root_path
 
-        writing_section = section_titled("Latest Writing")
-
-        expect(writing_section.text).to include("The real excerpt, shown in the Latest Writing card body (R7)")
-        expect(writing_section.text).not_to include("The SEO meta-tag description, never shown in the card body (R7)")
-      end
-
-      it "uses the responsive one-column-to-three-column grid for Featured Projects (R6)" do
-        get root_path
-
-        grid = section_titled("Featured Projects").at_css("div.grid")
-
-        expect(grid.classes).to include("grid-cols-1", "md:grid-cols-3")
-      end
-
-      it "uses the responsive one-column-to-three-column grid for Latest Writing (R6)" do
-        get root_path
-
-        grid = section_titled("Latest Writing").at_css("div.grid")
-
-        expect(grid.classes).to include("grid-cols-1", "md:grid-cols-3")
+        expect(writing_block.text).to include(post.title, "#{post.reading_time} min")
+        expect(writing_block.text).not_to include(post.description)
       end
     end
 
     context "when there are no projects" do
       before { create(:post) }
 
-      it "omits the Featured Projects section entirely (R2/R3)" do
+      it "omits the featured-projects block entirely (R2/R3)" do
         get root_path
 
-        expect(section_titled("Featured Projects")).to be_nil
+        expect(projects_block).to be_nil
       end
 
-      it "still renders the Latest Writing section" do
+      it "still renders the latest-writing block" do
         get root_path
 
-        expect(section_titled("Latest Writing")).to be_present
+        expect(writing_block).to be_present
       end
     end
 
     context "when there are no posts" do
       before { create(:project) }
 
-      it "omits the Latest Writing section entirely (R2/R4)" do
+      it "omits the latest-writing block entirely (R2/R4)" do
         get root_path
 
-        expect(section_titled("Latest Writing")).to be_nil
+        expect(writing_block).to be_nil
       end
 
-      it "still renders the Featured Projects section" do
+      it "still renders the featured-projects block" do
         get root_path
 
-        expect(section_titled("Featured Projects")).to be_present
+        expect(projects_block).to be_present
       end
     end
   end
@@ -273,7 +219,11 @@ RSpec.describe "Welcomes" do
       get root_path
 
       expected_email = YAML.safe_load_file(Rails.root.join("resume/resume.yml"), symbolize_names: true).dig(:basics, :email)
-      cta = response.parsed_body.css(".btn-primary").find { |link| link.text == "Work with me" }
+      # Terminal-identity redesign (#1226): the visible label is now the stylized
+      # "[ work with me ]" (brackets, lowercase) -- the accessible name "Work with me" lives
+      # on aria-label instead (components/_cta_button.html.erb's aria_label local), so the
+      # CTA is located by that real accessible-name selector rather than by link text.
+      cta = response.parsed_body.at_css("a.btn-primary[aria-label='Work with me']")
 
       expect(cta["href"]).to eq("mailto:#{expected_email}")
     end
