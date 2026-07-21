@@ -214,6 +214,69 @@ RSpec.describe "Welcomes" do
     end
   end
 
+  # Terminal-identity redesign (#1226) PR review fix: the Home "stats" block used to render
+  # a hardcoded "1,284" literal and a static sparkline. WelcomeController#index now assigns
+  # @views_stats/@daily_view_counts from Analytics::StatsQuery (the same real PageView data
+  # `:stats views --last 7d` queries live) -- these specs prove the figure is genuinely
+  # data-driven, not a literal, in both directions (real count present, old literal gone).
+  describe "GET / — real first-party stats (#1226 PR review fix)" do
+    include ActionView::Helpers::NumberHelper
+
+    def stats_block
+      prompt = response.parsed_body.css("p").find { |p| p.text.include?("stats views --last 7d") }
+      prompt&.next_element
+    end
+
+    it "never renders the retired hardcoded '1,284' stats literal" do
+      get root_path
+
+      expect(response.body).not_to include("1,284")
+    end
+
+    context "when page views exist in the last 7 days" do
+      it "shows the real total (human + bot), via number_with_delimiter, not a hardcoded figure" do
+        create_list(:page_view, 4, recorded_at: 1.day.ago, visitor_type: "human")
+        create(:page_view, :bot, recorded_at: 2.days.ago)
+
+        get root_path
+
+        figure = stats_block.at_css("span.font-bold")
+
+        expect(figure.text).to eq(number_with_delimiter(5))
+      end
+
+      it "reflects the real total in the sr-only label" do
+        create_list(:page_view, 4, recorded_at: 1.day.ago, visitor_type: "human")
+        create(:page_view, :bot, recorded_at: 2.days.ago)
+
+        get root_path
+
+        expect(stats_block.at_css("span.sr-only").text).to eq("5 views over the last 7 days")
+      end
+
+      it "excludes page views recorded outside the 7-day window from the total" do
+        create(:page_view, recorded_at: 1.day.ago)
+        create(:page_view, recorded_at: 8.days.ago)
+
+        get root_path
+
+        figure = stats_block.at_css("span.font-bold")
+
+        expect(figure.text).to eq(number_with_delimiter(1))
+      end
+    end
+
+    context "when there are no page views at all (brand-new DB)" do
+      it "renders '0 views' honestly rather than hiding the stats block" do # rubocop:disable RSpec/MultipleExpectations
+        get root_path
+
+        expect(stats_block).to be_present
+        expect(stats_block.at_css("span.font-bold").text).to eq("0")
+        expect(stats_block.at_css("span.sr-only").text).to eq("0 views over the last 7 days")
+      end
+    end
+  end
+
   describe "GET / — Work with me CTA (1181 R5)" do
     it "links the CTA to a real mailto: address sourced from resume.yml, not a hardcoded literal" do
       get root_path
