@@ -1,0 +1,14 @@
+<%
+  set_meta_tags(
+    title: "Unsubscribed",
+    description: "You have been unsubscribed from James Ebentier's newsletter.",
+  )
+%>
+
+<div class="flex flex-col items-center justify-center py-24 gap-6 text-center">
+  <h1 class="font-mono text-3xl">You've been unsubscribed.</h1>
+  <p class="text-base-content/70 max-w-md">
+    Sorry to see you go. You won't receive any more emails from me. If you change your mind, you can always sign up again.
+  </p>
+  <%= link_to "← Back to home", root_path, class: "btn btn-ghost" %>
+</div>

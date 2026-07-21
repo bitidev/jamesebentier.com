@@ -1,0 +1,39 @@
+<%#
+  Newsletter signup form partial.
+
+  Locals:
+    source: required — short string identifying where the form is rendered
+            (e.g. "footer" / "home"). Written to Subscriber#consent_source.
+
+  On submit, POSTs to /newsletter with email, consent checkbox, and the source.
+  Consent checkbox links to /privacy per GDPR requirement.
+  Flash messages (notice/alert) are handled by the layout; this partial only
+  triggers a redirect-back with flash via NewslettersController#create.
+%>
+<%= form_with url: newsletters_path, method: :post, class: "flex flex-col gap-4" do |f| %>
+  <%= hidden_field_tag "subscriber[source]", local_assigns.fetch(:source, "unknown") %>
+
+  <div class="flex flex-col sm:flex-row gap-2">
+    <label class="sr-only" for="subscriber_email_<%= source %>">Email address</label>
+    <%= f.email_field :email,
+          id: "subscriber_email_#{source}",
+          name: "subscriber[email]",
+          placeholder: "your@email.com",
+          required: true,
+          autocomplete: "email",
+          class: "input input-bordered flex-1 bg-base-100" %>
+    <button type="submit" class="btn btn-primary whitespace-nowrap">
+      Subscribe
+    </button>
+  </div>
+
+  <label class="flex items-start gap-2 cursor-pointer text-sm text-base-content/70">
+    <%= check_box_tag "subscriber[consent]", "1", false,
+          required: true,
+          class: "checkbox checkbox-sm mt-0.5 shrink-0" %>
+    <span>
+      I agree to receive occasional newsletter emails. Read how we handle your data in our
+      <%= link_to "privacy policy", privacy_path, class: "link link-primary" %>.
+    </span>
+  </label>
+<% end %>

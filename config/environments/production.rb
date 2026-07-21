@@ -2,7 +2,7 @@
 
 require "active_support/core_ext/integer/time"
 
-Rails.application.configure do
+Rails.application.configure do # rubocop:disable Metrics/BlockLength
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -79,6 +79,16 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "james_ebentier_production"
 
   config.action_mailer.perform_caching = false
+
+  # Log-only mail delivery (no real SMTP/ESP until one is chosen). The LoggerDelivery
+  # class writes the would-be email to the Rails log at :info level.
+  # See docs/ops/newsletter-mail.md for the ESP swap-in path.
+  # add_delivery_method (inside the require) registers logger_settings= on ActionMailer::Base.
+  require Rails.root.join("lib/mail/logger_delivery")
+  config.action_mailer.delivery_method = :logger
+  config.action_mailer.logger_settings = { log_level: :info }
+
+  config.action_mailer.default_url_options = { host: "jamesebentier.com", protocol: "https" }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

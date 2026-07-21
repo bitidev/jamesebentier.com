@@ -1,0 +1,15 @@
+<%
+  set_meta_tags(
+    title: "Subscription Confirmed",
+    description: "You're now subscribed to James Ebentier's newsletter.",
+  )
+%>
+
+<div class="flex flex-col items-center justify-center py-24 gap-6 text-center">
+  <div class="text-5xl">✓</div>
+  <h1 class="font-mono text-3xl">You're confirmed!</h1>
+  <p class="text-base-content/70 max-w-md">
+    Thanks for confirming your email. You're now on the list and will hear from me when I have something worth sharing.
+  </p>
+  <%= link_to "← Back to home", root_path, class: "btn btn-ghost" %>
+</div>

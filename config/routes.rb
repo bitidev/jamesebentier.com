@@ -9,6 +9,12 @@ Rails.application.routes.draw do
   get "projects/:slug" => "projects#show",    as: :project
   get "about"          => "welcome#about",    as: :about
   get "resume"         => "welcome#resume",   as: :resume
+  get "privacy"        => "welcome#privacy",  as: :privacy
+
+  # Newsletter double opt-in
+  post "newsletter"            => "newsletters#create",      as: :newsletters
+  get  "newsletter/confirm"    => "newsletters#confirm",     as: :newsletter_confirm
+  get  "newsletter/unsubscribe" => "newsletters#unsubscribe", as: :newsletter_unsubscribe
 
   # SEARCH mode's content index (#1187 R9) -- a JSON array of Post/Project items,
   # fetched lazily and cached client-side (app/javascript/keyboard_nav/search_index.js).

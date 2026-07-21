@@ -90,4 +90,12 @@
   <% end %>
 <% end %>
 
+<%# Newsletter signup below Latest Writing per design doc §2 / operator decision #2 %>
+<%= render layout: "components/section", locals: { eyebrow: "Stay in the loop", title: "Newsletter" } do %>
+  <div class='max-w-lg'>
+    <p class='text-base-content/70 mb-6'>Occasional writing on architecture, systems, and engineering craft. No spam. Unsubscribe any time.</p>
+    <%= render "components/newsletter_signup", source: "home" %>
+  </div>
+<% end %>
+
 <%= render "components/work_with_me_cta" %>

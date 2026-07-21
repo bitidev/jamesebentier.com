@@ -65,6 +65,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 - `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex?`
 - `lib/assets/.keep` — Rails lib/assets keepfile
+- `lib/mail/logger_delivery.rb` — `Mail::LoggerDelivery` custom delivery method that writes email to the Rails log (no external ESP until one is chosen; see docs/ops/newsletter-mail.md)
 - `lib/tasks/.keep` — Rails lib/tasks keepfile
 
 ### content-domain
@@ -72,6 +73,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/models/application_record.rb` — ActiveRecord base; model-level `noindex?` for sitemap
 - `app/models/post.rb` — Blog post metadata + markdown file content loader
 - `app/models/project.rb` — Project portfolio record + optional markdown detail loader
+- `app/models/subscriber.rb` — Newsletter subscriber: double opt-in lifecycle (pending/confirmed/unsubscribed), consent metadata, one-way IP hash
 - `app/models/concerns/.keep` — Concerns directory keepfile
 
 ### markdown-rendering
@@ -81,8 +83,9 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 ### web-presentation
 
 - `app/controllers/projects_controller.rb` — Projects index/show
-- `app/controllers/welcome_controller.rb` — Landing + resume
+- `app/controllers/welcome_controller.rb` — Landing + resume + privacy stub
 - `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
+- `app/controllers/newsletters_controller.rb` — Newsletter signup (POST /newsletter), confirm, unsubscribe
 - `app/controllers/concerns/.keep` — Concerns directory keepfile
 - `app/helpers/application_helper.rb` — Social icon helpers
 - `app/helpers/blog_helper.rb` — `render_markdown` via `Blog::Renderer`
@@ -97,6 +100,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/javascript/controllers/theme_picker_controller.js` — Theme switcher Stimulus controller (localStorage-persisted)
 - `app/jobs/application_job.rb` — Base Active Job (scaffold)
 - `app/mailers/application_mailer.rb` — Base mailer (scaffold)
+- `app/mailers/newsletter_mailer.rb` — `NewsletterMailer#confirmation` — double opt-in email with confirm + unsubscribe URLs
 - `app/channels/application_cable/channel.rb` — Action Cable channel base
 - `app/channels/application_cable/connection.rb` — Action Cable connection base
 - `app/assets/builds/.keep` — Built assets keepfile
@@ -106,6 +110,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/assets/stylesheets/application.tailwind.css` — Tailwind entry CSS + `@theme` tokens/DaisyUI theme source of truth
 - `app/views/components/_card.html.erb` — Shared card partial (stretched-link wrapper, hover-lift)
 - `app/views/components/_cta_button.html.erb` — Shared CTA button partial (primary/ghost)
+- `app/views/components/_newsletter_signup.html.erb` — Newsletter signup form partial (email + consent checkbox; source: local)
 - `app/views/components/_pill.html.erb` — Shared tag/status pill partial (status→badge-role map)
 - `app/views/components/_section.html.erb` — Shared section wrapper partial (eyebrow/title + scroll motion)
 - `app/views/components/_work_with_me_cta.html.erb` — Shared "Work with me" mailto CTA block (home/about/footer)
@@ -117,8 +122,13 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/projects/index.html.erb` — Projects listing
 - `app/views/projects/index.rss.builder` — Projects RSS
 - `app/views/projects/show.html.erb` — Project detail
+- `app/views/newsletter_mailer/confirmation.html.erb` — HTML body for double opt-in confirmation email
+- `app/views/newsletter_mailer/confirmation.text.erb` — Plain-text body for double opt-in confirmation email
+- `app/views/newsletters/confirm.html.erb` — Subscription confirmed success page
+- `app/views/newsletters/unsubscribe.html.erb` — Unsubscribed success page
 - `app/views/welcome/about.html.erb` — About page (fractional-architect narrative)
 - `app/views/welcome/index.html.erb` — Landing page
+- `app/views/welcome/privacy.html.erb` — Privacy policy stub (P1.11 / #1190 fills content later)
 - `app/views/welcome/resume.html.erb` — Resume page shell
 - `app/views/welcome/resume/_education.html.erb` — Resume education partial
 - `app/views/welcome/resume/_header.html.erb` — Resume header partial
@@ -150,11 +160,11 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 | Subsystem | File count |
 |-----------|------------|
-| rails-runtime | 3 |
-| content-domain | 4 |
+| rails-runtime | 4 |
+| content-domain | 5 |
 | markdown-rendering | 1 |
-| web-presentation | 47 |
+| web-presentation | 57 |
 | keyboard-navigation | 11 |
-| **Total** | **66** |
+| **Total** | **78** |
 
 Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.

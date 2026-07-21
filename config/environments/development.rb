@@ -43,6 +43,15 @@ Rails.application.configure do # rubocop:disable Metrics/BlockLength
 
   config.action_mailer.perform_caching = false
 
+  # Log-only mail delivery (no real SMTP/ESP until one is chosen). The LoggerDelivery
+  # class writes the would-be email to the Rails log at :info level.
+  # See docs/ops/newsletter-mail.md for the ESP swap-in path.
+  require Rails.root.join("lib/mail/logger_delivery")
+  config.action_mailer.delivery_method = :logger
+  config.action_mailer.logger_settings = { log_level: :info }
+
+  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
