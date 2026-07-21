@@ -33,7 +33,7 @@
           target on this same <select> -- keyboard_nav_controller.js's `t` binding drives
           this exact element via a real `change` event, so theme-picker#change stays the
           one and only code path that ever applies/persists a theme; no parallel logic. %>
-      <span class="inline-flex items-center gap-1.5 border border-base-300 rounded-md px-2.5 py-1 text-[13px] text-base-content/70 hover:border-primary hover:text-primary" data-controller="theme-picker">
+      <span class="inline-flex items-center gap-1.5 border border-base-300 rounded-md px-2.5 py-1 text-[13px] text-base-content/70 hover:border-primary hover:text-primary focus-within:border-primary focus-within:text-primary" data-controller="theme-picker">
         <label for="theme-picker-select" class="sr-only">Theme</label>
         <span class="text-primary font-bold" aria-hidden="true">t</span>
         <select
@@ -41,7 +41,13 @@
           data-theme-picker-target="select"
           data-keyboard-nav-target="themeSelect"
           data-action="theme-picker#change"
-          class="select select-ghost select-xs font-mono"
+          <%# Plain, chrome-less <select>: no DaisyUI `select` component classes (they
+              draw their own border + focus ring, which nested inside the chip's border
+              as an awkward double-border on open). appearance-none drops the native
+              caret so the chip reads as clean "t <theme>" text per the design; the chip
+              span owns the single border, and text-inherit lets the select follow the
+              chip's own base-content/70 -> primary hover/focus-within color. %>
+          class="appearance-none bg-transparent border-0 shadow-none outline-none focus:outline-none focus:ring-0 min-h-0 h-auto p-0 font-mono text-[13px] leading-none text-inherit cursor-pointer"
         >
           <option value="light">light</option>
           <option value="dark">dark</option>
