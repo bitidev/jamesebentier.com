@@ -8,16 +8,16 @@ RSpec.describe "GET /analytics/stats.json" do
     create(:page_view, :bot, path: "/writing/post-a", recorded_at: 1.day.ago)
   end
 
-  it "returns aggregate views for a valid query" do
+  it "responds successfully for a valid query" do
     get analytics_stats_path, params: { q: "views --last 7d" }
 
     expect(response).to have_http_status(:ok)
-    expect(response.parsed_body).to include(
-      "metric" => "views",
-      "total" => 2,
-      "human" => 1,
-      "bot" => 1
-    )
+  end
+
+  it "returns aggregate human and bot view counts" do
+    get analytics_stats_path, params: { q: "views --last 7d" }
+
+    expect(response.parsed_body).to include("metric" => "views", "total" => 2, "human" => 1, "bot" => 1)
   end
 
   it "rejects an invalid query" do

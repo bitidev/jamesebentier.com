@@ -21,6 +21,7 @@ RSpec.describe "Privacy page" do
 
       expect(response.body).to include("newsletter")
     end
+
     it "mentions first-party analytics" do
       get privacy_path
 

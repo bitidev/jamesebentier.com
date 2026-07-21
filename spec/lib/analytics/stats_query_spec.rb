@@ -25,11 +25,21 @@ RSpec.describe Analytics::StatsQuery do
       create(:page_view, path: "/", referrer: "news.ycombinator.com/item", recorded_at: 1.day.ago)
     end
 
-    it "returns human and bot totals for views" do
+    it "returns the total view count" do
       payload = described_class.fetch(metric: "views", window: "7d")
 
       expect(payload[:total]).to eq(4)
+    end
+
+    it "returns the human view count" do
+      payload = described_class.fetch(metric: "views", window: "7d")
+
       expect(payload[:human]).to eq(3)
+    end
+
+    it "returns the bot view count" do
+      payload = described_class.fetch(metric: "views", window: "7d")
+
       expect(payload[:bot]).to eq(1)
     end
 
