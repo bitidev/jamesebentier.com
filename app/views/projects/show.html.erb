@@ -4,37 +4,38 @@
     description: @project.description,
   )
 %>
+<%# Terminal-identity redesign (#1226): project detail reading column. This page wasn't
+    one of the six design-handoff screens -- extrapolated from Post detail's back-link/
+    prompt-and-meta conventions (app/views/writing/show.html.erb) and the Projects index
+    card's status dot + bracket "commands" (app/views/projects/index.html.erb), so a
+    visitor following a link from the redesigned Projects grid or Home doesn't land on
+    the old card/pill/section page. Imagery-free like the rest of the redesign -- Post
+    detail dropped its old hero image for the same reason -- so @project.image is not
+    rendered here; this page's components/section/pill/cta_button usages are retired. %>
+<article class="max-w-[900px] mx-auto px-8 pt-12 pb-[88px] font-sans text-lg leading-[1.7]">
+  <%= link_to "cd ../projects ←", projects_path, class: "font-mono text-[13px] text-base-content/50 no-underline hover:text-primary inline-block mb-7" %>
 
-<%# Wrapped in components/section purely for the consistent mb-16 spacing + scroll
-    fade/slide-in motion parity with every other section-wrapped page (R6) -- no
-    eyebrow/title locals needed since this page's own <h1> carries the heading. %>
-<%= render layout: "components/section" do %>
-  <h1 class='font-mono text-3xl mb-4'><%= @project.title %></h1>
+  <p class="font-mono text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ cat ~/projects/<%= @project.slug %></p>
 
-  <div class='flex flex-row mb-6 space-x-4'>
-    <div class='p-4 w-1/4 align-top m-auto mt-0 flex-shrink-0 border border-base-300 bg-base-100 rounded shadow'>
-      <%= image_tag @project.image, alt: @project.title, class: 'm-auto' %>
-      <div class='my-2 w-full text-center'>
-        <%= render "components/pill", label: @project.status, variant: :status %>
-      </div>
-    </div>
-    <div class='p-4 m-auto'>
-      <%# Triple-links, identical read -> demo -> source conditional composition as the
-          index card (R6): Demo (project.url) always renders; Read/Source render only
-          when present. relative z-10 keeps these independently clickable above the
-          section's own layout (matches the card-actions convention used elsewhere). %>
-      <div class='card-actions relative z-10 mb-4'>
-        <% if @project.read_url.present? %>
-          <%= render "components/cta_button", label: "Read", href: @project.read_url, style: :ghost %>
-        <% end %>
-        <%= render "components/cta_button", label: "Demo", href: @project.url, style: :primary %>
-        <% if @project.source_url.present? %>
-          <%= render "components/cta_button", label: "Source", href: @project.source_url, style: :ghost %>
-        <% end %>
-      </div>
-      <div class='prose w-full max-w-none'>
-        <%= render_markdown(@project.content) %>
-      </div>
-    </div>
+  <h1 class="font-mono text-4xl leading-[1.25] font-bold mb-3"><%= @project.title %></h1>
+
+  <p class="font-mono text-[13px] mb-8">
+    <span class="<%= @project.status_color_class %>">● <%= @project.status %></span>
+  </p>
+
+  <%# Bracket "commands", demo -> read -> source (index-card precedent, R3/R6): demo
+      (project.url) always renders; read/source render only when present. %>
+  <div class="flex gap-4 text-sm border-b border-base-300 pb-6 mb-9">
+    <%= link_to "[demo ↗]", @project.url, class: "text-primary font-bold no-underline hover:underline" %>
+    <% if @project.read_url.present? %>
+      <%= link_to "[read]", @project.read_url, class: "text-base-content/50 no-underline hover:text-primary" %>
+    <% end %>
+    <% if @project.source_url.present? %>
+      <%= link_to "[source]", @project.source_url, class: "text-base-content/50 no-underline hover:text-primary" %>
+    <% end %>
   </div>
-<% end %>
+
+  <div class="prose max-w-none">
+    <%= render_markdown(@project.content) %>
+  </div>
+</article>
