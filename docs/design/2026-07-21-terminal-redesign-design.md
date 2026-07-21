@@ -2,9 +2,10 @@
 
 ## Problem
 
-A second-pass visual redesign arrived as a Claude Design handoff
-(`design_handoff_personal_site/` in the repo root — untracked, read it from the main
-checkout at `/Users/jebentier/development/jamesebentier.com/design_handoff_personal_site/`).
+A second-pass visual redesign arrived as a Claude Design handoff in the
+`design_handoff_personal_site/` directory at the repo root. It is untracked (not committed),
+so it lives only in the checkout it was dropped into; obtain it from the original handoff
+bundle if it isn't present in your working copy.
 It re-lays-out all six pages into a cohesive **terminal-session** aesthetic. The current
 site already ships the terminal *theme* (Phase 1, epic #1179) but with conventional
 card/grid page layouts. This work replaces the **layouts and chrome** only; it reuses all

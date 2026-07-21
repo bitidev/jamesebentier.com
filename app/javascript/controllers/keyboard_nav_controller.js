@@ -173,7 +173,11 @@ export default class extends Controller {
   // parallel open/close implementation.
   openGuideDialog(event) {
     event?.preventDefault()
-    if (this.hasGuideDialogTarget) this.guideDialogTarget.showModal()
+    // Guard on .open: showModal() throws InvalidStateError if the dialog is already open
+    // (e.g. the `?` chip double-clicked). The `?` keydown path (dispatchNormalMode) also
+    // routes through here now; handleKeydown already bails while the dialog is open, so
+    // that path never hits an open dialog -- this guard is what makes the click entry safe.
+    if (this.hasGuideDialogTarget && !this.guideDialogTarget.open) this.guideDialogTarget.showModal()
   }
 
   // `?` guide overlay's COMMAND-registry list (spec R10, Increment 6): populated once
@@ -321,8 +325,9 @@ export default class extends Controller {
 
     switch (event.key) {
       case "?":
-        event.preventDefault()
-        this.guideDialogTarget.showModal()
+        // Single showModal() entry point, shared with the header `?` chip's click handler
+        // (openGuideDialog also calls preventDefault + guards the already-open case).
+        this.openGuideDialog(event)
         return
       case "g":
         event.preventDefault()

@@ -16,8 +16,10 @@
   <%= link_to "cd ../writing ←", posts_path, class: "font-mono text-[13px] text-base-content/50 no-underline hover:text-primary inline-block mb-7" %>
 
   <p class="font-mono text-[13px] text-base-content/50 mb-3.5">
+    <%# Glyph is decorative (aria-hidden); the visible "<kind> · date · N min" text below
+        already conveys the kind to assistive tech, so no separate sr-only label here (a
+        duplicate would make screen readers announce the kind twice). %>
     <span class="text-primary" aria-hidden="true"><%= @post.kind_glyph %></span>
-    <span class="sr-only"><%= @post.kind_label %></span>
     <%= @post.kind_label.downcase %> &middot; <%= @post.published_at.strftime("%Y-%m-%d") %> &middot; <%= @post.reading_time %> min
     <% @post.tags.each do |tag| %>
       &middot; #<%= tag %>

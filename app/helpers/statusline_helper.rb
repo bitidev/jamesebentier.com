@@ -4,8 +4,9 @@
 # _keyboard_status_line.html.erb), keyed on the current controller/action -- see the
 # terminal-identity redesign design doc's "Statusline" section (#1226). Both lookups
 # fall back to a safe default (path "~/", no hints) for any controller/action not named
-# below (e.g. projects#show, welcome#privacy, the newsletter confirm/unsubscribe pages)
-# rather than raising, so a future page never breaks the statusline just by existing.
+# below (e.g. welcome#privacy, the newsletter confirm/unsubscribe pages) rather than
+# raising, so a future page never breaks the statusline just by existing. writing#show
+# and projects#show are not in PATHS but are handled explicitly in statusline_path below.
 module StatuslineHelper
   PATHS = {
     "welcome#index" => "~/home",
