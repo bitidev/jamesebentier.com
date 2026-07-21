@@ -59,18 +59,6 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
     <script src="https://kit.fontawesome.com/d7b2096eb7.js" crossorigin="anonymous"></script>
-    <%- if Rails.env.production? %>
-    <script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"88e45cec281a34f78c4a2745481794d3"})});</script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TWP4CV64DK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-TWP4CV64DK');
-    </script>
-    <% end %>
   </head>
 
   <%# data-controller="keyboard-nav" mounts the modal NORMAL/COMMAND/SEARCH keyboard
@@ -78,7 +66,7 @@
       <body> is not data-turbo-permanent, so standard Turbo Drive visits
       disconnect/reconnect it -- and reset mode to NORMAL -- on every navigation, by
       design. %>
-  <body data-controller="keyboard-nav">
+  <body data-controller="keyboard-nav analytics-visit">
     <%= render partial: 'layouts/components/header' %>
     <div class="max-w-screen-lg m-auto font-sans">
       <%# Flash messages for newsletter signup and other controller actions %>

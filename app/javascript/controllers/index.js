@@ -4,6 +4,9 @@
 
 import { application } from "./application"
 
+import AnalyticsVisitController from "./analytics_visit_controller"
+application.register("analytics-visit", AnalyticsVisitController)
+
 import CollapseController from "./collapse_controller"
 application.register("collapse", CollapseController)
 

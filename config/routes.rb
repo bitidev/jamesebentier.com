@@ -20,6 +20,10 @@ Rails.application.routes.draw do
   # fetched lazily and cached client-side (app/javascript/keyboard_nav/search_index.js).
   get "search-index.json" => "search_index#index", as: :search_index
 
+  # First-party analytics (#1188) — Turbo beacon + COMMAND-mode stats JSON.
+  post "analytics/page_views" => "analytics/page_views#create", as: :analytics_page_views
+  get  "analytics/stats.json" => "analytics/stats#show", as: :analytics_stats
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check

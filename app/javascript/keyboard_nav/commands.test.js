@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, rankCommands, willCommandApply } from "./commands"
+import { COMMAND_REGISTRY, findCommand, formatCommandInvocation, parseCommand, parseStatsArgs, rankCommands, willCommandApply } from "./commands"
 
 describe("parseCommand", () => {
   it("parses a bare name with no args", () => {
@@ -124,10 +124,28 @@ describe("formatCommandInvocation (Increment 6, spec R10 -- ? guide overlay)", (
   })
 })
 
+describe("parseStatsArgs", () => {
+  it("parses views with a default window", () => {
+    expect(parseStatsArgs("views")).toEqual({ metric: "views", window: "7d", query: "views --last 7d" })
+  })
+
+  it("parses top posts with an explicit window", () => {
+    expect(parseStatsArgs("top posts --last 30d")).toEqual({
+      metric: "top_posts",
+      window: "30d",
+      query: "top posts --last 30d",
+    })
+  })
+
+  it("returns null for an unknown metric", () => {
+    expect(parseStatsArgs("bogus")).toBeNull()
+  })
+})
+
 describe("COMMAND_REGISTRY (v1 command set, spec R6)", () => {
-  it("registers exactly the v1 nav/theme/help commands", () => {
+  it("registers exactly the v1 nav/theme/help/stats commands", () => {
     expect(COMMAND_REGISTRY.map((command) => command.name).sort()).toEqual(
-      ["help", "home", "projects", "resume", "theme", "writing"].sort()
+      ["help", "home", "projects", "resume", "stats", "theme", "writing"].sort()
     )
   })
 
@@ -157,21 +175,40 @@ describe("COMMAND_REGISTRY (v1 command set, spec R6)", () => {
   })
 
   it("theme returns false and never calls context.setTheme for an unrecognized theme name", () => {
-    const context = { navigateTo: vi.fn(), setTheme: vi.fn(), openGuideDialog: vi.fn() }
+    const context = { navigateTo: vi.fn(), setTheme: vi.fn(), openGuideDialog: vi.fn(), setCommandFeedback: vi.fn() }
 
     const result = findCommand("theme", COMMAND_REGISTRY).run("not-a-real-theme", context)
 
     expect(context.setTheme).not.toHaveBeenCalled()
     expect(result).toBe(false)
   })
+
+  it("stats fetches aggregate data and writes formatted lines to command feedback", async () => {
+    const context = { navigateTo: vi.fn(), setTheme: vi.fn(), openGuideDialog: vi.fn(), setCommandFeedback: vi.fn() }
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({ lines: ["views (7d): 10 total (8 human, 2 bot)"] }),
+    })
+
+    await findCommand("stats", COMMAND_REGISTRY).run("views", context)
+
+    expect(fetchMock).toHaveBeenCalledWith("/analytics/stats.json?q=views%20--last%207d", {
+      headers: { Accept: "application/json" },
+    })
+    expect(context.setCommandFeedback).toHaveBeenCalledWith("views (7d): 10 total (8 human, 2 bot)")
+    fetchMock.mockRestore()
+  })
 })
 
 describe("willCommandApply", () => {
-  it("accepts every v1 command except theme with bad args", () => {
+  it("accepts every v1 command except theme with bad args or stats with bad args", () => {
     const theme = findCommand("theme", COMMAND_REGISTRY)
+    const stats = findCommand("stats", COMMAND_REGISTRY)
 
     expect(willCommandApply(findCommand("help", COMMAND_REGISTRY), "")).toBe(true)
     expect(willCommandApply(theme, "dracula")).toBe(true)
     expect(willCommandApply(theme, "not-a-real-theme")).toBe(false)
+    expect(willCommandApply(stats, "views --last 7d")).toBe(true)
+    expect(willCommandApply(stats, "bogus")).toBe(false)
   })
 })

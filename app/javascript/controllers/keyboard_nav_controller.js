@@ -562,12 +562,16 @@ export default class extends Controller {
       return
     }
 
+    const staysInCommandMode = command.staysInCommandMode === true
+
     this.commandInputTarget.value = ""
     this.clearCommandFeedback()
-    // Exit COMMAND mode (blur + restore priorFocus) before run() -- especially
-    // openGuideDialog/showModal() -- so the native <dialog>'s own focus-restore on
-    // Esc-close returns to the pre-COMMAND target, not the now-hidden command input.
-    this.exitToNormal()
+    if (!staysInCommandMode) {
+      // Exit COMMAND mode (blur + restore priorFocus) before run() -- especially
+      // openGuideDialog/showModal() -- so the native <dialog>'s own focus-restore on
+      // Esc-close returns to the pre-COMMAND target, not the now-hidden command input.
+      this.exitToNormal()
+    }
     command.run(args, this.commandContext())
   }
 
@@ -580,6 +584,7 @@ export default class extends Controller {
       navigateTo: (target) => this.navigateTo(target),
       setTheme: (theme) => this.applyTheme(theme),
       openGuideDialog: () => this.hasGuideDialogTarget && this.guideDialogTarget.showModal(),
+      setCommandFeedback: (text) => this.setCommandFeedback(text),
     }
   }
 
