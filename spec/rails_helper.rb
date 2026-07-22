@@ -10,6 +10,7 @@ require 'rspec/rails'
 
 # Add additional requires below this line. Rails is not loaded until this point!
 require 'database_cleaner/active_record'
+require 'rspec/retry'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -52,6 +53,15 @@ RSpec.configure do |config|
       example.run
     end
   end
+
+  # rspec-retry: opt-in-per-example only. default_retry_count of 1 means "one try,
+  # no retry" for every example UNLESS it's explicitly tagged `retry: N` -- this
+  # must never become a blanket flake-masker for the whole suite. See
+  # spec/system/keyboard_nav_spec.rb:73 for the one deliberate, commented exception
+  # (#1233/#1238).
+  config.verbose_retry = true
+  config.display_try_failure_messages = true
+  config.default_retry_count = 1
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false

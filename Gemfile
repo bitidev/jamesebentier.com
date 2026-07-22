@@ -92,6 +92,7 @@ group :test do
   gem "faker"
   gem "rspec"
   gem "rspec-rails"
+  gem "rspec-retry"
   gem "shoulda-matchers"
   gem "simplecov", require: false
   gem "timecop"

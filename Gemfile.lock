@@ -384,6 +384,8 @@ GEM
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
+    rspec-retry (0.6.2)
+      rspec-core (> 3.3)
     rspec-support (3.13.7)
     rubocop (1.88.2)
       json (~> 2.3)
@@ -521,6 +523,7 @@ DEPENDENCIES
   redis (>= 4.0.1)
   rspec
   rspec-rails
+  rspec-retry
   rubocop
   rubocop-factory_bot
   rubocop-performance
