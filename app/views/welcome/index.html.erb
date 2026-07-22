@@ -5,97 +5,79 @@
   )
 %>
 
-<%# Hero: the page's one <h1> (the final, verbatim positioning line -- see
-    docs/specs/1181-home-hero-redesign.md's Hero Copy). Deliberately NOT wrapped in
-    components/section (R1): the hero is the singular above-the-fold headline, distinct
-    in weight from the section-wrapped content below (whose own <h2> title slot is a
-    smaller text-2xl), and must render visible immediately rather than participate in
-    section's scroll-triggered fade/slide-in motion. The ASCII-art terminal/monogram
-    visual sits beside the copy on md+ viewports; hidden below md rather than stacked,
-    since a fixed-width text block (unlike the raster banner it replaces) would either
-    overflow or squash illegibly at phone width. %>
-<div class='flex flex-col md:flex-row md:items-center gap-8 mb-16'>
-  <div class='md:w-1/2'>
-    <p class='font-mono text-sm text-primary mb-2'>$ whoami</p>
-    <h1 class='font-mono text-3xl mb-4'>I help engineers get their systems right — a fraction of the time, all of the leverage.</h1>
-    <p class='text-lg text-base-content/70'>James Ebentier — software architect based in Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.</p>
+<%# Terminal-identity redesign (#1226): Home reads as one terminal session -- each
+    block below is a command + its output. The final, verbatim positioning line (h1)
+    and its subhead are pinned by welcome_spec; second clause of the h1 is text-primary. %>
+<div class="max-w-[1088px] mx-auto px-8 pt-16 font-mono">
+  <p class="text-[15px] m-0"><span class="text-primary">james@ebentier:~</span>$ whoami</p>
+  <h1 class="text-[38px] leading-[1.25] font-bold mt-4 mb-3 max-w-[900px]">I help engineers get their systems right — <span class="text-primary">a fraction of the time, all of the leverage.</span></h1>
+  <p class="font-sans text-xl text-base-content/70 mb-12 max-w-[760px]">James Ebentier — software architect based in Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.</p>
+
+  <%# Featured projects -- Project.for_home (curated-first, chronological-fallback,
+      1181 R2) omitted entirely when there's nothing to show. %>
+  <% featured_projects = Project.for_home(limit: 3).to_a %>
+  <% if featured_projects.any? %>
+    <p class="text-[15px] mb-5"><span class="text-primary">james@ebentier:~</span>$ ls ~/projects --featured</p>
+    <div class="flex flex-col mb-12">
+      <% featured_projects.each do |project| %>
+        <%= link_to project_url(slug: project.slug), class: "flex items-baseline gap-4 py-3 border-t border-base-300 no-underline hover:bg-base-200" do %>
+          <span class="w-[280px] shrink-0 font-bold text-primary hover:underline"><%= project.slug %>/</span>
+          <span class="w-[110px] shrink-0 text-[13px] <%= project.status_color_class %>">● <%= project.status.downcase %></span>
+          <span class="flex-1 font-sans text-[15px] text-base-content/70 truncate"><%= project.description %></span>
+          <span class="text-[13px] text-base-content/50 shrink-0">[demo ↗]</span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Latest writing -- Post.for_home is always scoped under Post.published first
+      (1181 R2), so an unpublished/future-dated post can never appear here. %>
+  <% latest_posts = Post.for_home(limit: 3).to_a %>
+  <% if latest_posts.any? %>
+    <p class="text-[15px] mb-5"><span class="text-primary">james@ebentier:~</span>$ tail -n 3 ~/writing</p>
+    <div class="flex flex-col mb-12">
+      <% latest_posts.each do |post| %>
+        <%= link_to post_url(slug: post.slug), class: "flex items-baseline gap-4 py-3 border-t border-base-300 no-underline hover:bg-base-200" do %>
+          <span class="w-[110px] shrink-0 text-[13px] text-base-content/50"><%= post.published_at.strftime("%Y-%m-%d") %></span>
+          <span class="flex-1 font-bold hover:text-primary"><%= post.title %></span>
+          <span class="text-[13px] text-base-content/50 shrink-0"><%= post.reading_time %> min</span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Real first-party analytics block (#1226 PR review fix): the total and sparkline are
+      a live server-side query (WelcomeController#index, via Analytics::StatsQuery) over
+      the same "views" metric (no visitor_type filter) that `:stats views --last 7d`
+      queries live, so the two always agree. Renders "0 views" and a flat sparkline
+      honestly on a brand-new, empty DB rather than hiding the block. %>
+  <p class="text-[15px] mb-3.5"><span class="text-primary">james@ebentier:~</span>$ stats views --last 7d</p>
+  <div class="mb-12 flex items-baseline gap-5 flex-wrap">
+    <span class="text-[26px] tracking-[4px] text-primary leading-none" aria-hidden="true"><%= sparkline(@daily_view_counts) %></span>
+    <span class="sr-only"><%= @views_stats[:total] %> views over the last 7 days</span>
+    <span class="text-[15px]"><span class="font-bold"><%= number_with_delimiter(@views_stats[:total]) %></span> views</span>
+    <span class="text-[13px] text-base-content/50">first-party only — no third-party trackers. query it yourself with <span class="text-primary">:</span>stats</span>
   </div>
-  <%# Decorative only (aria-hidden): the h1 + subhead above already carry the hero's
-      meaning for screen-reader users, so this text art needs no alternative text --
-      same "meaning already conveyed by adjacent text" rationale components/card uses
-      for its own decorative alt="" figures. Colored solely via text-primary/bg-base-200
-      /border-base-300 -- the P1.1 daisyUI theme tokens -- so it re-themes automatically
-      across all six bundled themes with no per-theme styling of its own, and introduces
-      no new literal color utility (keeps 1181 R10's no-rainbow-utilities guarantee). %>
-  <div class='hidden md:flex md:w-1/2 items-center justify-center'>
-    <pre aria-hidden='true' class='font-mono text-sm leading-tight text-primary bg-base-200 border border-base-300 rounded-xl p-6 inline-block'>╭────────────────────╮
-│ ● ● ●              │
-├────────────────────┤
-│                    │
-│      ███  █████    │
-│       █   █        │
-│       █   █        │
-│       █   ████     │
-│       █   █        │
-│    █  █   █        │
-│     ██    █████    │
-│                    │
-│  &gt; _               │
-╰────────────────────╯</pre>
-  </div>
+
+  <p class="text-[15px] mb-16"><span class="text-primary">james@ebentier:~</span>$ <span class="animate-blink" aria-hidden="true">█</span></p>
 </div>
 
-<%# Featured Projects -- composed identically to projects/index.html.erb's shipped
-    per-project block (1180 R9), just inside a responsive grid instead of a space-y-6
-    stack. Omitted entirely (no section wrapper, no heading at all) when there's nothing
-    to show -- R2/R3's empty-table edge case. %>
-<% featured_projects = Project.for_home(limit: 3).to_a %>
-<% if featured_projects.any? %>
-  <%= render layout: "components/section", locals: { eyebrow: "Portfolio", title: "Featured Projects" } do %>
-    <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
-      <% featured_projects.each do |project| %>
-        <%= render layout: "components/card", locals: { href: project_url(slug: project.slug), image_url: project.image } do %>
-          <h2 class='card-title font-mono text-xl'><%= project.title %></h2>
-          <div>
-            <%= render "components/pill", label: project.status, variant: :status %>
-          </div>
-          <p class='mb-0'><%= project.description %></p>
-          <div class='card-actions relative z-10 mt-2'>
-            <%= render "components/cta_button", label: "View Project", href: project_url(slug: project.slug), style: :primary %>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  <% end %>
-<% end %>
+<div class="max-w-[1088px] mx-auto px-8 pb-8">
+  <%= render "components/work_with_me_cta" %>
+</div>
 
-<%# Latest Writing -- same grid/card pattern as Featured Projects. Post.for_home is
-    always scoped under Post.published first (R2), so an unpublished/future-dated post
-    can never appear here. Omitted entirely when there's nothing to show. %>
-<% latest_posts = Post.for_home(limit: 3).to_a %>
-<% if latest_posts.any? %>
-  <%= render layout: "components/section", locals: { eyebrow: "Writing", title: "Latest Writing" } do %>
-    <div class='grid grid-cols-1 md:grid-cols-3 gap-6'>
-      <% latest_posts.each do |post| %>
-        <%= render layout: "components/card", locals: { href: post_url(slug: post.slug), image_url: post.image } do %>
-          <h2 class='card-title font-mono text-xl'><%= post.title %></h2>
-          <p class='text-sm text-base-content/70'><%= post.published_at.strftime("%B %d, %Y") %></p>
-          <p class='mb-0'><%= post.excerpt %></p>
-          <div class='card-actions relative z-10 mt-2'>
-            <%= render "components/cta_button", label: "Read Post", href: post_url(slug: post.slug), style: :primary %>
-          </div>
-        <% end %>
-      <% end %>
+<%# Second newsletter form on Home (welcome_spec: at least two /newsletter forms on
+    "/", one inside <footer>) -- the footer's own newsletter column is now Home-only,
+    so this inline "# subscribe" card (styled after the Post-detail inline subscribe
+    card) keeps a second, in-page entry point rather than relying on the footer alone. %>
+<div class="max-w-[1088px] mx-auto px-8 pb-16">
+  <div class="border border-base-300 bg-base-200 rounded-[10px] p-6 md:p-7 flex items-center gap-6 flex-wrap font-mono">
+    <div class="flex-1 min-w-[240px]">
+      <p class="text-[13px] text-primary mb-1.5"># subscribe</p>
+      <p class="font-sans text-base text-base-content/70 m-0">Occasional writing on systems &amp; craft — no spam.</p>
     </div>
-  <% end %>
-<% end %>
-
-<%# Newsletter signup below Latest Writing per design doc §2 / operator decision #2 %>
-<%= render layout: "components/section", locals: { eyebrow: "Stay in the loop", title: "Newsletter" } do %>
-  <div class='max-w-lg'>
-    <p class='text-base-content/70 mb-6'>Occasional writing on architecture, systems, and engineering craft. No spam. Unsubscribe any time.</p>
-    <%= render "components/newsletter_signup", source: "home" %>
+    <div class="flex-1 min-w-[240px]">
+      <%= render "components/newsletter_signup", source: "home" %>
+    </div>
   </div>
-<% end %>
-
-<%= render "components/work_with_me_cta" %>
+</div>

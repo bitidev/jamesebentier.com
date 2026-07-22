@@ -74,8 +74,16 @@ RSpec.describe "Keyboard navigation foundation", :js do
     visit root_path
     wait_for_keyboard_nav_connected
 
-    %w[Writing Home Projects Home].each do |label|
-      within("header") { click_link label }
+    # Terminal-identity redesign (#1226): nav text is lowercase now, and Home has no
+    # separate nav item -- its data-nav-target lives on the logo link -- so "Home" hops
+    # below select it via that data hook rather than visible link text.
+    [
+      -> { within("header") { click_link "writing" } },
+      -> { within("header") { find("a[data-nav-target='home']").click } },
+      -> { within("header") { click_link "projects" } },
+      -> { within("header") { find("a[data-nav-target='home']").click } }
+    ].each do |navigate|
+      navigate.call
       # Standard (non-permanent) Turbo visits replace <body>, disconnecting and
       # reconnecting this controller on every navigation (see the controller's own
       # Turbo lifecycle note) -- wait for the fresh instance to reconnect before

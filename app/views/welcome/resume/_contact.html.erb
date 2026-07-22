@@ -1,0 +1,27 @@
+<%#
+  Resume contact grid -- terminal-identity redesign (#1226): four bordered tiles
+  (email/github/site/status), values sourced from resume.yml's basics/profiles
+  (email/github handle/site are real data; "available for engagements" is an
+  editorial status line, not a resume.yml field).
+%>
+<% github_profile = basics[:profiles].find { |profile| profile[:network] == "github" } %>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-12 font-mono text-sm">
+  <div class="border border-base-300 bg-base-200 rounded-md px-4.5 py-3.5 flex gap-2.5 items-baseline">
+    <span class="text-primary">email</span>
+    <%= link_to basics[:email], "mailto:#{basics[:email]}", class: "text-base-content/70 no-underline hover:text-primary" %>
+  </div>
+  <% if github_profile %>
+    <div class="border border-base-300 bg-base-200 rounded-md px-4.5 py-3.5 flex gap-2.5 items-baseline">
+      <span class="text-primary">github</span>
+      <%= link_to "@#{github_profile[:username]}", github_profile[:url], class: "text-base-content/70 no-underline hover:text-primary" %>
+    </div>
+  <% end %>
+  <div class="border border-base-300 bg-base-200 rounded-md px-4.5 py-3.5 flex gap-2.5 items-baseline">
+    <span class="text-primary">site</span>
+    <%= link_to basics[:website].sub(%r{\Ahttps?://}, ""), root_url, class: "text-base-content/70 no-underline hover:text-primary" %>
+  </div>
+  <div class="border border-base-300 bg-base-200 rounded-md px-4.5 py-3.5 flex gap-2.5 items-baseline">
+    <span class="text-primary">status</span>
+    <span class="text-success">● available for engagements</span>
+  </div>
+</div>

@@ -87,9 +87,11 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
 - `app/controllers/newsletters_controller.rb` — Newsletter signup (POST /newsletter), confirm, unsubscribe
 - `app/controllers/concerns/.keep` — Concerns directory keepfile
+- `app/helpers/analytics_helper.rb` — `sparkline` (daily view-count series → block-glyph string) for the Home stats block
 - `app/helpers/application_helper.rb` — Social icon helpers
 - `app/helpers/blog_helper.rb` — `render_markdown` via `Blog::Renderer`
-- `app/helpers/resume_helper.rb` — Resume YAML load + skill-level CSS
+- `app/helpers/resume_helper.rb` — Resume YAML load
+- `app/helpers/statusline_helper.rb` — Statusline path + keybind-hint copy, keyed by controller/action
 - `app/helpers/welcome_helper.rb` — Welcome helper module (empty)
 - `app/javascript/application.js` — JS entry
 - `app/javascript/controllers/application.js` — Stimulus application
@@ -113,10 +115,10 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/components/_newsletter_signup.html.erb` — Newsletter signup form partial (email + consent checkbox; source: local)
 - `app/views/components/_pill.html.erb` — Shared tag/status pill partial (status→badge-role map)
 - `app/views/components/_section.html.erb` — Shared section wrapper partial (eyebrow/title + scroll motion)
-- `app/views/components/_work_with_me_cta.html.erb` — Shared "Work with me" mailto CTA block (home/about/footer)
+- `app/views/components/_work_with_me_cta.html.erb` — Shared "Work with me" mailto CTA block (home/about)
 - `app/views/layouts/application.html.erb` — Main HTML layout (meta-tags, analytics, FOUC-prevention theme script)
 - `app/views/layouts/components/_header.html.erb` — Site header
-- `app/views/layouts/components/_footer.html.erb` — Site footer
+- `app/views/layouts/components/_footer.html.erb` — Home-only site footer (identity/sitemap/newsletter)
 - `app/views/layouts/mailer.html.erb` — HTML mailer layout
 - `app/views/layouts/mailer.text.erb` — Text mailer layout
 - `app/views/projects/index.html.erb` — Projects listing
@@ -126,17 +128,17 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/newsletter_mailer/confirmation.text.erb` — Plain-text body for double opt-in confirmation email
 - `app/views/newsletters/confirm.html.erb` — Subscription confirmed success page
 - `app/views/newsletters/unsubscribe.html.erb` — Unsubscribed success page
-- `app/views/welcome/about.html.erb` — About page (fractional-architect narrative)
+- `app/views/welcome/about.html.erb` — About page (embedded-architect narrative)
 - `app/views/welcome/index.html.erb` — Landing page
 - `app/views/welcome/privacy.html.erb` — Privacy policy stub (P1.11 / #1190 fills content later)
 - `app/views/welcome/resume.html.erb` — Resume page shell
+- `app/views/welcome/resume/_contact.html.erb` — Resume contact grid partial (email/github/site/status tiles)
 - `app/views/welcome/resume/_education.html.erb` — Resume education partial
 - `app/views/welcome/resume/_header.html.erb` — Resume header partial
-- `app/views/welcome/resume/_languages.html.erb` — Resume languages partial
 - `app/views/welcome/resume/_main_summary.html.erb` — Resume summary partial
 - `app/views/welcome/resume/_skills.html.erb` — Resume skills partial
 - `app/views/welcome/resume/_work_experience.html.erb` — Resume work experience partial
-- `app/views/writing/index.html.erb` — Writing listing (Notes/Deep Dives filter, editorial guidelines)
+- `app/views/writing/index.html.erb` — Writing listing (Notes/Deep Dives filter, glyph legend)
 - `app/views/writing/index.rss.builder` — Writing RSS
 - `app/views/writing/show.html.erb` — Writing post detail
 
@@ -163,8 +165,8 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 | rails-runtime | 4 |
 | content-domain | 5 |
 | markdown-rendering | 1 |
-| web-presentation | 57 |
+| web-presentation | 58 |
 | keyboard-navigation | 11 |
-| **Total** | **78** |
+| **Total** | **79** |
 
 Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.

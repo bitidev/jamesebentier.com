@@ -55,7 +55,27 @@ module Analytics
         end
       end
 
+      # Per-day view counts for `window` (oldest -> newest), over the SAME rows fetch's
+      # :total counts. Tiles the rolling `[since, now]` window into 24h buckets FROM `since`
+      # (not calendar dates, which dropped boundary views and broke sum==total off-midnight);
+      # an index at/past the last bucket (a view at the exact `now`, matching fetch's
+      # unbounded-above `recorded_at: since..` scope) is clamped in, so `daily_view_counts.sum
+      # == fetch(:total)` holds for any time of day. Length == bucket count ("7d" -> 7).
+      def daily_view_counts(window: "7d")
+        since = window_start(window)
+        buckets = bucket_count(window)
+        group = ActiveRecord::Base.sanitize_sql_array(["FLOOR(EXTRACT(EPOCH FROM (recorded_at - ?)) / ?)", since, 1.day.to_i])
+        PageView.where(recorded_at: since..).group(Arel.sql(group)).count
+                .each_with_object(Array.new(buckets, 0)) { |(i, n), series| series[i.to_i.clamp(0, buckets - 1)] += n }
+      end
+
       private
+
+      # 24h buckets in `window` (min 1): "7d" -> 7, "24h"/"12h" -> 1, "48h" -> 2.
+      def bucket_count(window)
+        amount, unit = window.match(/\A(\d+)([dh])\z/i).captures
+        [unit.casecmp("h").zero? ? (amount.to_i / 24.0).ceil : amount.to_i, 1].max
+      end
 
       def views_payload(scope, window, since) # rubocop:disable Metrics/MethodLength
         counts = scope.group(:visitor_type).count

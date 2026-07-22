@@ -69,11 +69,21 @@ RSpec.describe "Keyboard navigation -- SEARCH mode (/)", :js do
     wait_for_search_results(3)
 
     fill_in "Search", with: "vim"
-
     wait_for_search_results(2)
-    expect(page).to have_link("Learning Vim Motions")
-    expect(page).to have_link("Vimium Clone")
-    expect(page).to have_no_link("Hosting on AWS")
+
+    # Terminal-identity redesign (#1226): Home's own Latest Writing block now renders
+    # each recent post as a real row link with the post's title as its visible/accessible
+    # text (app/views/welcome/index.html.erb) -- so with only two posts in the fixture set,
+    # the underlying Home page (still in the DOM behind the SEARCH overlay) legitimately
+    # contains a real "Hosting on AWS" link of its own. Scoping to #keyboard-search-results
+    # (the overlay's own result list, app/views/layouts/components/_keyboard_command_bar.
+    # html.erb) is what actually proves the *filtering*, independent of whatever the host
+    # page underneath happens to render.
+    within("#keyboard-search-results") do
+      expect(page).to have_link("Learning Vim Motions")
+      expect(page).to have_link("Vimium Clone")
+      expect(page).to have_no_link("Hosting on AWS")
+    end
   end
 
   it "highlights the first result by default and steps the highlight with n/N, scoped to the open list" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations

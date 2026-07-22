@@ -1,14 +1,26 @@
 <%
   set_meta_tags(
     title: 'Resume',
-    description: "The fully interactive resume of James Ebentier, a full-stack developer with a passion for learning and creating.",
+    description: "The resume of James Ebentier, a software architect based in Berlin.",
   )
 %>
-<div class='text-sm mx-auto my-10 text-[#40484f] font-resume text-justify leading-snug'>
+<%# Terminal-identity redesign (#1226): "cat resume.txt" reading column, restyling the
+    existing partials over the real resume/resume.yml data (ResumeHelper#resume_data)
+    -- the handoff's own roles/skills/education are placeholders and are not used.
+    No download.pdf button: there is no PDF/print-download route in this app (see
+    _header partial's own comment) -- the page itself stays print-friendly instead.
+    resume.yml's languages data isn't rendered here at all -- the design doc's Resume
+    section doesn't include a languages block in the two-column skills/education band,
+    and resume.yml only lists one (English/Native Speaker), so it added little on its
+    own reading column. %>
+<div class="max-w-[900px] mx-auto px-8 pt-14 pb-20">
   <%= render partial: 'welcome/resume/header',          locals: resume_data %>
+  <%= render partial: 'welcome/resume/contact',         locals: resume_data %>
   <%= render partial: 'welcome/resume/main_summary',    locals: resume_data %>
-  <%= render partial: 'welcome/resume/skills',          locals: resume_data %>
   <%= render partial: 'welcome/resume/work_experience', locals: resume_data %>
-  <%= render partial: 'welcome/resume/education',       locals: resume_data %>
-  <%= render partial: 'welcome/resume/languages',       locals: resume_data %>
+
+  <div class="grid md:grid-cols-2 gap-11">
+    <%= render partial: 'welcome/resume/skills',    locals: resume_data %>
+    <%= render partial: 'welcome/resume/education', locals: resume_data %>
+  </div>
 </div>
