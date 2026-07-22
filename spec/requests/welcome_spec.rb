@@ -346,4 +346,25 @@ RSpec.describe "Welcomes" do
       expect(footer_forms).not_to be_empty
     end
   end
+
+  # Legal pages (#1190): the shared footer only renders on Home (ApplicationHelper#
+  # show_full_footer?, see about_spec's "footer" block), so this is the one place the
+  # Impressum/Privacy links can be exercised through the real controller/view stack.
+  describe "GET / — footer legal links (#1190)" do
+    it "links to the Impressum page from the footer" do
+      get root_path
+
+      footer_link = response.parsed_body.at_css("footer a[href='#{impressum_path}']")
+
+      expect(footer_link.text).to eq("Impressum")
+    end
+
+    it "links to the Privacy Policy page from the footer" do
+      get root_path
+
+      footer_link = response.parsed_body.at_css("footer a[href='#{privacy_path}']")
+
+      expect(footer_link.text).to eq("Privacy")
+    end
+  end
 end
