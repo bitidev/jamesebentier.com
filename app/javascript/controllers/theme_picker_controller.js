@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 // Single documented localStorage key shared with the render-blocking inline script in
 // app/views/layouts/application.html.erb that prevents a flash-of-wrong-theme on load.
 const STORAGE_KEY = "theme"
-const DEFAULT_THEME = "light"
+const DEFAULT_THEME = "gruvbox"
 
 // Connects to data-controller="theme-picker"
 //
