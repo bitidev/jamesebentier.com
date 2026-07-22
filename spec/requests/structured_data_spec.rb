@@ -136,6 +136,29 @@ RSpec.describe "SEO structured data and meta (#1189)" do
       end
     end
 
+    context "when the post has a root-relative image" do
+      let!(:root_relative_image_post) do
+        create(:post, slug: "root-relative-image-post", image: "/logo.png")
+      end
+
+      # rubocop:disable RSpec/MultipleExpectations
+      it "resolves og:image to a single-slash absolute URL, not a doubled-up //logo.png " \
+         "(regression: 034de23)" do
+        get post_path(slug: root_relative_image_post.slug)
+        image = meta_content("meta[property='og:image']")
+
+        expect(image).to eq("#{root_url}logo.png")
+        expect(image).not_to include("#{root_url.chomp('/')}//logo.png")
+      end
+      # rubocop:enable RSpec/MultipleExpectations
+
+      it "resolves twitter:image to the same single-slash absolute URL" do
+        get post_path(slug: root_relative_image_post.slug)
+
+        expect(meta_content("meta[name='twitter:image']")).to eq("#{root_url}logo.png")
+      end
+    end
+
     context "when the post has an absolute external image" do
       let!(:external_image_post) do
         create(:post, slug: "external-image-post", image: "https://notmyrealemail.com/logo-120.png")
@@ -169,6 +192,14 @@ RSpec.describe "SEO structured data and meta (#1189)" do
       person = json_ld_blocks.find { |data| data["@type"] == "Person" }
 
       expect(person["sameAs"]).to eq(ApplicationHelper::SOCIAL_PROFILES.values)
+    end
+
+    it "every target=\"_blank\" footer link carries rel=\"noopener\", closing the reverse-tabnabbing " \
+       "gap (regression: 034de23)" do
+      get root_path
+      blank_target_links = response.parsed_body.at_css("footer").css("a[target='_blank']")
+
+      expect(blank_target_links).to all(satisfy { |link| link["rel"].to_s.split.include?("noopener") })
     end
   end
 end

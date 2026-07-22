@@ -181,6 +181,18 @@ RSpec.describe StructuredDataHelper do
       expect(helper.resolved_og_image(post)).to eq("#{helper.root_url}blog/images/foo.png")
     end
 
+    # rubocop:disable RSpec/MultipleExpectations
+    it "strips the leading slash off a root-relative Post#image instead of doubling it onto root_url " \
+       "(regression: 034de23)" do
+      post = create(:post, image: "/logo.png")
+
+      resolved = helper.resolved_og_image(post)
+
+      expect(resolved).to eq("#{helper.root_url}logo.png")
+      expect(resolved).not_to include("#{helper.root_url.chomp('/')}//logo.png")
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
     it "never resolves to the bare root URL for a blank image (pre-#1189 regression guard)" do
       post = create(:post, image: "")
 
