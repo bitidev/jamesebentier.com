@@ -1,12 +1,23 @@
 <%
+  # Resolved once via StructuredDataHelper#resolved_og_image (#1189) -- @post.image when
+  # present, else the branded og-default.png -- shared with blog_posting_json_ld below so
+  # the og/twitter image and the JSON-LD image can never disagree. Fixes the pre-#1189 bug
+  # where a post without an image emitted the bare root URL as its og:image.
+  post_image = resolved_og_image(@post)
+
   set_meta_tags(
     title: @post.title,
     description: @post.description,
     canonical: post_url(@post.slug),
-    og: { url: post_url(@post.slug), image: "https://jamesebentier.com/#{@post.image}" },
-    twitter: { image: "https://jamesebentier.com/#{@post.image}" }
+    og: { type: "article", url: post_url(@post.slug), image: post_image },
+    twitter: { image: post_image }
   )
 %>
+<% content_for :head do %>
+  <%= tag.meta(property: "article:published_time", content: @post.published_at.iso8601) %>
+  <%= tag.meta(property: "article:author", content: "James Ebentier") %>
+  <%= blog_posting_json_ld(@post) %>
+<% end %>
 <%# Terminal-identity redesign (#1226): article reading column. No hero image -- the
     design reference's Post detail screen doesn't render one (the site's imagery-free
     terminal aesthetic), unlike the pre-redesign template which showed @post.image

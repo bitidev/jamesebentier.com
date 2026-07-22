@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 module ApplicationHelper # rubocop:disable Style/Documentation
+  # Single source of truth for James's public social profile URLs (#1189) -- the footer
+  # (components/_footer.html.erb) renders these as icon links, and
+  # StructuredDataHelper#person_json_ld reuses the same list verbatim for the Person
+  # entity's `sameAs`, so the two can never drift apart. Ordered for footer display.
+  SOCIAL_PROFILES = {
+    github: "https://github.com/jebentier",
+    linkedin: "https://linkedin.com/in/jebentier",
+    twitter: "https://twitter.com/jebentier"
+  }.freeze
+
   # Terminal-identity redesign (#1226): the full multi-column footer (identity/sitemap/
   # newsletter) now renders on Home only -- interior pages end at the statusline. Kept
   # as a named predicate (rather than an inline current_page? in the layout) so its

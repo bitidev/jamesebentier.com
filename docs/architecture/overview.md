@@ -66,7 +66,9 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex?`
 - `lib/assets/.keep` — Rails lib/assets keepfile
 - `lib/mail/logger_delivery.rb` — `Mail::LoggerDelivery` custom delivery method that writes email to the Rails log (no external ESP until one is chosen; see docs/ops/newsletter-mail.md)
+- `lib/og_image/generator.rb` — `OgImage::Generator` renders the static branded OG default (1200x630) via headless-Chrome (Ferrum) screenshot; sole producer of `public/og-default.png`
 - `lib/tasks/.keep` — Rails lib/tasks keepfile
+- `lib/tasks/og_image.rake` — `rake og:image` task wrapping `OgImage::Generator`
 
 ### content-domain
 
@@ -92,6 +94,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/helpers/blog_helper.rb` — `render_markdown` via `Blog::Renderer`
 - `app/helpers/resume_helper.rb` — Resume YAML load
 - `app/helpers/statusline_helper.rb` — Statusline path + keybind-hint copy, keyed by controller/action
+- `app/helpers/structured_data_helper.rb` — schema.org JSON-LD (`Person`/`WebSite`/`BlogPosting`) `<script>` block helpers + shared post OG-image fallback resolution
 - `app/helpers/welcome_helper.rb` — Welcome helper module (empty)
 - `app/javascript/application.js` — JS entry
 - `app/javascript/controllers/application.js` — Stimulus application
@@ -162,11 +165,11 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 | Subsystem | File count |
 |-----------|------------|
-| rails-runtime | 4 |
+| rails-runtime | 6 |
 | content-domain | 5 |
 | markdown-rendering | 1 |
-| web-presentation | 58 |
+| web-presentation | 59 |
 | keyboard-navigation | 11 |
-| **Total** | **79** |
+| **Total** | **82** |
 
 Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.
