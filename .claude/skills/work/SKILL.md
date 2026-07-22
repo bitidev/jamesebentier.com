@@ -1,6 +1,6 @@
 ---
 name: work
-description: Take a GitHub issue from Ready to Done — claim it, design gate for features, implement via builder (+ test), open a PR with an advisory review and theatre-check, then post-merge cleanup. Use when the operator says "work on #N", "implement #N", "fix #N", or similar.
+description: Take a GitHub issue from Ready to Done — claim it, design gate for features, implement via builder (+ test), open a PR with an advisory review and theatre-check, gate it on CI + Copilot review, then post-merge cleanup. Use when the operator says "work on #N", "implement #N", "fix #N", or similar.
 ---
 
 # /work <issue-number>
@@ -52,18 +52,33 @@ write/update the tests covering the change.
 
 Both agents work inside the worktree from Step 1 and report back before you move to Step 4.
 
-## 4. PR + advisory review
+## 4. PR + review gate
 
-- Push the branch; `gh pr create` with title `[#N] <summary>` and `Closes #N` in the body.
+- Push the branch; `gh pr create` with title `[#N] <summary>`, `Closes #N` in the body, and
+  `--reviewer "@copilot"` to request a GitHub Copilot review up front.
 - Set board status **In Review** (`docs/flow/board.md`).
 - Run one review pass over the PR diff: the `code-review` skill at medium effort (or an
   equivalent single pass). Fix confirmed bugs and push; post remaining non-blocking notes as a
   PR comment.
 - **Theatre-check:** dispatch `test` (`.claude/agents/test.md`) in audit mode over the tests
   this issue added or changed. Rewrite any theatre it finds via `test`, not inline.
-- **No re-review loop** — CI and the operator are the final gate.
-- Present the PR URL to the operator with a summary of what was built and any review notes, and
-  **stop** — wait for the operator to merge, or to explicitly say to merge it now.
+- **Gate on CI + Copilot before handing off.** The PR is not handed off until both are green and
+  addressed — never present a red PR:
+  - **CI:** `gh pr checks N --watch` until it settles. Fix real failures in the worktree and
+    push. Every push re-runs CI and re-triggers Copilot, so re-wait after each push.
+  - **Copilot:** wait for its review to land (`gh pr view N --json reviews` shows a review from
+    `copilot-pull-request-reviewer[bot]`). Triage the comments — dispatch `builder`/`test` for
+    the correct ones and push, reply to or dismiss (with a reason) the ones you're intentionally
+    not taking. If a push invalidates the review, re-request it with
+    `gh pr edit N --add-reviewer "@copilot"`.
+  - Loop until CI is green and every Copilot finding is either fixed or explicitly answered.
+- **Escape hatch.** If CI can't reach green on its own (a flaky or infra failure unrelated to the
+  change) or Copilot review is unavailable/not enabled on the repo, stop and surface exactly what
+  is stuck to the operator — don't silently hand off, and don't loop forever. The operator decides
+  how to proceed.
+- Present the PR URL to the operator with a summary of what was built, the review notes, and
+  CI/Copilot status, and **stop** — wait for the operator to merge, or to explicitly say to merge
+  it now.
 
 ## 5. After the PR merges
 
