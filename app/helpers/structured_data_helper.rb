@@ -68,13 +68,26 @@ module StructuredDataHelper
     )
   end
 
-  # Resolves the OG/Twitter image for a post: its own Post#image when present, else the
-  # site-wide branded default -- the single place this fallback is decided, shared by
-  # blog_posting_json_ld above and writing/show's own set_meta_tags og/twitter image, so
-  # the two can never disagree. Fixes the pre-#1189 bug where a post without an image
-  # emitted "https://jamesebentier.com/" (Post#image defaults to "") as its og:image.
+  # Matches an already-absolute http(s) URL -- some seeded Post#image values are full
+  # external URLs (see db/seeds.rb, e.g. "https://notmyrealemail.com/logo-120.png"), not
+  # site-relative paths, so blindly prefixing root_url would double up into a broken
+  # "https://jamesebentier.com/https://...". This distinguishes the two cases.
+  ABSOLUTE_URL = %r{\Ahttps?://}i
+
+  # Resolves the OG/Twitter/JSON-LD image for a post -- the single place this fallback is
+  # decided, shared by blog_posting_json_ld above and writing/show's own set_meta_tags
+  # og/twitter image, so all three can never disagree:
+  #   - blank Post#image -> the site-wide branded default (fixes the pre-#1189 bug where a
+  #     post without an image emitted the bare root URL, "https://jamesebentier.com/", as
+  #     its og:image);
+  #   - an already-absolute Post#image (some seed data stores a full external URL, see
+  #     ABSOLUTE_URL above) -> used verbatim, never re-prefixed with root_url;
+  #   - a site-relative Post#image (e.g. "blog/images/foo.png") -> root_url-prefixed.
   def resolved_og_image(post)
-    post.image.present? ? "#{root_url}#{post.image}" : og_default_image_url
+    return og_default_image_url if post.image.blank?
+    return post.image if post.image.match?(ABSOLUTE_URL)
+
+    "#{root_url}#{post.image}"
   end
 
   private
