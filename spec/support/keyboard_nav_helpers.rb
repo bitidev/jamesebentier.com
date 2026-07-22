@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "timeout"
+
 # Shared helpers for the keyboard-nav system specs (spec/system/keyboard_nav_spec.rb,
 # spec/system/keyboard_nav_normal_navigation_spec.rb). See
 # docs/specs/1187-modal-vim-keyboard-navigation.md.
@@ -52,13 +54,62 @@ module KeyboardNavHelpers
   # registered), not the timing issue this widened wait addresses. Deliberately
   # NOT `visible: :all` -- the text is in the server-rendered markup regardless of
   # JS, so only the default visibility filter (which respects the "hidden" class)
-  # actually proves connect() ran. Call after every visit/navigation, before any
-  # key.
+  # actually proves connect() ran.
+  #
+  # Only a true proxy for "the CURRENT page's listener is attached" on a FRESH
+  # `visit` (a real browser navigation tears down the whole document immediately,
+  # so there is no outgoing instance left to false-match). It is NOT safe to call
+  # directly after a same-tab Turbo click/link navigation (#1233): the status line
+  # is server-rendered with this exact text already in NORMAL mode, and #1226's
+  # standard (non-permanent) <body> swap means the OUTGOING page's status line is
+  # still live, visible, and already reading "-- NORMAL --" for the whole (short
+  # but real) gap between "click dispatched" and "Turbo actually replaces <body>".
+  # This method's `have_selector` can therefore match that STALE, outgoing
+  # instance on its very first poll -- before the INCOMING instance's connect()
+  # has attached its keydown listener -- silently swallowing whatever key gets
+  # dispatched next. Confirmed deterministically (see the #1233 investigation) by
+  # capturing the outgoing status line's Ferrum node, injecting artificial network
+  # latency, and observing it still `exists?`, still selector-matches, and the URL
+  # still reads as the OLD path hundreds of ms after the click. Call this directly
+  # only right after `visit`; for any Turbo click/link navigation mid-example, use
+  # capture_keyboard_status_line + wait_for_keyboard_nav_reconnect instead (below).
   def wait_for_keyboard_nav_connected
     expect(page).to have_selector("#keyboard-status-line", visible: :all)
     expect(page).to have_selector(
       "#keyboard-status-line", text: "-- NORMAL --", wait: KEYBOARD_NAV_CONNECT_TIMEOUT
     )
+  end
+
+  # Pairs with wait_for_keyboard_nav_reconnect: grab a handle to the CURRENT page's
+  # #keyboard-status-line DOM node before triggering a same-tab Turbo navigation, so
+  # the pair can later prove that exact node -- not just any element matching the
+  # same selector -- was actually removed from the page. `.native` on a Capybara::
+  # Cuprite element resolves to the Cuprite::Node wrapper (Capybara::Driver::Node#
+  # initialize sets `native` to `self`, per Cuprite::Node#initialize's `super(driver,
+  # self)`); `.node` is Cuprite::Node's own reader for the raw Ferrum::Node it wraps,
+  # which is what exposes `#exists?` (below).
+  def capture_keyboard_status_line
+    page.find("#keyboard-status-line", visible: :all).native.node
+  end
+
+  # Closes the stale-DOM race documented on wait_for_keyboard_nav_connected: blocks
+  # until `outgoing_status_line` (from capture_keyboard_status_line, captured BEFORE
+  # the Turbo navigation) has actually been removed from the live DOM, THEN defers to
+  # wait_for_keyboard_nav_connected for the fresh instance. `Ferrum::Node#exists?`
+  # issues a real `DOM.resolveNode` for that specific node id -- it can only start
+  # returning false once the browser has actually removed that node, which (for the
+  # standard, non-permanent <body> swap every keyboard-nav route uses -- #1226, no
+  # `data-turbo-refresh-method="morph"` meta tag in app/views/layouts/application.
+  # html.erb) only happens when Turbo's real PageRenderer replaces <body>. This is a
+  # deterministic proof the swap has happened, not a widened timeout papering over
+  # the same race with a bigger window: it is exactly as fast as the real swap, and
+  # cannot be satisfied by the outgoing page at any point, however slow connect() is.
+  def wait_for_keyboard_nav_reconnect(outgoing_status_line)
+    Timeout.timeout(KEYBOARD_NAV_CONNECT_TIMEOUT) do
+      sleep 0.02 while outgoing_status_line.exists?
+    end
+
+    wait_for_keyboard_nav_connected
   end
 
   # Dispatches real keydown/keyup CDP events directly (Ferrum's

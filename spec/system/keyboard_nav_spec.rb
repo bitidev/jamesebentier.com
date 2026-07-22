@@ -83,13 +83,19 @@ RSpec.describe "Keyboard navigation foundation", :js do
       -> { within("header") { click_link "projects" } },
       -> { within("header") { find("a[data-nav-target='home']").click } }
     ].each do |navigate|
-      navigate.call
       # Standard (non-permanent) Turbo visits replace <body>, disconnecting and
       # reconnecting this controller on every navigation (see the controller's own
-      # Turbo lifecycle note) -- wait for the fresh instance to reconnect before
-      # the next navigation/keypress, or the same connect race this file exists to
-      # guard against reappears after every hop.
-      wait_for_keyboard_nav_connected
+      # Turbo lifecycle note) -- wait for the fresh instance to reconnect before the
+      # next navigation/keypress, or the same connect race this file exists to guard
+      # against reappears after every hop. Plain wait_for_keyboard_nav_connected isn't
+      # enough here (#1233): it can match the OUTGOING page's still-live status line
+      # instead of the incoming one (see that method's own comment in
+      # keyboard_nav_helpers.rb), so capture the outgoing node first and route through
+      # wait_for_keyboard_nav_reconnect, which proves the swap actually happened
+      # before checking connect().
+      outgoing_status_line = capture_keyboard_status_line
+      navigate.call
+      wait_for_keyboard_nav_reconnect(outgoing_status_line)
     end
 
     # If a prior navigation left a stale listener attached, this single "?" would
