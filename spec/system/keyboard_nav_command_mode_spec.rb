@@ -157,7 +157,8 @@ RSpec.describe "Keyboard navigation -- COMMAND mode (:)", :js do
     fill_in "Command", with: "theme not-a-real-theme"
     find("#keyboard-command-input").send_keys(:enter)
 
-    expect(page).to have_field("theme-picker-select", with: "light")
+    # gruvbox is the site default, so an unchanged first-time visitor stays on it.
+    expect(page).to have_field("theme-picker-select", with: "gruvbox")
     expect(page).to have_selector("[data-keyboard-nav-target='commandFeedback']", text: "command not found")
   end
 

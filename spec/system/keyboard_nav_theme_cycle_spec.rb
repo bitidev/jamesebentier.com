@@ -21,22 +21,25 @@ RSpec.describe "Keyboard navigation -- theme cycle (t)", :js do
   it "advances the visible <select> value through the full 6-theme order on repeated t" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
     visit root_path
     wait_for_keyboard_nav_connected
-    expect(page).to have_field("theme-picker-select", with: "light")
+    # gruvbox is the site default (application.tailwind.css), so a first-time visitor with
+    # no stored preference starts here rather than at the head of THEME_CYCLE_ORDER.
+    expect(page).to have_field("theme-picker-select", with: "gruvbox")
 
-    %w[dark dracula nord gruvbox catppuccin].each do |expected_theme|
+    # The rest of the cycle from gruvbox, wrapping catppuccin -> light -> ... -> nord.
+    %w[catppuccin light dark dracula nord].each do |expected_theme|
       press("t")
 
       expect(page).to have_field("theme-picker-select", with: expected_theme)
     end
   end
 
-  # The wrap-to-light precondition (five presses land on catppuccin) matters here --
-  # this example proves the sixth press wraps, which requires first confirming it
-  # actually reached the end of the order.
+  # The wrap precondition (one press from the gruvbox default lands on catppuccin, the
+  # last theme in THEME_CYCLE_ORDER) matters here -- this example proves the next press
+  # wraps to light, which requires first confirming it actually reached the end.
   it "wraps from catppuccin back to light" do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
     visit root_path
     wait_for_keyboard_nav_connected
-    5.times { press("t") }
+    press("t")
     expect(page).to have_field("theme-picker-select", with: "catppuccin")
 
     press("t")
@@ -51,10 +54,12 @@ RSpec.describe "Keyboard navigation -- theme cycle (t)", :js do
     visit root_path
     wait_for_keyboard_nav_connected
 
+    # One press from the gruvbox default advances to catppuccin (the next entry after
+    # gruvbox in THEME_CYCLE_ORDER).
     press("t")
 
-    expect(page).to have_field("theme-picker-select", with: "dark")
-    expect(page.evaluate_script("document.documentElement.dataset.theme")).to eq("dark")
+    expect(page).to have_field("theme-picker-select", with: "catppuccin")
+    expect(page.evaluate_script("document.documentElement.dataset.theme")).to eq("catppuccin")
   end
 
   # Both the visible <select> and the underlying localStorage value matter here --
@@ -63,11 +68,12 @@ RSpec.describe "Keyboard navigation -- theme cycle (t)", :js do
     visit root_path
     wait_for_keyboard_nav_connected
 
+    # From the gruvbox default: press 1 -> catppuccin, press 2 wraps to light.
     press("t")
     press("t")
 
-    expect(page).to have_field("theme-picker-select", with: "dracula")
-    expect(page.evaluate_script("window.localStorage.getItem('theme')")).to eq("dracula")
+    expect(page).to have_field("theme-picker-select", with: "light")
+    expect(page.evaluate_script("window.localStorage.getItem('theme')")).to eq("light")
   end
 
   # The pre-reload state matters here -- this example proves the choice survives a
@@ -78,13 +84,13 @@ RSpec.describe "Keyboard navigation -- theme cycle (t)", :js do
     wait_for_keyboard_nav_connected
 
     press("t")
-    expect(page).to have_field("theme-picker-select", with: "dark")
+    expect(page).to have_field("theme-picker-select", with: "catppuccin")
 
     visit root_path
     wait_for_keyboard_nav_connected
 
-    expect(page).to have_field("theme-picker-select", with: "dark")
-    expect(page.evaluate_script("document.documentElement.dataset.theme")).to eq("dark")
+    expect(page).to have_field("theme-picker-select", with: "catppuccin")
+    expect(page.evaluate_script("document.documentElement.dataset.theme")).to eq("catppuccin")
   end
 
   it "keeps t inert while the existing theme <select> has focus (no cycle-on-typeahead)" do
@@ -93,6 +99,6 @@ RSpec.describe "Keyboard navigation -- theme cycle (t)", :js do
 
     find("#theme-picker-select").send_keys("t")
 
-    expect(page).to have_field("theme-picker-select", with: "light")
+    expect(page).to have_field("theme-picker-select", with: "gruvbox")
   end
 end

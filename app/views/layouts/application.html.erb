@@ -50,17 +50,17 @@
     <%# Sets [data-theme] from the visitor's stored preference before first paint, so a
         returning visitor never sees a flash of the wrong theme on load. Synchronous and
         render-blocking on purpose (no type="module", no defer/async) -- it must finish
-        before the stylesheet below applies. Falls back to "light" (today's default) when
+        before the stylesheet below applies. Falls back to "gruvbox" (today's default) when
         no preference is stored yet. "theme" is the single documented localStorage key;
         app/javascript/controllers/theme_picker_controller.js is the only other place
         that reads/writes it. %>
     <script>
       (function () {
-        var theme = 'light';
+        var theme = 'gruvbox';
         try {
-          theme = window.localStorage.getItem('theme') || 'light';
+          theme = window.localStorage.getItem('theme') || 'gruvbox';
         } catch (e) {
-          // localStorage can throw in some private-browsing modes; fall back to light.
+          // localStorage can throw in some private-browsing modes; fall back to gruvbox.
         }
         document.documentElement.setAttribute('data-theme', theme);
       })();
