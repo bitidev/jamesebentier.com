@@ -51,10 +51,15 @@ module KeyboardNavHelpers
   # KEYBOARD_NAV_CONNECT_TIMEOUT for the text to be populated by JS. If CI ever
   # fails the SECOND wait, the element is present but connect() never ran -- a
   # genuine "JS isn't executing" problem (bundle not loaded / controller not
-  # registered), not the timing issue this widened wait addresses. Deliberately
-  # NOT `visible: :all` -- the text is in the server-rendered markup regardless of
-  # JS, so only the default visibility filter (which respects the "hidden" class)
-  # actually proves connect() ran.
+  # registered), not the timing issue this widened wait addresses. The two
+  # expectations deliberately use opposite visibility filters: the first
+  # intentionally DOES pass `visible: :all`, since the element is server-rendered
+  # with the "hidden" class already on it and this check only wants to confirm the
+  # markup/layout exists at all, regardless of that class. The second
+  # intentionally OMITS `visible: :all` (the default filter, which respects
+  # "hidden") precisely so a match proves connect() actually removed "hidden" --
+  # i.e. the listener is attached -- rather than just that the text happens to be
+  # present in hidden markup.
   #
   # Only a true proxy for "the CURRENT page's listener is attached" on a FRESH
   # `visit` (a real browser navigation tears down the whole document immediately,
