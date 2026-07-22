@@ -82,12 +82,15 @@ module StructuredDataHelper
   #     its og:image);
   #   - an already-absolute Post#image (some seed data stores a full external URL, see
   #     ABSOLUTE_URL above) -> used verbatim, never re-prefixed with root_url;
-  #   - a site-relative Post#image (e.g. "blog/images/foo.png") -> root_url-prefixed.
+  #   - a site-relative Post#image (e.g. "blog/images/foo.png") -> root_url-prefixed, with
+  #     any leading slash(es) stripped first -- root_url already ends in "/", so a
+  #     root-relative value like "/logo.png" would otherwise double up into
+  #     "https://jamesebentier.com//logo.png".
   def resolved_og_image(post)
     return og_default_image_url if post.image.blank?
     return post.image if post.image.match?(ABSOLUTE_URL)
 
-    "#{root_url}#{post.image}"
+    "#{root_url}#{post.image.sub(%r{\A/+}, '')}"
   end
 
   private
