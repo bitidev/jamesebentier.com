@@ -12,13 +12,18 @@
         reverse: true,
         follow: true,
         index: true,
+        # Site-wide default canonical (#1189): the query string is stripped so filtered
+        # index views (?kind=note, ?status=beta) canonicalize back to their clean path.
+        # A view that sets its own `canonical:` via set_meta_tags (e.g. writing/show)
+        # overrides this default -- meta-tags values are last-set-wins.
+        canonical: request.original_url.sub(/\?.*\z/, ''),
         og: {
           title: :title,
           description: :description,
           type: 'website',
           site_name: :site,
           url: request.original_url,
-          image: 'https://jamesebentier.com/logo192.png'
+          image: "#{root_url}og-default.png"
         },
         twitter: {
           card: 'summary_large_image',
@@ -26,10 +31,15 @@
           description: :description,
           site: t('site.twitter_handle'),
           creator: t('site.owner_twitter_handle'),
-          image: 'https://jamesebentier.com/logo192.png'
+          image: "#{root_url}og-default.png"
         }
       )
     %>
+    <%# Site-wide structured data (#1189 design doc): Person + WebSite on every page, each
+        its own <script type="application/ld+json"> block. Post pages additionally emit
+        BlogPosting from writing/show via content_for :head. %>
+    <%= person_json_ld %>
+    <%= website_json_ld %>
 
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/logo192.png" />
