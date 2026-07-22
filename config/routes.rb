@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get "about"          => "welcome#about",    as: :about
   get "resume"         => "welcome#resume",   as: :resume
   get "privacy"        => "welcome#privacy",  as: :privacy
+  get "impressum"      => "welcome#impressum", as: :impressum
 
   # Newsletter double opt-in
   post "newsletter"            => "newsletters#create",      as: :newsletters

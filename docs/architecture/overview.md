@@ -83,7 +83,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 ### web-presentation
 
 - `app/controllers/projects_controller.rb` — Projects index/show
-- `app/controllers/welcome_controller.rb` — Landing + resume + privacy stub
+- `app/controllers/welcome_controller.rb` — Landing + resume + impressum + privacy
 - `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
 - `app/controllers/newsletters_controller.rb` — Newsletter signup (POST /newsletter), confirm, unsubscribe
 - `app/controllers/concerns/.keep` — Concerns directory keepfile
@@ -129,8 +129,9 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/newsletters/confirm.html.erb` — Subscription confirmed success page
 - `app/views/newsletters/unsubscribe.html.erb` — Unsubscribed success page
 - `app/views/welcome/about.html.erb` — About page (embedded-architect narrative)
+- `app/views/welcome/impressum.html.erb` — Impressum / § 5 DDG provider identification (P1.11 / #1190; owner-identity fields are placeholders pending sign-off)
 - `app/views/welcome/index.html.erb` — Landing page
-- `app/views/welcome/privacy.html.erb` — Privacy policy stub (P1.11 / #1190 fills content later)
+- `app/views/welcome/privacy.html.erb` — GDPR Art. 13 privacy policy (P1.11 / #1190): newsletter, analytics, theme localStorage, server logs, data-subject rights
 - `app/views/welcome/resume.html.erb` — Resume page shell
 - `app/views/welcome/resume/_contact.html.erb` — Resume contact grid partial (email/github/site/status tiles)
 - `app/views/welcome/resume/_education.html.erb` — Resume education partial

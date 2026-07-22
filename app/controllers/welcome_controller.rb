@@ -16,4 +16,5 @@ class WelcomeController < ApplicationController
   def projects; end
   def resume; end
   def privacy; end
+  def impressum; end
 end

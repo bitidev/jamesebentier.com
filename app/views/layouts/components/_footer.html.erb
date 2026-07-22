@@ -2,10 +2,7 @@
     (app/views/layouts/application.html.erb gates this partial behind
     ApplicationHelper#show_full_footer?) -- interior pages end at the statusline.
     The shared work_with_me_cta CTA moved OUT of the footer; each page carries its own
-    CTA block instead (see components/_work_with_me_cta.html.erb). No Impressum link:
-    the design reference shows "Impressum · Privacy", but this app has no Impressum
-    route/page to link to (only /privacy exists) -- omitted rather than fabricate a
-    path literal for a page that doesn't exist. %>
+    CTA block instead (see components/_work_with_me_cta.html.erb). %>
 <footer class="border-t border-base-300 font-mono">
   <div class="max-w-[1088px] mx-auto px-8 py-12 grid gap-12 md:grid-cols-[1.2fr_0.7fr_1.3fr]">
     <div>
@@ -14,6 +11,8 @@
       </p>
       <p class="text-[13px] text-base-content/50 mb-4">
         &copy; <%= Date.today.year %> James Ebentier &middot; Berlin<br>
+        <%= link_to "Impressum", impressum_path, class: "hover:text-primary" %>
+        &middot;
         <%= link_to "Privacy", privacy_path, class: "hover:text-primary" %>
       </p>
       <div class="flex gap-4 text-[17px] text-base-content/70">
