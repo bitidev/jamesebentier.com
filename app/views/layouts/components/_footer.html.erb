@@ -16,10 +16,12 @@
         <%= link_to "Privacy", privacy_path, class: "hover:text-primary" %>
       </p>
       <div class="flex gap-4 text-[17px] text-base-content/70">
-        <a href="https://github.com/jebentier" rel="noreferrer" target="_blank" title="jebentier github account" class="hover:text-primary"><%= social_profile_icon :github %></a>
-        <a href="https://linkedin.com/in/jebentier" rel="noreferrer" target="_blank" title="jebentier linkedin account" class="hover:text-primary"><%= social_profile_icon :linkedin %></a>
-        <a href="https://twitter.com/jebentier" rel="noreferrer" target="_blank" title="jebentier twitter account" class="hover:text-primary"><%= social_profile_icon :twitter %></a>
-        <a href="<%= posts_url(format: "rss") %>" target="_blank" title="writing rss feed" class="hover:text-primary"><i class="fa-solid fa-square-rss text-base"></i></a>
+        <%# Rendered from ApplicationHelper::SOCIAL_PROFILES (#1189) -- the single source
+            of truth also reused by StructuredDataHelper#person_json_ld's `sameAs`. %>
+        <% ApplicationHelper::SOCIAL_PROFILES.each do |network, url| %>
+          <a href="<%= url %>" rel="noopener noreferrer" target="_blank" title="jebentier <%= network %> account" class="hover:text-primary"><%= social_profile_icon network %></a>
+        <% end %>
+        <a href="<%= posts_url(format: "rss") %>" rel="noopener noreferrer" target="_blank" title="writing rss feed" class="hover:text-primary"><i class="fa-solid fa-square-rss text-base"></i></a>
       </div>
     </div>
 
