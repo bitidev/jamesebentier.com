@@ -65,6 +65,14 @@ gem "sitemap_generator"
 
 gem "warning"
 
+# Build-time-only for us: assembles the multi-size public/favicon.ico from PNGs via
+# ImageMagick (lib/favicon/generator.rb, rake favicon:generate). Favicon::IcoAssembler
+# requires it lazily, so we don't rely on Bundler.require auto-loading it -- hence
+# require: false. (In practice active_storage/engine already requires mini_magick at boot
+# regardless, so it's typically resident anyway; require: false just documents that our
+# own use is confined to the build-time favicon task.)
+gem "mini_magick", require: false
+
 group :development, :test do
   gem "danger",              require: false
   gem "danger-rubocop",      require: false

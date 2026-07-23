@@ -65,9 +65,12 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 - `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex?`
 - `lib/assets/.keep` — Rails lib/assets keepfile
+- `lib/favicon/generator.rb` — `Favicon::Generator` renders the `>` terminal-prompt mark to every favicon/app-icon PNG size via headless-Chrome (Ferrum); sole producer of `public/favicon-*.png`, `public/apple-touch-icon*.png`, `public/logo*.png`
+- `lib/favicon/ico_assembler.rb` — `Favicon::IcoAssembler` combines the rendered 16/32/48 PNGs into the multi-size `public/favicon.ico` via ImageMagick (`mini_magick`)
 - `lib/mail/logger_delivery.rb` — `Mail::LoggerDelivery` custom delivery method that writes email to the Rails log (no external ESP until one is chosen; see docs/ops/newsletter-mail.md)
 - `lib/og_image/generator.rb` — `OgImage::Generator` renders the static branded OG default (1200x630) via headless-Chrome (Ferrum) screenshot; sole producer of `public/og-default.png`
 - `lib/tasks/.keep` — Rails lib/tasks keepfile
+- `lib/tasks/favicon.rake` — `rake favicon:generate` task wrapping `Favicon::Generator`
 - `lib/tasks/og_image.rake` — `rake og:image` task wrapping `OgImage::Generator`
 
 ### content-domain
@@ -169,11 +172,11 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 | Subsystem | File count |
 |-----------|------------|
-| rails-runtime | 6 |
+| rails-runtime | 8 |
 | content-domain | 6 |
 | markdown-rendering | 1 |
 | web-presentation | 63 |
 | keyboard-navigation | 11 |
-| **Total** | **87** |
+| **Total** | **89** |
 
 Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.
