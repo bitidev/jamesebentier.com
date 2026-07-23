@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Favicon
-  # Renders the site's `>` terminal-prompt mark (2026 terminal-identity redesign, epic
+  # Renders the site's ❯ terminal-prompt mark (2026 terminal-identity redesign, epic
   # #1179 / #1235 design doc) to every browser/app icon size and writes them to
   # `public/`. Invoked exclusively by `rake favicon:generate` (lib/tasks/favicon.rake)
   # -- never hand-edit the committed public/favicon.ico, public/favicon-*.png,
@@ -23,8 +23,8 @@ module Favicon
     BASE_COLOR = "#0d1117"
     CHEVRON_COLOR = "#fab73a"
 
-    # The `>` chevron as an SVG <path>, NOT the "❯" Unicode glyph the OG card uses --
-    # that glyph's font coverage varies across machines (tofu on Liberation Mono at
+    # The ❯ chevron mark, drawn as an SVG <path>, NOT the ❯ Unicode glyph the OG card
+    # uses -- that glyph's font coverage varies across machines (tofu on Liberation Mono at
     # favicon sizes), unacceptable at 16px. A path renders deterministically anywhere.
     # Round caps/joins on a 3-point stroke give the OG card's chevron shape; its
     # bounding box (with the caps'/joins' bulge) is ~36% wide x 58% tall of the
@@ -56,6 +56,7 @@ module Favicon
     def call
       require "ferrum"
       require "tmpdir"
+      require "fileutils"
 
       Dir.mktmpdir("favicon") do |tmp_dir|
         rendered = render_all_sizes(tmp_dir)

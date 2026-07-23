@@ -66,8 +66,9 @@ gem "sitemap_generator"
 gem "warning"
 
 # Build-time-only: assembles the multi-size public/favicon.ico from PNGs via ImageMagick
-# (lib/favicon/generator.rb, rake favicon:generate). Never loaded at request time.
-gem "mini_magick"
+# (lib/favicon/generator.rb, rake favicon:generate). require: false because it's only
+# loaded when Favicon::IcoAssembler requires it lazily, never at request time.
+gem "mini_magick", require: false
 
 group :development, :test do
   gem "danger",              require: false
