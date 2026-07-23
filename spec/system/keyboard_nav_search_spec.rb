@@ -215,9 +215,19 @@ RSpec.describe "Keyboard navigation -- SEARCH mode (/)", :js do
     # ahead and land while SEARCH's <input> still has focus.
     expect(page).to have_selector("#keyboard-status-line", text: "-- NORMAL --")
 
+    # Same stale-DOM race wait_for_keyboard_nav_connected's own comment documents
+    # (#1233): g p navigates via a real .click() on the projects header link
+    # (navigateTo, keyboard_nav_controller.js), the exact same Turbo body-swap this
+    # example was already in NORMAL mode for (see the "-- NORMAL --" check just
+    # above) -- so a plain wait_for_keyboard_nav_connected here could match the
+    # OUTGOING page's still-live status line before the incoming page's connect()
+    # has attached its listener, silently swallowing the press("/") below. Capture
+    # the outgoing node first and route through wait_for_keyboard_nav_reconnect,
+    # exactly like keyboard_nav_spec.rb's repeated-navigation example does.
+    outgoing_status_line = capture_keyboard_status_line
     press("g", "p")
     expect(page).to have_current_path(projects_path)
-    wait_for_keyboard_nav_connected
+    wait_for_keyboard_nav_reconnect(outgoing_status_line)
 
     press("/")
     wait_for_search_results(3)
