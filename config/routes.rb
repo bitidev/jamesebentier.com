@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "writing/:slug"  => "writing#show",     as: :post
   get "projects"       => "projects#index",   as: :projects
   get "projects/:slug" => "projects#show",    as: :project
+  get "changelog"      => "changelog#index",  as: :changelog
   get "about"          => "welcome#about",    as: :about
   get "resume"         => "welcome#resume",   as: :resume
   get "privacy"        => "welcome#privacy",  as: :privacy

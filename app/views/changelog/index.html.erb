@@ -1,0 +1,43 @@
+<%
+  set_meta_tags(
+    title: "Changelog",
+    description: "What's shipped on jamesebentier.com, release by release — built in public.",
+  )
+%>
+
+<%# Terminal-identity redesign (#1226) style, matching about/privacy's narrow reading
+    column and mono eyebrow/headings. Content is entirely sourced from Changelog.releases
+    (db/changelog.yml via app/models/changelog.rb) -- the same object the footer's site
+    version (Changelog.current_version) reads, so the two can never drift apart (#1191). %>
+<div class="max-w-[760px] mx-auto px-8 pt-16 pb-20">
+  <p class="font-mono text-sm text-primary mb-3">james@ebentier:~$ cat CHANGELOG.md</p>
+  <h1 class="font-mono text-[34px] leading-[1.25] font-bold mb-4">Changelog</h1>
+  <p class="text-xl text-base-content/70 mb-14">
+    Built in public. Every notable change to this site, newest first.
+  </p>
+
+  <% if @releases.empty? %>
+    <%# Graceful-degradation counterpart to Changelog's load failure (missing/malformed
+        db/changelog.yml) -- render an empty state rather than 500 or a blank page. %>
+    <p class="text-base-content/70">No releases yet — check back soon.</p>
+  <% else %>
+    <div class="flex flex-col gap-12">
+      <% @releases.each do |release| %>
+        <div>
+          <h2 class="flex items-baseline gap-3 mb-2">
+            <span class="font-mono text-[15px] font-bold text-primary">v<%= release.version %></span>
+            <span class="font-mono text-sm text-base-content/50"><%= release.date.strftime("%B %-d, %Y") %></span>
+          </h2>
+          <h3 class="font-mono text-xl font-bold mb-3"><%= release.title %></h3>
+          <%# One render_markdown call per release, over a markdown-list built from
+              `changes` -- reuses the existing Redcarpet pipeline for both the list
+              structure and any inline markdown within an entry, rather than hand-rolling
+              a second (item-by-item) markdown path. %>
+          <div class="prose prose-base max-w-none text-base-content/80">
+            <%= render_markdown(release.changes.map { |change| "- #{change}" }.join("\n")) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
