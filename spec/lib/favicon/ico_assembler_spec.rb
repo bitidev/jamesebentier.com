@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require "rails_helper"
+# mini_magick is `require: false` in the Gemfile (not auto-loaded at boot), and this
+# spec references the MiniMagick / MiniMagick::Tool constants in its let/before blocks
+# before .call ever runs its own lazy require, so it must load the gem explicitly here.
+require "mini_magick"
 
 # lib/favicon/ico_assembler.rb -- the one step in the favicon pipeline (#1235 design
 # doc) that shells out to real ImageMagick (via mini_magick) rather than rendering
