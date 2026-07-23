@@ -17,9 +17,11 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base as build
 
-# Install packages needed to build gems and node modules
+# Install packages needed to build gems and node modules. imagemagick is build-time-only
+# (rake favicon:generate, lib/favicon/generator.rb assembles public/favicon.ico) -- not
+# needed in the runtime stage since the generated PNGs/ICO are committed static assets.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential curl git libpq-dev libvips node-gyp pkg-config python-is-python3
+    apt-get install --no-install-recommends -y build-essential curl git imagemagick libpq-dev libvips node-gyp pkg-config python-is-python3
 
 # Install JavaScript dependencies (Yarn 4 via Corepack + packageManager in package.json)
 ARG NODE_VERSION=20.14.0
