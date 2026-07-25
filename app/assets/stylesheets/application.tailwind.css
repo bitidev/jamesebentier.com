@@ -13,15 +13,18 @@
  *   stock primary (L≈59%) measures only ~3.5:1 against nord's very light base-100 when
  *   used as foreground text (`text-primary`), below the 4.5:1 WCAG AA floor (#1193).
  * - gruvbox/catppuccin: not built into DaisyUI 5; defined as custom themes below.
+ *   gruvbox is the site default (marked `--default` here and `default: true` in its
+ *   custom-theme block), so a first-time visitor with no stored preference lands on it.
  */
 @plugin "daisyui" {
-  themes: light --default, dark, dracula, nord, gruvbox, catppuccin;
+  themes: light, dark, dracula, nord, gruvbox --default, catppuccin;
 }
 
-/* Gruvbox (Dark, "hard" contrast) -- warm retro palette, not built into DaisyUI 5. */
+/* Gruvbox (Dark, "hard" contrast) -- warm retro palette, not built into DaisyUI 5.
+   Site default theme (see the themes registry above). */
 @plugin "daisyui/theme" {
   name: "gruvbox";
-  default: false;
+  default: true;
   prefersdark: false;
   color-scheme: dark;
   --color-base-100: #282828;

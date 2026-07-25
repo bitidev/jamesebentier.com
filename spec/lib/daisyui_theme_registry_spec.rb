@@ -17,8 +17,8 @@ RSpec.describe 'application.tailwind.css DaisyUI theme registry' do # rubocop:di
     expect(registered_themes).to eq(%w[light dark dracula nord gruvbox catppuccin])
   end
 
-  it 'marks light as the DaisyUI --default theme, matching first-time-visitor behavior (R6)' do
-    expect(themes_declaration).to match(/\blight\s+--default\b/)
+  it 'marks gruvbox as the DaisyUI --default theme, matching first-time-visitor behavior (R6)' do
+    expect(themes_declaration).to match(/\bgruvbox\s+--default\b/)
   end
 
   it 'defines a custom daisyui/theme block for gruvbox, which DaisyUI 5 does not ship built in' do
