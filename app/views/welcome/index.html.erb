@@ -8,7 +8,7 @@
 <%# Terminal-identity redesign (#1226): Home reads as one terminal session -- each
     block below is a command + its output. The final, verbatim positioning line (h1)
     and its subhead are pinned by welcome_spec; second clause of the h1 is text-primary. %>
-<div class="max-w-[1088px] mx-auto px-8 pt-16 font-mono">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pt-16 font-mono">
   <p class="text-[15px] m-0"><span class="text-primary">james@ebentier:~</span>$ whoami</p>
   <h1 class="text-[38px] leading-[1.25] font-bold mt-4 mb-3 max-w-[900px]">I help engineers get their systems right — <span class="text-primary">a fraction of the time, all of the leverage.</span></h1>
   <p class="font-sans text-xl text-base-content/70 mb-12 max-w-[760px]">James Ebentier — software architect based in Berlin. I embed with engineering teams to unblock hard technical decisions and mentor the people who'll own the system long after I'm gone.</p>
@@ -20,11 +20,22 @@
     <p class="text-[15px] mb-5"><span class="text-primary">james@ebentier:~</span>$ ls ~/projects --featured</p>
     <div class="flex flex-col mb-12">
       <% featured_projects.each do |project| %>
-        <%= link_to project_url(slug: project.slug), class: "flex items-baseline gap-4 py-3 border-t border-base-300 no-underline hover:bg-base-200" do %>
-          <span class="w-[280px] shrink-0 font-bold text-primary hover:underline"><%= project.slug %>/</span>
-          <span class="w-[110px] shrink-0 text-[13px] <%= project.status_color_class %>">● <%= project.status.downcase %></span>
-          <span class="flex-1 font-sans text-[15px] text-base-content/70 truncate"><%= project.description %></span>
-          <span class="text-[13px] text-base-content/50 shrink-0">[demo ↗]</span>
+        <%= link_to project_url(slug: project.slug), class: "block py-3 border-t border-base-300 no-underline hover:bg-base-200 group" do %>
+          <%# Desktop (>=sm): single-line listing. %>
+          <span class="hidden sm:flex items-baseline gap-4">
+            <span class="w-[280px] shrink-0 font-bold text-primary group-hover:underline"><%= project.slug %>/</span>
+            <span class="w-[110px] shrink-0 text-[13px] <%= project.status_color_class %>">● <%= project.status.downcase %></span>
+            <span class="flex-1 font-sans text-[15px] text-base-content/70 truncate"><%= project.description %></span>
+            <span class="text-[13px] text-base-content/50 shrink-0">[demo ↗]</span>
+          </span>
+          <%# Mobile (<sm): slug + status lead; description wraps below at full width. %>
+          <span class="flex sm:hidden flex-col gap-1">
+            <span class="flex items-baseline gap-3">
+              <span class="min-w-0 flex-1 font-bold text-primary truncate group-hover:underline"><%= project.slug %>/</span>
+              <span class="shrink-0 text-[13px] <%= project.status_color_class %>">● <%= project.status.downcase %></span>
+            </span>
+            <span class="font-sans text-[13px] leading-snug text-base-content/70 line-clamp-2"><%= project.description %></span>
+          </span>
         <% end %>
       <% end %>
     </div>
@@ -37,10 +48,22 @@
     <p class="text-[15px] mb-5"><span class="text-primary">james@ebentier:~</span>$ tail -n 3 ~/writing</p>
     <div class="flex flex-col mb-12">
       <% latest_posts.each do |post| %>
-        <%= link_to post_url(slug: post.slug), class: "flex items-baseline gap-4 py-3 border-t border-base-300 no-underline hover:bg-base-200" do %>
-          <span class="w-[110px] shrink-0 text-[13px] text-base-content/50"><%= post.published_at.strftime("%Y-%m-%d") %></span>
-          <span class="flex-1 font-bold hover:text-primary"><%= post.title %></span>
-          <span class="text-[13px] text-base-content/50 shrink-0"><%= post.reading_time %> min</span>
+        <%= link_to post_url(slug: post.slug), class: "block py-3 border-t border-base-300 no-underline hover:bg-base-200 group" do %>
+          <%# Desktop (>=sm): date | title | read-time on one line. %>
+          <span class="hidden sm:flex items-baseline gap-4">
+            <span class="w-[110px] shrink-0 text-[13px] text-base-content/50"><%= post.published_at.strftime("%Y-%m-%d") %></span>
+            <span class="flex-1 min-w-0 truncate font-bold group-hover:text-primary"><%= post.title %></span>
+            <span class="text-[13px] text-base-content/50 shrink-0"><%= post.reading_time %> min</span>
+          </span>
+          <%# Mobile (<sm): title leads at full width; date + read-time drop below. %>
+          <span class="flex sm:hidden flex-col gap-1">
+            <span class="font-bold leading-snug break-words group-hover:text-primary"><%= post.title %></span>
+            <span class="flex items-center gap-2 text-[13px] text-base-content/50">
+              <span><%= post.published_at.strftime("%Y-%m-%d") %></span>
+              <span aria-hidden="true">&middot;</span>
+              <span><%= post.reading_time %> min</span>
+            </span>
+          </span>
         <% end %>
       <% end %>
     </div>
@@ -62,7 +85,7 @@
   <p class="text-[15px] mb-16"><span class="text-primary">james@ebentier:~</span>$ <span class="animate-blink" aria-hidden="true">█</span></p>
 </div>
 
-<div class="max-w-[1088px] mx-auto px-8 pb-8">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pb-8">
   <%= render "components/work_with_me_cta" %>
 </div>
 
@@ -70,7 +93,7 @@
     "/", one inside <footer>) -- the footer's own newsletter column is now Home-only,
     so this inline "# subscribe" card (styled after the Post-detail inline subscribe
     card) keeps a second, in-page entry point rather than relying on the footer alone. %>
-<div class="max-w-[1088px] mx-auto px-8 pb-16">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pb-16">
   <div class="border border-base-300 bg-base-200 rounded-[10px] p-6 md:p-7 flex items-center gap-6 flex-wrap font-mono">
     <div class="flex-1 min-w-[240px]">
       <p class="text-[13px] text-primary mb-1.5"># subscribe</p>

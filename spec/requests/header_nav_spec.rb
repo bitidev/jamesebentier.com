@@ -41,10 +41,15 @@ RSpec.describe "Header nav markup (1187 regression guard)" do
     end
 
     it "carries the load-bearing right-align/row-flex layout classes on the nav wrapper (bd4bad7)" do
+      # Mobile-first touch-ups (personal/jebentier/mobile-first-touchups) made the nav's
+      # right-align responsive: on mobile the nav is a full-width second row (no right-align),
+      # and the desktop (>= sm) right-align is now carried by `sm:ml-auto` instead of the
+      # unconditional `ml-auto`. The row-flex layout itself (`flex`, `items-center`) is
+      # unchanged at every breakpoint, so this guard still covers the original bd4bad7 regression.
       get root_path
       nav = response.parsed_body.at_css("header nav")
 
-      expect(nav.classes).to include("ml-auto", "flex", "items-center")
+      expect(nav.classes).to include("sm:ml-auto", "flex", "items-center")
     end
   end
 end
