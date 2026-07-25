@@ -16,7 +16,7 @@
 <% current_kind = params[:kind] %>
 <% posts = Post.published.by_kind(current_kind).order(published_at: :desc).to_a %>
 
-<div class="max-w-[1088px] mx-auto px-8 pt-14 pb-[72px] font-mono">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pt-14 pb-[72px] font-mono">
   <p class="text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ ls ~/writing</p>
   <h1 class="text-4xl font-bold mb-6">Writing</h1>
 
@@ -32,15 +32,36 @@
 
   <div class="border-t border-base-300">
     <% posts.each do |post| %>
-      <%= link_to post_url(slug: post.slug), class: "flex items-baseline gap-4 py-3.5 px-2 border-b border-base-300 no-underline hover:bg-base-200" do %>
-        <span class="w-[100px] shrink-0 text-[13px] text-base-content/50"><%= post.published_at.strftime("%Y-%m-%d") %></span>
-        <span class="shrink-0 text-[13px] text-primary" aria-hidden="true"><%= post.kind_glyph %></span>
-        <span class="sr-only"><%= post.kind_label %></span>
-        <span class="flex-1 text-base font-bold min-w-0 truncate hover:text-primary"><%= post.title %></span>
-        <% if post.tags.first.present? %>
-          <span class="shrink-0 text-xs text-base-content/50 whitespace-nowrap">#<%= post.tags.first %></span>
-        <% end %>
-        <span class="w-14 shrink-0 text-right text-[13px] text-base-content/50"><%= post.reading_time %> min</span>
+      <%= link_to post_url(slug: post.slug), class: "block border-b border-base-300 no-underline hover:bg-base-200 group" do %>
+        <%# Desktop (>=sm): single-line `ls` directory listing. %>
+        <span class="hidden sm:flex items-baseline gap-4 py-3.5 px-2">
+          <span class="w-[100px] shrink-0 text-[13px] text-base-content/50"><%= post.published_at.strftime("%Y-%m-%d") %></span>
+          <span class="shrink-0 text-[13px] text-primary" aria-hidden="true"><%= post.kind_glyph %></span>
+          <span class="sr-only"><%= post.kind_label %></span>
+          <span class="flex-1 text-base font-bold min-w-0 truncate group-hover:text-primary"><%= post.title %></span>
+          <% if post.tags.first.present? %>
+            <span class="shrink-0 text-xs text-base-content/50 whitespace-nowrap">#<%= post.tags.first %></span>
+          <% end %>
+          <span class="w-14 shrink-0 text-right text-[13px] text-base-content/50"><%= post.reading_time %> min</span>
+        </span>
+
+        <%# Mobile (<sm): stack so the title leads at full width, metadata drops below. %>
+        <span class="flex sm:hidden gap-2.5 py-3.5 px-2">
+          <span class="shrink-0 text-sm text-primary leading-6" aria-hidden="true"><%= post.kind_glyph %></span>
+          <span class="sr-only"><%= post.kind_label %></span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-base font-bold leading-snug break-words group-hover:text-primary"><%= post.title %></span>
+            <span class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-base-content/50">
+              <span><%= post.published_at.strftime("%Y-%m-%d") %></span>
+              <% if post.tags.first.present? %>
+                <span aria-hidden="true">&middot;</span>
+                <span class="text-base-content/70">#<%= post.tags.first %></span>
+              <% end %>
+              <span aria-hidden="true">&middot;</span>
+              <span><%= post.reading_time %> min</span>
+            </span>
+          </span>
+        </span>
       <% end %>
     <% end %>
   </div>

@@ -65,14 +65,18 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 - `app/controllers/application_controller.rb` — Base controller; production host URL options; class-level `noindex?`
 - `lib/assets/.keep` — Rails lib/assets keepfile
+- `lib/favicon/generator.rb` — `Favicon::Generator` renders the `>` terminal-prompt mark to every favicon/app-icon PNG size via headless-Chrome (Ferrum); sole producer of `public/favicon-*.png`, `public/apple-touch-icon*.png`, `public/logo*.png`
+- `lib/favicon/ico_assembler.rb` — `Favicon::IcoAssembler` combines the rendered 16/32/48 PNGs into the multi-size `public/favicon.ico` via ImageMagick (`mini_magick`)
 - `lib/mail/logger_delivery.rb` — `Mail::LoggerDelivery` custom delivery method that writes email to the Rails log (no external ESP until one is chosen; see docs/ops/newsletter-mail.md)
 - `lib/og_image/generator.rb` — `OgImage::Generator` renders the static branded OG default (1200x630) via headless-Chrome (Ferrum) screenshot; sole producer of `public/og-default.png`
 - `lib/tasks/.keep` — Rails lib/tasks keepfile
+- `lib/tasks/favicon.rake` — `rake favicon:generate` task wrapping `Favicon::Generator`
 - `lib/tasks/og_image.rake` — `rake og:image` task wrapping `OgImage::Generator`
 
 ### content-domain
 
 - `app/models/application_record.rb` — ActiveRecord base; model-level `noindex?` for sitemap
+- `app/models/changelog.rb` — `Changelog` PORO: loads `db/changelog.yml` (no table/migration) into `Changelog::Release` value objects; single source for `/changelog` and the footer's `Changelog.current_version`
 - `app/models/post.rb` — Blog post metadata + markdown file content loader
 - `app/models/project.rb` — Project portfolio record + optional markdown detail loader
 - `app/models/subscriber.rb` — Newsletter subscriber: double opt-in lifecycle (pending/confirmed/unsubscribed), consent metadata, one-way IP hash
@@ -84,6 +88,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 ### web-presentation
 
+- `app/controllers/changelog_controller.rb` — Changelog index (`Changelog.releases`, #1191)
 - `app/controllers/projects_controller.rb` — Projects index/show
 - `app/controllers/welcome_controller.rb` — Landing + resume + impressum + privacy
 - `app/controllers/writing_controller.rb` — Writing (Notes/Deep Dives) index/show
@@ -113,6 +118,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/assets/images/.keep` — Images keepfile
 - `app/assets/images/landing-image.webp` — Landing hero image
 - `app/assets/stylesheets/application.tailwind.css` — Tailwind entry CSS + `@theme` tokens/DaisyUI theme source of truth
+- `app/views/changelog/index.html.erb` — Changelog listing (`Changelog.releases`, terminal-identity style, #1191)
 - `app/views/components/_card.html.erb` — Shared card partial (stretched-link wrapper, hover-lift)
 - `app/views/components/_cta_button.html.erb` — Shared CTA button partial (primary/ghost)
 - `app/views/components/_newsletter_signup.html.erb` — Newsletter signup form partial (email + consent checkbox; source: local)
@@ -121,7 +127,7 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 - `app/views/components/_work_with_me_cta.html.erb` — Shared "Work with me" mailto CTA block (home/about)
 - `app/views/layouts/application.html.erb` — Main HTML layout (meta-tags, analytics, FOUC-prevention theme script)
 - `app/views/layouts/components/_header.html.erb` — Site header
-- `app/views/layouts/components/_footer.html.erb` — Home-only site footer (identity/sitemap/newsletter)
+- `app/views/layouts/components/_footer.html.erb` — Home-only site footer (identity/sitemap/newsletter); identity line links `Changelog.current_version` to `/changelog` (#1191)
 - `app/views/layouts/mailer.html.erb` — HTML mailer layout
 - `app/views/layouts/mailer.text.erb` — Text mailer layout
 - `app/views/projects/index.html.erb` — Projects listing
@@ -166,11 +172,11 @@ Every non-test file under `app/` and `lib/` appears here exactly once. Reviewers
 
 | Subsystem | File count |
 |-----------|------------|
-| rails-runtime | 6 |
-| content-domain | 5 |
+| rails-runtime | 8 |
+| content-domain | 6 |
 | markdown-rendering | 1 |
-| web-presentation | 59 |
+| web-presentation | 63 |
 | keyboard-navigation | 11 |
-| **Total** | **82** |
+| **Total** | **89** |
 
 Must equal `git ls-files app lib | grep -v '\.test\.js$' | wc -l`.

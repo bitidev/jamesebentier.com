@@ -12,12 +12,12 @@
     the old card/pill/section page. Imagery-free like the rest of the redesign -- Post
     detail dropped its old hero image for the same reason -- so @project.image is not
     rendered here; this page's components/section/pill/cta_button usages are retired. %>
-<article class="max-w-[900px] mx-auto px-8 pt-12 pb-[88px] font-sans text-lg leading-[1.7]">
+<article class="max-w-[900px] mx-auto px-5 sm:px-8 pt-12 pb-[88px] font-sans text-lg leading-[1.7]">
   <%= link_to "cd ../projects ←", projects_path, class: "font-mono text-[13px] text-base-content/50 no-underline hover:text-primary inline-block mb-7" %>
 
   <p class="font-mono text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ cat ~/projects/<%= @project.slug %></p>
 
-  <h1 class="font-mono text-4xl leading-[1.25] font-bold mb-3"><%= @project.title %></h1>
+  <h1 class="font-mono text-[30px] sm:text-4xl leading-[1.2] sm:leading-[1.25] font-bold mb-3 break-words"><%= @project.title %></h1>
 
   <p class="font-mono text-[13px] mb-8">
     <span class="<%= @project.status_color_class %>">● <%= @project.status %></span>

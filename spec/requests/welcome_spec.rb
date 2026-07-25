@@ -367,4 +367,29 @@ RSpec.describe "Welcomes" do
       expect(footer_link.text).to eq("Privacy")
     end
   end
+
+  # Build-in-public site version (#1191): the footer's "james@ebentier" prompt line links a
+  # "v<version>" tag to /changelog, sourced from Changelog.current_version -- the very same
+  # object the /changelog page itself renders (see spec/models/changelog_spec.rb and
+  # spec/requests/changelog_spec.rb). Deriving the expected text from Changelog.current_version
+  # here, rather than hardcoding "v1.3.0", is the point: it proves the footer and the model
+  # can't drift apart, not just that today's fixture happens to match.
+  describe "GET / — footer site version (#1191)" do
+    it "shows the current site version, linked to /changelog, on the james@ebentier prompt line" do # rubocop:disable RSpec/MultipleExpectations
+      get root_path
+
+      version_link = response.parsed_body.css("footer a[href='#{changelog_path}']").find { |a| a.text.start_with?("v") }
+
+      expect(version_link).to be_present
+      expect(version_link.text).to eq("v#{Changelog.current_version}")
+    end
+
+    it "links the footer sitemap's /changelog entry to the changelog page" do
+      get root_path
+
+      sitemap_link = response.parsed_body.css("footer a[href='#{changelog_path}']").find { |a| a.text == "/changelog" }
+
+      expect(sitemap_link).to be_present
+    end
+  end
 end

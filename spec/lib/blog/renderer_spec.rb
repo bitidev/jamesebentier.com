@@ -36,21 +36,25 @@ RSpec.describe Blog::Renderer do
     end
   end
 
+  # Mobile touch-ups made these headings responsive: the design-doc reference size now rides
+  # on the `sm:` (desktop) variant, with a smaller base size for phones. These guards still
+  # pin the reference desktop size + the element demotion, and additionally assert the mobile
+  # step so the responsive pairing can't silently regress to a single fixed size.
   describe "heading size mapping (article type-scale fidelity, PR review fix)" do
-    it "keys a markdown '##' on the original level-2 (24px) class while demoting the element to <h3>" do # rubocop:disable RSpec/MultipleExpectations
+    it "keys a markdown '##' on the original level-2 size (21px mobile / 24px sm+) while demoting the element to <h3>" do # rubocop:disable RSpec/MultipleExpectations
       html = render_markdown("## Overview\nBody text")
       heading = Nokogiri::HTML5.fragment(html).at_css("h3")
 
       expect(heading.text).to eq("Overview")
-      expect(heading.classes).to include("text-[24px]")
+      expect(heading.classes).to include("text-[21px]", "sm:text-[24px]")
     end
 
-    it "keys a markdown '###' on the original level-3 (19px) class while demoting the element to <h4>" do # rubocop:disable RSpec/MultipleExpectations
+    it "keys a markdown '###' on the original level-3 size (18px mobile / 19px sm+) while demoting the element to <h4>" do # rubocop:disable RSpec/MultipleExpectations
       html = render_markdown("### Details\nBody text")
       heading = Nokogiri::HTML5.fragment(html).at_css("h4")
 
       expect(heading.text).to eq("Details")
-      expect(heading.classes).to include("text-[19px]")
+      expect(heading.classes).to include("text-[18px]", "sm:text-[19px]")
     end
   end
 end
