@@ -85,14 +85,14 @@
         centered column. Flash messages get their own constrained wrapper so they never
         stretch edge-to-edge. %>
     <% if flash[:notice].present? %>
-      <div class="max-w-[1088px] mx-auto px-8 mt-4">
+      <div class="max-w-[1088px] mx-auto px-5 sm:px-8 mt-4">
         <div class="alert alert-success" role="alert">
           <span><%= flash[:notice] %></span>
         </div>
       </div>
     <% end %>
     <% if flash[:alert].present? %>
-      <div class="max-w-[1088px] mx-auto px-8 mt-4">
+      <div class="max-w-[1088px] mx-auto px-5 sm:px-8 mt-4">
         <div class="alert alert-error" role="alert">
           <span><%= flash[:alert] %></span>
         </div>

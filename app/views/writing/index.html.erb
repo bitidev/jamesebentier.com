@@ -16,7 +16,7 @@
 <% current_kind = params[:kind] %>
 <% posts = Post.published.by_kind(current_kind).order(published_at: :desc).to_a %>
 
-<div class="max-w-[1088px] mx-auto px-8 pt-14 pb-[72px] font-mono">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pt-14 pb-[72px] font-mono">
   <p class="text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ ls ~/writing</p>
   <h1 class="text-4xl font-bold mb-6">Writing</h1>
 

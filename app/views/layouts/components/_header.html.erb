@@ -6,23 +6,29 @@
     own root_url/posts_url/projects_url/about_path/resume_path remain the single source
     of every href, never a path literal. %>
 <header class="border-b border-base-300 font-mono">
-  <div class="max-w-[1088px] mx-auto px-8 h-[60px] flex items-center gap-8">
-    <%= link_to root_url, class: "flex items-baseline gap-2 font-bold text-[15px] no-underline text-base-content", data: { nav_target: "home" } do %>
-      <span class="text-primary" aria-hidden="true">❯</span> james@ebentier
-    <% end %>
+  <%# Mobile-first (mobile touch-ups): stack the logo and nav so the nav never cuts off
+      `about`/`resume`/theme on a phone. The nav row scrolls horizontally edge-to-edge
+      (a terminal-native command row) rather than wrapping or hiding items behind a menu;
+      on sm+ it collapses back to the original right-aligned 60px single row. %>
+  <div class="max-w-[1088px] mx-auto px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:gap-8 sm:h-[60px]">
+    <div class="flex items-center h-[52px] sm:h-auto">
+      <%= link_to root_url, class: "flex items-baseline gap-2 font-bold text-[15px] no-underline text-base-content", data: { nav_target: "home" } do %>
+        <span class="text-primary" aria-hidden="true">❯</span> james@ebentier
+      <% end %>
+    </div>
 
-    <nav class="ml-auto flex items-center gap-6 text-sm">
+    <nav class="sm:ml-auto flex items-center gap-5 sm:gap-6 text-sm overflow-x-auto sm:overflow-visible -mx-5 px-5 sm:mx-0 sm:px-0 pb-2 sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <%= link_to "writing", posts_url,
-            class: current_page?(posts_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            class: "shrink-0 py-1 whitespace-nowrap #{current_page?(posts_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline"}",
             data: { nav_target: "writing" } %>
       <%= link_to "projects", projects_url,
-            class: current_page?(projects_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            class: "shrink-0 py-1 whitespace-nowrap #{current_page?(projects_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline"}",
             data: { nav_target: "projects" } %>
       <%= link_to "about", about_path,
-            class: current_page?(about_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            class: "shrink-0 py-1 whitespace-nowrap #{current_page?(about_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline"}",
             data: { nav_target: "about" } %>
       <%= link_to "resume", resume_path,
-            class: current_page?(resume_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline",
+            class: "shrink-0 py-1 whitespace-nowrap #{current_page?(resume_path) ? "text-primary font-bold no-underline" : "text-base-content/70 hover:text-primary no-underline"}",
             data: { nav_target: "resume" } %>
 
       <%# Terminal-styled theme switcher (R6). data-theme-picker-target="select" is read
@@ -33,7 +39,7 @@
           target on this same <select> -- keyboard_nav_controller.js's `t` binding drives
           this exact element via a real `change` event, so theme-picker#change stays the
           one and only code path that ever applies/persists a theme; no parallel logic. %>
-      <span class="inline-flex items-center gap-1.5 border border-base-300 rounded-md px-2.5 py-1 text-[13px] text-base-content/70 hover:border-primary hover:text-primary focus-within:border-primary focus-within:text-primary" data-controller="theme-picker">
+      <span class="shrink-0 inline-flex items-center gap-1.5 border border-base-300 rounded-md px-2.5 py-1 text-[13px] text-base-content/70 hover:border-primary hover:text-primary focus-within:border-primary focus-within:text-primary" data-controller="theme-picker">
         <label for="theme-picker-select" class="sr-only">Theme</label>
         <span class="text-primary font-bold" aria-hidden="true">t</span>
         <select
@@ -65,7 +71,7 @@
           design's desktop-chrome affordance. %>
       <button
         type="button"
-        class="hidden md:inline-flex items-center justify-center border border-base-300 rounded-md w-7 h-7 text-[13px] text-base-content/50 hover:border-primary hover:text-primary cursor-pointer"
+        class="shrink-0 hidden md:inline-flex items-center justify-center border border-base-300 rounded-md w-7 h-7 text-[13px] text-base-content/50 hover:border-primary hover:text-primary cursor-pointer"
         data-action="click->keyboard-nav#openGuideDialog"
         aria-label="Keyboard shortcuts help"
       >?</button>

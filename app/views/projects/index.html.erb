@@ -12,7 +12,7 @@
 <%# Terminal-identity redesign (#1226): each project as a terminal-window pane. Status
     filter (R4) reuses the existing Project.by_status/Project::STATUSES contract
     unchanged, just restyled into --all/--pre-launch/--beta/--live pills. %>
-<div class="max-w-[1088px] mx-auto px-8 pt-14 pb-[72px] font-mono">
+<div class="max-w-[1088px] mx-auto px-5 sm:px-8 pt-14 pb-[72px] font-mono">
   <p class="text-sm mb-2.5"><span class="text-primary">james@ebentier:~</span>$ ls ~/projects</p>
   <h1 class="text-4xl font-bold mb-6">Projects</h1>
 
@@ -45,8 +45,8 @@
               <span class="ml-2 truncate min-w-0">~/projects/<%= project.slug %></span>
               <span class="ml-auto shrink-0 <%= project.status_color_class %>">● <%= project.status.downcase %></span>
             </div>
-            <div class="p-7 flex flex-col gap-3 flex-1">
-              <h2 class="text-2xl font-bold m-0"><%= link_to project.title, project_url(slug: project.slug), class: "no-underline hover:text-primary" %></h2>
+            <div class="p-5 sm:p-7 flex flex-col gap-3 flex-1">
+              <h2 class="text-2xl font-bold m-0 break-words"><%= link_to project.title, project_url(slug: project.slug), class: "no-underline hover:text-primary" %></h2>
               <p class="text-base text-base-content/70 m-0 flex-1"><%= project.description %></p>
               <%# Triple-links, demo -> read -> source (R3/R6 precedent): demo (project.url)
                   always renders; read/source render only when present. %>
