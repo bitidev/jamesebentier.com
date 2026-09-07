@@ -15,7 +15,7 @@
     "webpack-cli": "^7.2.3"
   },
   "devDependencies": {
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
