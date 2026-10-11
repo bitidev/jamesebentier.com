@@ -89,7 +89,7 @@ jobs:
       # 1187-modal-vim-keyboard-navigation.md (Testing Strategy, Open Question 2).
       - name: Setup Chrome for Cuprite system specs
         id: setup_chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
         with:
           # Pin to Google Chrome stable rather than the default bleeding-edge
           # Chromium snapshot -- stable is more reliably Ferrum/Cuprite-compatible.
