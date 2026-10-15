@@ -1125,7 +1125,7 @@ __metadata:
     "@tailwindcss/cli": "npm:^4.3.3"
     "@tailwindcss/typography": "npm:^0.5.20"
     autoprefixer: "npm:^10.6.1"
-    daisyui: "npm:^5.7.47"
+    daisyui: "npm:^5.7.48"
     postcss: "npm:^8.5.28"
     tailwindcss: "npm:^4.3.3"
     vitest: "npm:^4.1.11"
@@ -1379,10 +1379,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daisyui@npm:^5.7.47":
-  version: 5.7.47
-  resolution: "daisyui@npm:5.7.47"
-  checksum: 10c0/1533b3a4b8c21444888ee72d01ad73a3b4500444de50216c940829e89ad9626e2a352c45b1d7aed8d79e5623c3f0c2abbe796bb47b56dd1cdc5b84438e902920
+"daisyui@npm:^5.7.48":
+  version: 5.7.48
+  resolution: "daisyui@npm:5.7.48"
+  checksum: 10c0/f81e8f96ddba29728a4b7490e50fe7fcc984565b4f92eeddfb92573ca4ed0462ae01b969d5f169ef3fce5d95271684f903916e3f3fa7893b35b35ef73c5fb7be
   languageName: node
   linkType: hard
 
