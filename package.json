@@ -8,7 +8,7 @@
     "@tailwindcss/cli": "^4.3.3",
     "@tailwindcss/typography": "^0.5.20",
     "autoprefixer": "^10.6.1",
-    "daisyui": "^5.7.48",
+    "daisyui": "^5.7.50",
     "postcss": "^8.5.30",
     "tailwindcss": "^4.3.3",
     "webpack": "^5.112.0",
