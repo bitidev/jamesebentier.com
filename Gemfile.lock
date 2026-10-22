@@ -235,7 +235,7 @@ GEM
       net-smtp
     marcel (1.2.1)
     matrix (0.4.3)
-    meta-tags (2.23.0)
+    meta-tags (2.24.0)
       actionpack (>= 6.0.0)
     method_source (1.1.0)
     mini_magick (5.3.3)
